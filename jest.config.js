@@ -1,4 +1,7 @@
+const os = require('os');
 const path = require('path');
+const fs = require('fs');
+const process = require('process');
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { compilerOptions } = require('./tsconfig');
 
@@ -8,21 +11,31 @@ const moduleNameMapper = pathsToModuleNameMapper(compilerOptions.paths, {
 
 // Global variables that are shared across the jest worker pool
 // These variables must be static and serializable
+if ((process.env.PK_TEST_PLATFORM != null) !== (process.env.PK_TEST_COMMAND != null)) throw Error('Both PK_TEST_PLATFORM and PK_TEST_COMMAND must be set together.')
 const globals = {
   // Absolute directory to the project root
   projectDir: __dirname,
   // Absolute directory to the test root
   testDir: path.join(__dirname, 'tests'),
+  // Default global data directory
+  dataDir: fs.mkdtempSync(
+    path.join(os.tmpdir(), 'polykey-test-global-'),
+  ),
   // Default asynchronous test timeout
   defaultTimeout: 20000,
+  polykeyStartupTimeout: 30000,
+  failedConnectionTimeout: 50000,
   // Timeouts rely on setTimeout which takes 32 bit numbers
   maxTimeout: Math.pow(2, 31) - 1,
+  testCmd: process.env.PK_TEST_COMMAND,
+  testPlatform: process.env.PK_TEST_PLATFORM,
+  tmpDir: path.resolve(process.env.PK_TEST_TMPDIR ?? os.tmpdir()),
 };
 
 // The `globalSetup` and `globalTeardown` cannot access the `globals`
 // They run in their own process context
-// They can however receive the process environment
-// Use `process.env` to set variables
+// They can receive process environment
+process.env['GLOBAL_DATA_DIR'] = globals.dataDir;
 
 module.exports = {
   testEnvironment: 'node',
