@@ -70,7 +70,7 @@ describe('start', () => {
       const rlOut = readline.createInterface(agentProcess.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
         rlOut.once('line', resolve);
-        rlOut.once('close', reject);
+        rlOut.once('close', () => reject(Error('closed early')));
       });
       const statusLiveData = JSON.parse(stdout);
       expect(statusLiveData).toMatchObject({
@@ -156,7 +156,7 @@ describe('start', () => {
       const rlOut = readline.createInterface(agentProcess.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
         rlOut.once('line', resolve);
-        rlOut.once('close', reject);
+        rlOut.once('close', () => reject(Error('closed early')));
       });
       const statusLiveData = JSON.parse(stdout);
       expect(statusLiveData).toMatchObject({
@@ -439,7 +439,7 @@ describe('start', () => {
       const rlOut = readline.createInterface(agentProcess1.stdout!);
       await new Promise<RecoveryCode>((resolve, reject) => {
         rlOut.once('line', resolve);
-        rlOut.once('close', reject);
+        rlOut.once('close', () => reject(Error('closed early')));
       });
       agentProcess1.kill('SIGHUP');
       const agentProcess2 = await testUtils.pkSpawn(
@@ -561,7 +561,7 @@ describe('start', () => {
       const rlOut = readline.createInterface(agentProcess2.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
         rlOut.once('line', resolve);
-        rlOut.once('close', reject);
+        rlOut.once('close', () => reject(Error('closed early')));
       });
       const statusLiveData = JSON.parse(stdout);
       expect(statusLiveData).toMatchObject({
@@ -642,7 +642,7 @@ describe('start', () => {
       const rlOut = readline.createInterface(agentProcess1.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
         rlOut.once('line', resolve);
-        rlOut.once('close', reject);
+        rlOut.once('close', () => reject(Error('closed early')));
       });
       const statusLiveData = JSON.parse(stdout);
       const recoveryCode = statusLiveData.recoveryCode;

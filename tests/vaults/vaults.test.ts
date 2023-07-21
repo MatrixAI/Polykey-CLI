@@ -1,18 +1,17 @@
-import type { NodeAddress } from '@/nodes/types';
-import type { VaultId, VaultName } from '@/vaults/types';
-import type { Host, Port } from '@/network/types';
-import type { GestaltNodeInfo } from '@/gestalts/types';
+import type { NodeAddress } from '@matrixai/polykey/dist/nodes/types';
+import type { VaultId, VaultName } from '@matrixai/polykey/dist/vaults/types';
+import type { Host, Port } from '@matrixai/polykey/dist/network/types';
+import type { GestaltNodeInfo } from '@matrixai/polykey/dist/gestalts/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from '@/PolykeyAgent';
-import * as nodesUtils from '@/nodes/utils';
-import * as vaultsUtils from '@/vaults/utils';
-import sysexits from '@/utils/sysexits';
-import NotificationsManager from '@/notifications/NotificationsManager';
-import * as keysUtils from '@/keys/utils/index';
-import * as testNodesUtils from '../../nodes/utils';
-import * as testUtils from '../../utils';
+import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
+import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
+import * as vaultsUtils from '@matrixai/polykey/dist/vaults/utils';
+import sysexits from '@matrixai/polykey/dist/utils/sysexits';
+import NotificationsManager from '@matrixai/polykey/dist/notifications/NotificationsManager';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as testUtils from '../utils';
 
 describe('CLI vaults', () => {
   const password = 'password';
@@ -24,9 +23,9 @@ describe('CLI vaults', () => {
   let vaultNumber: number;
   let vaultName: VaultName;
 
-  const nodeId1 = testNodesUtils.generateRandomNodeId();
-  const nodeId2 = testNodesUtils.generateRandomNodeId();
-  const nodeId3 = testNodesUtils.generateRandomNodeId();
+  const nodeId1 = testUtils.generateRandomNodeId();
+  const nodeId2 = testUtils.generateRandomNodeId();
+  const nodeId3 = testUtils.generateRandomNodeId();
 
   const node1: GestaltNodeInfo = {
     nodeId: nodeId1,
@@ -408,7 +407,7 @@ describe('CLI vaults', () => {
             vaultName,
           );
           const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
-          const targetNodeId = testNodesUtils.generateRandomNodeId();
+          const targetNodeId = testUtils.generateRandomNodeId();
           const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
           await polykeyAgent.gestaltGraph.setNode({
             nodeId: targetNodeId,
@@ -454,7 +453,7 @@ describe('CLI vaults', () => {
         );
         const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
         const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = testNodesUtils.generateRandomNodeId();
+        const targetNodeId = testUtils.generateRandomNodeId();
         const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
         await polykeyAgent.gestaltGraph.setNode({
           nodeId: targetNodeId,
@@ -533,7 +532,7 @@ describe('CLI vaults', () => {
         );
         const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
         const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = testNodesUtils.generateRandomNodeId();
+        const targetNodeId = testUtils.generateRandomNodeId();
         const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
         await polykeyAgent.gestaltGraph.setNode({
           nodeId: targetNodeId,

@@ -15,7 +15,6 @@ import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
 import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/utils';
 import TestProvider from '@matrixai/polykey/tests/identities/TestProvider';
-import * as testNodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('discover/get', () => {
@@ -77,7 +76,7 @@ describe('discover/get', () => {
       },
     });
     nodeBId = nodeB.keyRing.getNodeId();
-    await testNodesUtils.nodesConnect(nodeA, nodeB);
+    await testUtils.nodesConnect(nodeA, nodeB);
     nodePath = path.join(dataDir, 'polykey');
     // Cannot use global shared agent since we need to register a provider
     pkAgent = await PolykeyAgent.createPolykeyAgent({

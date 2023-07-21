@@ -7,7 +7,6 @@ import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import { sysexits } from '@matrixai/polykey/dist/errors';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
-import * as testNodesUtils from '@matrixai/polykey/tests/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('find', () => {
@@ -66,7 +65,7 @@ describe('find', () => {
     remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
     remoteOnlineHost = remoteOnline.quicServerAgent.host as unknown as Host;
     remoteOnlinePort = remoteOnline.quicServerAgent.port as unknown as Port;
-    await testNodesUtils.nodesConnect(polykeyAgent, remoteOnline);
+    await testUtils.nodesConnect(polykeyAgent, remoteOnline);
     // Setting up an offline remote keynode
     remoteOffline = await PolykeyAgent.createPolykeyAgent({
       password,
@@ -85,7 +84,7 @@ describe('find', () => {
     remoteOfflineNodeId = remoteOffline.keyRing.getNodeId();
     remoteOfflineHost = remoteOffline.quicServerAgent.host as unknown as Host;
     remoteOfflinePort = remoteOffline.quicServerAgent.port as unknown as Port;
-    await testNodesUtils.nodesConnect(polykeyAgent, remoteOffline);
+    await testUtils.nodesConnect(polykeyAgent, remoteOffline);
     await remoteOffline.stop();
   });
   afterEach(async () => {

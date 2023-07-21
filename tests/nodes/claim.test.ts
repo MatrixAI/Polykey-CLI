@@ -6,7 +6,6 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
-import * as testNodesUtils from '@matrixai/polykey/tests/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('claim', () => {
@@ -58,7 +57,7 @@ describe('claim', () => {
     });
     remoteId = remoteNode.keyRing.getNodeId();
     remoteIdEncoded = nodesUtils.encodeNodeId(remoteId);
-    await testNodesUtils.nodesConnect(pkAgent, remoteNode);
+    await testUtils.nodesConnect(pkAgent, remoteNode);
     await pkAgent.acl.setNodePerm(remoteId, {
       gestalt: {
         notify: null,

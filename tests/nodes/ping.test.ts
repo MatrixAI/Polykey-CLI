@@ -7,7 +7,6 @@ import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import { sysexits } from '@matrixai/polykey/dist/errors';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
-import * as testNodesUtils from '@matrixai/polykey/tests/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('ping', () => {
@@ -60,7 +59,7 @@ describe('ping', () => {
       },
     });
     remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
-    await testNodesUtils.nodesConnect(polykeyAgent, remoteOnline);
+    await testUtils.nodesConnect(polykeyAgent, remoteOnline);
     // Setting up an offline remote keynode
     remoteOffline = await PolykeyAgent.createPolykeyAgent({
       password,
@@ -77,7 +76,7 @@ describe('ping', () => {
       },
     });
     remoteOfflineNodeId = remoteOffline.keyRing.getNodeId();
-    await testNodesUtils.nodesConnect(polykeyAgent, remoteOffline);
+    await testUtils.nodesConnect(polykeyAgent, remoteOffline);
     await remoteOffline.stop();
   });
   afterEach(async () => {

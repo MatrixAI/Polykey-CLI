@@ -1,4 +1,7 @@
 import type { NodeId } from '@matrixai/polykey/dist/ids/types';
+import type PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
+import type { Host, Port } from '@matrixai/polykey/dist/network/types';
+import type { NodeAddress } from '@matrixai/polykey/dist/nodes/types';
 import { IdInternal } from '@matrixai/id';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import { promise } from '@matrixai/polykey/dist/utils/utils';
@@ -67,4 +70,20 @@ function trackTimers() {
   return timerMap;
 }
 
-export { generateRandomNodeId, testIf, describeIf, trackTimers };
+/**
+ * Adds each node's details to the other
+ */
+async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
+  // Add remote node's details to local node
+  await localNode.nodeManager.setNode(remoteNode.keyRing.getNodeId(), {
+    host: remoteNode.quicServerAgent.host as unknown as Host,
+    port: remoteNode.quicServerAgent.port as unknown as Port,
+  } as NodeAddress);
+  // Add local node's details to remote node
+  await remoteNode.nodeManager.setNode(localNode.keyRing.getNodeId(), {
+    host: localNode.quicServerAgent.host as unknown as Host,
+    port: localNode.quicServerAgent.port as unknown as Port,
+  } as NodeAddress);
+}
+
+export { generateRandomNodeId, testIf, describeIf, trackTimers, nodesConnect };

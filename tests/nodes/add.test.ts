@@ -9,13 +9,12 @@ import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import NodeManager from '@matrixai/polykey/dist/nodes/NodeManager';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
-import * as testNodesUtils from '@matrixai/polykey/tests/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('add', () => {
   const logger = new Logger('add test', LogLevel.WARN, [new StreamHandler()]);
   const password = 'helloworld';
-  const validNodeId = testNodesUtils.generateRandomNodeId();
+  const validNodeId = testUtils.generateRandomNodeId();
   const invalidNodeId = IdInternal.fromString<NodeId>('INVALIDID');
   const validHost = '0.0.0.0';
   const invalidHost = 'INVALIDHOST';

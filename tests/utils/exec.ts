@@ -23,7 +23,7 @@ const tsConfigPath = path.resolve(
 );
 
 const polykeyPath = path.resolve(
-  path.join(globalThis.projectDir ?? '', 'src/bin/polykey.ts'),
+  path.join(globalThis.projectDir ?? '', 'src/polykey.ts'),
 );
 
 const generateDockerArgs = (mountPath: string) => [
