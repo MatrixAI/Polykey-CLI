@@ -31,9 +31,6 @@ class CommandVerify extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
       const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
       const clientOptions = await binProcessors.processClientOptions(
@@ -49,7 +46,7 @@ class CommandVerify extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -64,7 +61,6 @@ class CommandVerify extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         let data: string;
@@ -111,7 +107,7 @@ class CommandVerify extends CommandPolykey {
         }
         const response = await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.keysVerify({
+            pkClient.rpcClientClient.methods.keysVerify({
               metadata: auth,
               publicKeyJwk: publicJWK,
               data,

@@ -72,7 +72,7 @@
     "dev": "nodemon src/polykey.ts -- agent start --verbose"
   },
   "dependencies": {
-    "@matrixai/polykey": "/home/faulkes/matixWorkspace/gitRepos/Polykey",
+    "@matrixai/polykey": "/home/faulkes/matrixcode/polykey/js-polykey",
     "@matrixai/logger": "^3.1.0",
     "@matrixai/errors": "^1.1.7",
     "@matrixai/quic": "^0.0.12",

@@ -27,9 +27,6 @@ class CommandTrust extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const utils = await import('@matrixai/polykey/dist/utils');
       const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
@@ -45,7 +42,7 @@ class CommandTrust extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -60,7 +57,6 @@ class CommandTrust extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const [type, id] = gestaltId;
@@ -70,7 +66,7 @@ class CommandTrust extends CommandPolykey {
               // Setting by Node.
               await binUtils.retryAuthentication(
                 (auth) =>
-                  pkClient.rpcClient.methods.gestaltsGestaltTrustByNode({
+                  pkClient.rpcClientClient.methods.gestaltsGestaltTrustByNode({
                     metadata: auth,
                     nodeIdEncoded: nodesUtils.encodeNodeId(id),
                   }),
@@ -83,11 +79,13 @@ class CommandTrust extends CommandPolykey {
               //  Setting by Identity
               await binUtils.retryAuthentication(
                 (auth) =>
-                  pkClient.rpcClient.methods.gestaltsGestaltTrustByIdentity({
-                    metadata: auth,
-                    providerId: id[0],
-                    identityId: id[1],
-                  }),
+                  pkClient.rpcClientClient.methods.gestaltsGestaltTrustByIdentity(
+                    {
+                      metadata: auth,
+                      providerId: id[0],
+                      identityId: id[1],
+                    },
+                  ),
                 auth,
               );
             }

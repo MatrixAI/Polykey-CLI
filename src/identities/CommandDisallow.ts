@@ -32,9 +32,6 @@ class CommandDisallow extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const utils = await import('@matrixai/polykey/dist/utils');
       const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
@@ -50,7 +47,7 @@ class CommandDisallow extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -65,7 +62,6 @@ class CommandDisallow extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const [type, id] = gestaltId;
@@ -75,7 +71,7 @@ class CommandDisallow extends CommandPolykey {
               // Trusting
               await binUtils.retryAuthentication(
                 (auth) =>
-                  pkClient.rpcClient.methods.gestaltsActionsUnsetByNode({
+                  pkClient.rpcClientClient.methods.gestaltsActionsUnsetByNode({
                     metadata: auth,
                     nodeIdEncoded: nodesUtils.encodeNodeId(id),
                     action: permission,
@@ -89,12 +85,14 @@ class CommandDisallow extends CommandPolykey {
               // Trusting.
               await binUtils.retryAuthentication(
                 (auth) =>
-                  pkClient.rpcClient.methods.gestaltsActionsUnsetByIdentity({
-                    metadata: auth,
-                    providerId: id[0],
-                    identityId: id[1],
-                    action: permission,
-                  }),
+                  pkClient.rpcClientClient.methods.gestaltsActionsUnsetByIdentity(
+                    {
+                      metadata: auth,
+                      providerId: id[0],
+                      identityId: id[1],
+                      action: permission,
+                    },
+                  ),
                 auth,
               );
             }

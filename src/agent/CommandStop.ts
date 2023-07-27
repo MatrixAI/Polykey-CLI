@@ -21,9 +21,6 @@ class CommandStop extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const clientStatus = await binProcessors.processClientStatus(
         options.nodePath,
         options.nodeId,
@@ -49,7 +46,7 @@ class CommandStop extends CommandPolykey {
       // Either the statusInfo is undefined or LIVE
       // Either way, the connection parameters now exist
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -64,12 +61,11 @@ class CommandStop extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.agentStop({
+            pkClient.rpcClientClient.methods.agentStop({
               metadata: auth,
             }),
           auth,

@@ -27,9 +27,6 @@ class CommandMkdir extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -43,7 +40,7 @@ class CommandMkdir extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -58,12 +55,11 @@ class CommandMkdir extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.vaultsSecretsMkdir({
+            pkClient.rpcClientClient.methods.vaultsSecretsMkdir({
               metadata: auth,
               nameOrId: secretPath[0],
               dirName: secretPath[1],

@@ -20,9 +20,6 @@ class CommandList extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -36,7 +33,7 @@ class CommandList extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -51,15 +48,15 @@ class CommandList extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         let output: any;
         const gestalts = await binUtils.retryAuthentication(async (auth) => {
           const gestalts: Array<any> = [];
-          const stream = await pkClient.rpcClient.methods.gestaltsGestaltList({
-            metadata: auth,
-          });
+          const stream =
+            await pkClient.rpcClientClient.methods.gestaltsGestaltList({
+              metadata: auth,
+            });
           for await (const gestaltMessage of stream) {
             const gestalt = gestaltMessage.gestalt;
             const newGestalt: any = {
@@ -81,7 +78,7 @@ class CommandList extends CommandPolykey {
             // Getting the permissions for the gestalt.
             const actionsMessage = await binUtils.retryAuthentication(
               (auth) =>
-                pkClient.rpcClient.methods.gestaltsActionsGetByNode({
+                pkClient.rpcClientClient.methods.gestaltsActionsGetByNode({
                   metadata: auth,
                   nodeIdEncoded: newGestalt.nodes[0].nodeId,
                 }),

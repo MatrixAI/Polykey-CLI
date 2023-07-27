@@ -35,9 +35,6 @@ class CommandRead extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const notificationsUtils = await import(
         '@matrixai/polykey/dist/notifications/utils'
       );
@@ -54,7 +51,7 @@ class CommandRead extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -69,12 +66,11 @@ class CommandRead extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const response = await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.notificationsRead({
+            pkClient.rpcClientClient.methods.notificationsRead({
               metadata: auth,
               unread: options.unread,
               number: options.number,

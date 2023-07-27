@@ -51,9 +51,6 @@ class CommandSearch extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -67,7 +64,7 @@ class CommandSearch extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -82,7 +79,6 @@ class CommandSearch extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         await binUtils.retryAuthentication(async (auth) => {
@@ -90,20 +86,8 @@ class CommandSearch extends CommandPolykey {
             ClientRPCResponseResult<IdentityInfoMessage>
           >;
           if (options.identityId) {
-            readableStream = await pkClient.rpcClient.methods.identitiesInfoGet(
-              {
-                metadata: auth,
-                identityId: options.identityId,
-                authIdentityId: options.authIdentityId,
-                disconnected: options.disconnected,
-                providerIdList: options.providerId ?? [],
-                searchTermList: searchTerms,
-                limit: options.limit,
-              },
-            );
-          } else {
             readableStream =
-              await pkClient.rpcClient.methods.identitiesInfoConnectedGet({
+              await pkClient.rpcClientClient.methods.identitiesInfoGet({
                 metadata: auth,
                 identityId: options.identityId,
                 authIdentityId: options.authIdentityId,
@@ -112,6 +96,19 @@ class CommandSearch extends CommandPolykey {
                 searchTermList: searchTerms,
                 limit: options.limit,
               });
+          } else {
+            readableStream =
+              await pkClient.rpcClientClient.methods.identitiesInfoConnectedGet(
+                {
+                  metadata: auth,
+                  identityId: options.identityId,
+                  authIdentityId: options.authIdentityId,
+                  disconnected: options.disconnected,
+                  providerIdList: options.providerId ?? [],
+                  searchTermList: searchTerms,
+                  limit: options.limit,
+                },
+              );
           }
           for await (const identityInfoMessage of readableStream) {
             const output = {

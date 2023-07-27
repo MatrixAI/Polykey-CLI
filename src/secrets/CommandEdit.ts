@@ -29,9 +29,6 @@ class CommandEdit extends CommandPolykey {
       const { default: WebSocketClient } = await import(
         '@matrixai/polykey/dist/websockets/WebSocketClient'
       );
-      const { clientManifest } = await import(
-        '@matrixai/polykey/dist/client/handlers/clientManifest'
-      );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -45,7 +42,7 @@ class CommandEdit extends CommandPolykey {
         this.fs,
       );
       let webSocketClient: WebSocketClient;
-      let pkClient: PolykeyClient<typeof clientManifest>;
+      let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
         if (webSocketClient != null) await webSocketClient.destroy(true);
@@ -60,12 +57,11 @@ class CommandEdit extends CommandPolykey {
         pkClient = await PolykeyClient.createPolykeyClient({
           streamFactory: (ctx) => webSocketClient.startConnection(ctx),
           nodePath: options.nodePath,
-          manifest: clientManifest,
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const response = await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.vaultsSecretsGet({
+            pkClient.rpcClientClient.methods.vaultsSecretsGet({
               metadata: auth,
               nameOrId: secretPath[0],
               secretName: secretPath[1],
@@ -93,7 +89,7 @@ class CommandEdit extends CommandPolykey {
             cause: e,
           });
         }
-        await pkClient.rpcClient.methods.vaultsSecretsEdit({
+        await pkClient.rpcClientClient.methods.vaultsSecretsEdit({
           nameOrId: secretPath[0],
           secretName: secretPath[1],
           secretContent: content.toString('binary'),
