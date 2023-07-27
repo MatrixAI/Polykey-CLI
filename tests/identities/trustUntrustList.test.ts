@@ -15,7 +15,7 @@ import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as identitiesUtils from '@matrixai/polykey/dist/identities/utils';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
 import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/utils';
-import TestProvider from '@matrixai/polykey/tests/identities/TestProvider';
+import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 
 // Fixes problem with spyOn overriding imports directly

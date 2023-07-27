@@ -18,7 +18,7 @@ jest.mock('prompts');
 const mockedPrompts = mocked(prompts.prompt);
 
 describe('sessions', () => {
-  const logger = new Logger('sessions test', LogLevel.WARN, [
+  const logger = new Logger('sessions test', LogLevel.DEBUG, [
     new StreamHandler(),
   ]);
   let agentDir;
@@ -76,12 +76,12 @@ describe('sessions', () => {
       await session.stop();
     },
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  testUtils.testIf(testUtils.isTestPlatformEmpty).only(
     'unattended commands with invalid authentication should fail',
     async () => {
-      let exitCode, stderr;
+      let exitCode, stderr, stdout;
       // Password and Token set
-      ({ exitCode, stderr } = await testUtils.pkStdio(
+      ({ exitCode, stderr, stdout } = await testUtils.pkStdio(
         ['agent', 'status', '--format', 'json'],
         {
           env: {
@@ -92,6 +92,8 @@ describe('sessions', () => {
           cwd: agentDir,
         },
       ));
+      console.log(stderr);
+      console.log(stdout);
       testUtils.expectProcessError(exitCode, stderr, [
         new clientErrors.ErrorClientAuthDenied(),
       ]);

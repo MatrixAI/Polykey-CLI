@@ -566,7 +566,9 @@ function expectProcessError(
   expect(exitCode).toBe(errors[0].exitCode);
   const stdErrLine = stderr.trim().split('\n').pop();
   let currentError = JSON.parse(stdErrLine!);
+  console.log(currentError);
   while (currentError.type === 'ErrorPolykeyRemote') {
+    if (currentError.data.cause == null) throw Error('No cause was given');
     currentError = currentError.data.cause;
   }
   for (const error of errors) {
