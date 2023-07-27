@@ -1,14 +1,12 @@
 import path from 'path';
 import fs from 'fs';
 import prompts from 'prompts';
-import { mocked } from 'jest-mock';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import Session from '@matrixai/polykey/dist/sessions/Session';
 import config from '@matrixai/polykey/dist/config';
 import * as testUtils from '../utils';
 
 jest.mock('prompts');
-const mockedPrompts = mocked(prompts.prompt);
 
 describe('lock', () => {
   const logger = new Logger('lock test', LogLevel.WARN, [new StreamHandler()]);
@@ -54,8 +52,8 @@ describe('lock', () => {
     'lock ensures re-authentication is required',
     async () => {
       const password = agentPassword;
-      mockedPrompts.mockClear();
-      mockedPrompts.mockImplementation(async (_opts: any) => {
+      prompts.mockClear();
+      prompts.mockImplementation(async (_opts: any) => {
         return { password };
       });
       await testUtils.pkStdio(['agent', 'unlock'], {
@@ -76,8 +74,8 @@ describe('lock', () => {
         cwd: agentDir,
       });
       // Prompted for password 1 time
-      expect(mockedPrompts.mock.calls.length).toBe(1);
-      mockedPrompts.mockClear();
+      expect(prompts.mock.calls.length).toBe(1);
+      prompts.mockClear();
     },
   );
 });

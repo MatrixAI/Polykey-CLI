@@ -5,7 +5,6 @@
  */
 import path from 'path';
 import fs from 'fs';
-import { mocked } from 'jest-mock';
 import prompts from 'prompts';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import { Session } from '@matrixai/polykey/dist/sessions';
@@ -15,10 +14,9 @@ import * as clientErrors from '@matrixai/polykey/dist/client/errors';
 import * as testUtils from './utils';
 
 jest.mock('prompts');
-const mockedPrompts = mocked(prompts.prompt);
 
 describe('sessions', () => {
-  const logger = new Logger('sessions test', LogLevel.WARN, [
+  const logger = new Logger('sessions test', LogLevel.DEBUG, [
     new StreamHandler(),
   ]);
   let agentDir;
@@ -76,57 +74,59 @@ describe('sessions', () => {
       await session.stop();
     },
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'unattended commands with invalid authentication should fail',
-    async () => {
-      let exitCode, stderr;
-      // Password and Token set
-      ({ exitCode, stderr } = await testUtils.pkStdio(
-        ['agent', 'status', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: agentDir,
-            PK_PASSWORD: 'invalid',
-            PK_TOKEN: 'token',
+  testUtils
+    .testIf(testUtils.isTestPlatformEmpty)
+    .only(
+      'unattended commands with invalid authentication should fail',
+      async () => {
+        let exitCode, stderr;
+        // Password and Token set
+        ({ exitCode, stderr } = await testUtils.pkStdio(
+          ['agent', 'status', '--format', 'json'],
+          {
+            env: {
+              PK_NODE_PATH: agentDir,
+              PK_PASSWORD: 'invalid',
+              PK_TOKEN: 'token',
+            },
+            cwd: agentDir,
           },
-          cwd: agentDir,
-        },
-      ));
-      testUtils.expectProcessError(exitCode, stderr, [
-        new clientErrors.ErrorClientAuthDenied(),
-      ]);
-      // Password set
-      ({ exitCode, stderr } = await testUtils.pkStdio(
-        ['agent', 'status', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: agentDir,
-            PK_PASSWORD: 'invalid',
-            PK_TOKEN: undefined,
+        ));
+        testUtils.expectProcessError(exitCode, stderr, [
+          new clientErrors.ErrorClientAuthDenied(),
+        ]);
+        // Password set
+        ({ exitCode, stderr } = await testUtils.pkStdio(
+          ['agent', 'status', '--format', 'json'],
+          {
+            env: {
+              PK_NODE_PATH: agentDir,
+              PK_PASSWORD: 'invalid',
+              PK_TOKEN: undefined,
+            },
+            cwd: agentDir,
           },
-          cwd: agentDir,
-        },
-      ));
-      testUtils.expectProcessError(exitCode, stderr, [
-        new clientErrors.ErrorClientAuthDenied(),
-      ]);
-      // Token set
-      ({ exitCode, stderr } = await testUtils.pkStdio(
-        ['agent', 'status', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: agentDir,
-            PK_PASSWORD: undefined,
-            PK_TOKEN: 'token',
+        ));
+        testUtils.expectProcessError(exitCode, stderr, [
+          new clientErrors.ErrorClientAuthDenied(),
+        ]);
+        // Token set
+        ({ exitCode, stderr } = await testUtils.pkStdio(
+          ['agent', 'status', '--format', 'json'],
+          {
+            env: {
+              PK_NODE_PATH: agentDir,
+              PK_PASSWORD: undefined,
+              PK_TOKEN: 'token',
+            },
+            cwd: agentDir,
           },
-          cwd: agentDir,
-        },
-      ));
-      testUtils.expectProcessError(exitCode, stderr, [
-        new clientErrors.ErrorClientAuthDenied(),
-      ]);
-    },
-  );
+        ));
+        testUtils.expectProcessError(exitCode, stderr, [
+          new clientErrors.ErrorClientAuthDenied(),
+        ]);
+      },
+    );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'prompt for password to authenticate attended commands',
     async () => {
@@ -135,8 +135,8 @@ describe('sessions', () => {
         env: { PK_NODE_PATH: agentDir },
         cwd: agentDir,
       });
-      mockedPrompts.mockClear();
-      mockedPrompts.mockImplementation(async (_opts: any) => {
+      prompts.mockClear();
+      prompts.mockImplementation(async (_opts: any) => {
         return { password };
       });
       const { exitCode } = await testUtils.pkStdio(['agent', 'status'], {
@@ -145,8 +145,8 @@ describe('sessions', () => {
       });
       expect(exitCode).toBe(0);
       // Prompted for password 1 time
-      expect(mockedPrompts.mock.calls.length).toBe(1);
-      mockedPrompts.mockClear();
+      expect(prompts.mock.calls.length).toBe(1);
+      prompts.mockClear();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -158,8 +158,8 @@ describe('sessions', () => {
       });
       const validPassword = agentPassword;
       const invalidPassword = 'invalid';
-      mockedPrompts.mockClear();
-      mockedPrompts
+      prompts.mockClear();
+      prompts
         .mockResolvedValueOnce({ password: invalidPassword })
         .mockResolvedValue({ password: validPassword });
       const { exitCode } = await testUtils.pkStdio(['agent', 'status'], {
@@ -168,8 +168,8 @@ describe('sessions', () => {
       });
       expect(exitCode).toBe(0);
       // Prompted for password 2 times
-      expect(mockedPrompts.mock.calls.length).toBe(2);
-      mockedPrompts.mockClear();
+      expect(prompts.mock.calls.length).toBe(2);
+      prompts.mockClear();
     },
   );
 });

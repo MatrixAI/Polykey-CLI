@@ -567,6 +567,7 @@ function expectProcessError(
   const stdErrLine = stderr.trim().split('\n').pop();
   let currentError = JSON.parse(stdErrLine!);
   while (currentError.type === 'ErrorPolykeyRemote') {
+    if (currentError.data.cause == null) throw Error('No cause was given');
     currentError = currentError.data.cause;
   }
   for (const error of errors) {
