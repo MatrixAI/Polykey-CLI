@@ -18,10 +18,8 @@ import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/util
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 
-// Fixes problem with spyOn overriding imports directly
-const mocks = {
-  browser: identitiesUtils.browser,
-};
+// @ts-ignore: stub out method
+identitiesUtils.browser = () => {};
 
 describe('trust/untrust/list', () => {
   const logger = new Logger('trust/untrust/list test', LogLevel.WARN, [
@@ -130,9 +128,6 @@ describe('trust/untrust/list', () => {
           cwd: dataDir,
         },
       );
-      const mockedBrowser = jest
-        .spyOn(mocks, 'browser')
-        .mockImplementation(() => {});
       await testUtils.pkStdio(
         [
           'identities',
@@ -148,7 +143,6 @@ describe('trust/untrust/list', () => {
           cwd: dataDir,
         },
       );
-      mockedBrowser.mockRestore();
       // Trust node - this should trigger discovery on the gestalt the node
       // belongs to and add it to our gestalt graph
       ({ exitCode } = await testUtils.pkStdio(
@@ -264,9 +258,6 @@ describe('trust/untrust/list', () => {
           cwd: dataDir,
         },
       );
-      const mockedBrowser = jest
-        .spyOn(mocks, 'browser')
-        .mockImplementation(() => {});
       await testUtils.pkStdio(
         [
           'identities',
@@ -282,7 +273,6 @@ describe('trust/untrust/list', () => {
           cwd: dataDir,
         },
       );
-      mockedBrowser.mockRestore();
       // Trust identity - this should trigger discovery on the gestalt the node
       // belongs to and add it to our gestalt graph
       // This command should fail first time as we need to allow time for the

@@ -12,10 +12,14 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import { sysexits } from '@matrixai/polykey/dist/utils';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
+import * as identitiesUtils from '@matrixai/polykey/dist/identities/utils';
 import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
 import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/utils';
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
+
+// @ts-ignore: stub out method
+identitiesUtils.browser = () => {};
 
 describe('discover/get', () => {
   const logger = new Logger('discover/get test', LogLevel.WARN, [
