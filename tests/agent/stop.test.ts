@@ -4,8 +4,8 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import Status from '@matrixai/polykey/dist/status/Status';
 import config from '@matrixai/polykey/dist/config';
 import { sleep } from '@matrixai/polykey/dist/utils';
-import * as binErrors from '@matrixai/polykey/dist/bin/errors';
 import * as clientErrors from '@matrixai/polykey/dist/client/errors';
+import * as binErrors from '@/errors';
 import * as testUtils from '../utils';
 
 describe('stop', () => {

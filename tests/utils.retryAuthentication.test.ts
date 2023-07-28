@@ -1,13 +1,11 @@
 import prompts from 'prompts';
-import { mocked } from 'jest-mock';
 import mockedEnv from 'mocked-env';
 import * as clientUtils from '@matrixai/polykey/dist/client/utils';
 import * as clientErrors from '@matrixai/polykey/dist/client/errors';
-import * as binUtils from '@matrixai/polykey/dist/bin/utils';
+import * as binUtils from '@/utils';
 import * as testUtils from './utils';
 
 jest.mock('prompts');
-const mockedPrompts = mocked(prompts.prompt);
 
 describe('bin/utils retryAuthentication', () => {
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -85,9 +83,8 @@ describe('bin/utils retryAuthentication', () => {
     'retry once on clientErrors.ErrorClientAuthMissing',
     async () => {
       const password = 'the password';
-      mockedPrompts.mockClear();
       // Password prompt will return hello world
-      mockedPrompts.mockImplementation(async (_opts: any) => {
+      prompts.mockImplementation(async (_opts: any) => {
         return { password };
       });
       // Call will reject with ErrorClientAuthMissing then succeed
@@ -107,12 +104,12 @@ describe('bin/utils retryAuthentication', () => {
       // Call was tried 2 times
       expect(mockCall.mock.calls.length).toBe(2);
       // Prompted for password 1 time
-      expect(mockedPrompts.mock.calls.length).toBe(1);
+      expect(prompts.mock.calls.length).toBe(1);
       // Authorization metadata was set
       const auth = mockCall.mock.calls[1][0].authorization;
       expect(auth).toBeDefined();
       expect(auth).toBe(clientUtils.encodeAuthFromPassword(password));
-      mockedPrompts.mockClear();
+      prompts.mockClear();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -120,8 +117,8 @@ describe('bin/utils retryAuthentication', () => {
     async () => {
       const password1 = 'first password';
       const password2 = 'second password';
-      mockedPrompts.mockClear();
-      mockedPrompts
+      prompts.mockClear();
+      prompts
         .mockResolvedValueOnce({ password: password1 })
         .mockResolvedValue({ password: password2 });
       // Call will reject with ErrorClientAuthMissing then succeed
@@ -142,13 +139,13 @@ describe('bin/utils retryAuthentication', () => {
       // Call was tried 3 times
       expect(mockCall.mock.calls.length).toBe(3);
       // Prompted for password 2 times
-      expect(mockedPrompts.mock.calls.length).toBe(2);
+      expect(prompts.mock.calls.length).toBe(2);
       // Authorization metadata was set
       const auth = mockCall.mock.calls[2][0].authorization;
       expect(auth).toBeDefined();
       // Second password succeeded
       expect(auth).toBe(clientUtils.encodeAuthFromPassword(password2));
-      mockedPrompts.mockClear();
+      prompts.mockClear();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -156,8 +153,8 @@ describe('bin/utils retryAuthentication', () => {
     async () => {
       const password1 = 'first password';
       const password2 = 'second password';
-      mockedPrompts.mockClear();
-      mockedPrompts
+      prompts.mockClear();
+      prompts
         .mockResolvedValueOnce({ password: password1 })
         .mockResolvedValue({ password: password2 });
       // Call will reject with ErrorClientAuthMissing then succeed
@@ -178,12 +175,12 @@ describe('bin/utils retryAuthentication', () => {
       );
       envRestore();
       expect(mockCall.mock.calls.length).toBe(5);
-      expect(mockedPrompts.mock.calls.length).toBe(4);
+      expect(prompts.mock.calls.length).toBe(4);
       const auth = mockCall.mock.calls[4][0].authorization;
       expect(auth).toBeDefined();
       // Second password was the last used
       expect(auth).toBe(clientUtils.encodeAuthFromPassword(password2));
-      mockedPrompts.mockClear();
+      prompts.mockClear();
     },
   );
 });

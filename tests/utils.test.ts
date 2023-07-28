@@ -1,8 +1,8 @@
 import type { Host, Port } from '@matrixai/polykey/dist/network/types';
 import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
-import * as binUtils from '@matrixai/polykey/dist/bin/utils/utils';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as rpcErrors from '@matrixai/polykey/dist/rpc/errors';
+import * as binUtils from '@/utils/utils';
 import * as testUtils from './utils';
 
 describe('bin/utils', () => {
@@ -84,9 +84,9 @@ describe('bin/utils', () => {
       ).toBe('{"key1":"value1","key2":"value2"}\n');
     },
   );
-  testUtils
-    .testIf(testUtils.isTestPlatformEmpty)
-    .only('errors in human and json format', () => {
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'errors in human and json format',
+    () => {
       const timestamp = new Date();
       const data = { string: 'one', number: 1 };
       const host = '127.0.0.1' as Host;
@@ -190,5 +190,6 @@ describe('bin/utils', () => {
       expect(
         binUtils.outputFormatter({ type: 'json', data: twoRemoteErrors }),
       ).toBe(JSON.stringify(twoRemoteErrors.toJSON()) + '\n');
-    });
+    },
+  );
 });

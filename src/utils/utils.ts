@@ -1,7 +1,6 @@
 import type { POJO } from '@matrixai/polykey/dist/types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
-import { AbstractError } from '@matrixai/errors';
 import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
 import * as clientUtils from '@matrixai/polykey/dist/client/utils/utils';
 import * as clientErrors from '@matrixai/polykey/dist/client/errors';
@@ -98,7 +97,7 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
       output += `${key}\t${value}\n`;
     }
   } else if (msg.type === 'json') {
-    if (msg.data instanceof Error && !(msg.data instanceof AbstractError)) {
+    if (msg.data instanceof Error && !(msg.data instanceof ErrorPolykey)) {
       msg.data = {
         type: msg.data.name,
         data: { message: msg.data.message, stack: msg.data.stack },

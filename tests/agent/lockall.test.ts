@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import prompts from 'prompts';
-import { mocked } from 'jest-mock';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import Session from '@matrixai/polykey/dist/sessions/Session';
 import config from '@matrixai/polykey/dist/config';
@@ -12,7 +11,6 @@ import * as testUtils from '../utils';
  * Mock prompts module which is used prompt for password
  */
 jest.mock('prompts');
-const mockedPrompts = mocked(prompts.prompt);
 
 describe('lockall', () => {
   const logger = new Logger('lockall test', LogLevel.WARN, [
@@ -70,8 +68,8 @@ describe('lockall', () => {
         cwd: agentDir,
       });
       // Token is deleted, re-authentication is required
-      mockedPrompts.mockClear();
-      mockedPrompts.mockImplementation(async (_opts: any) => {
+      prompts.mockClear();
+      prompts.mockImplementation(async (_opts: any) => {
         return { password };
       });
       await testUtils.pkStdio(['agent', 'status'], {
@@ -79,8 +77,8 @@ describe('lockall', () => {
         cwd: agentDir,
       });
       // Prompted for password 1 time
-      expect(mockedPrompts.mock.calls.length).toBe(1);
-      mockedPrompts.mockClear();
+      expect(prompts.mock.calls.length).toBe(1);
+      prompts.mockClear();
     },
   );
   testUtils
