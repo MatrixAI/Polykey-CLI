@@ -16,7 +16,7 @@ import * as testUtils from './utils';
 jest.mock('prompts');
 
 describe('sessions', () => {
-  const logger = new Logger('sessions test', LogLevel.DEBUG, [
+  const logger = new Logger('sessions test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
   let agentDir;

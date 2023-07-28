@@ -14,10 +14,8 @@ import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 
-// Fixes problem with spyOn overriding imports directly
-const mocks = {
-  browser: identitiesUtils.browser,
-};
+// @ts-ignore: stub out method
+identitiesUtils.browser = () => {};
 
 describe('claim', () => {
   const logger = new Logger('claim test', LogLevel.WARN, [new StreamHandler()]);
@@ -64,9 +62,6 @@ describe('claim', () => {
     'claims an identity',
     async () => {
       // Need an authenticated identity
-      const mockedBrowser = jest
-        .spyOn(mocks, 'browser')
-        .mockImplementation(() => {});
       await testUtils.pkStdio(
         [
           'identities',
@@ -110,7 +105,6 @@ describe('claim', () => {
       expect(claim).toBeDefined();
       expect(claim!.id).toBe('0');
       // Expect(claim!.payload.data.type).toBe('identity');
-      mockedBrowser.mockRestore();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(

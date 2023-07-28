@@ -13,10 +13,8 @@ import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 
-// Fixes problem with spyOn overriding imports directly
-const mocks = {
-  browser: identitiesUtils.browser,
-};
+// @ts-ignore: stub out method
+identitiesUtils.browser = () => {};
 
 describe('authenticate/authenticated', () => {
   const logger = new Logger('authenticate/authenticated test', LogLevel.WARN, [
@@ -66,9 +64,6 @@ describe('authenticate/authenticated', () => {
     async () => {
       // Can't test with target command due to mocking
       let exitCode, stdout;
-      const mockedBrowser = jest
-        .spyOn(mocks, 'browser')
-        .mockImplementation(() => {});
       // Authenticate an identity
       ({ exitCode, stdout } = await testUtils.pkStdio(
         [
@@ -126,7 +121,6 @@ describe('authenticate/authenticated', () => {
         providerId: testToken.providerId,
         identityId: testToken.identityId,
       });
-      mockedBrowser.mockRestore();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(

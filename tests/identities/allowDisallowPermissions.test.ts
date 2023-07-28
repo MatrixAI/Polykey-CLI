@@ -18,10 +18,8 @@ import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/util
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 
-// Fixes problem with spyOn overriding imports directly
-const mocks = {
-  browser: identitiesUtils.browser,
-};
+// @ts-ignore: stub out method
+identitiesUtils.browser = () => {};
 
 describe('allow/disallow/permissions', () => {
   const logger = new Logger('allow/disallow/permissions test', LogLevel.WARN, [
@@ -241,10 +239,6 @@ describe('allow/disallow/permissions', () => {
           cwd: dataDir,
         },
       );
-      // Authenticate our own identity in order to query the provider
-      const mockedBrowser = jest
-        .spyOn(mocks, 'browser')
-        .mockImplementation(() => {});
       await testUtils.pkStdio(
         [
           'identities',
@@ -260,7 +254,6 @@ describe('allow/disallow/permissions', () => {
           cwd: dataDir,
         },
       );
-      mockedBrowser.mockRestore();
       // Must first trust identity before we can set permissions
       // This is because trusting the identity sets it in our gestalt graph,
       // which we need in order to set permissions
