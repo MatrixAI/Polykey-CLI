@@ -48,7 +48,7 @@ class CommandStart extends CommandPolykey {
         '@matrixai/polykey/dist/PolykeyAgent'
       );
       const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
-      const keysUtils = await import('@matrixai/polykey/dist/keys/utils/index');
+      const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
       let password: string | undefined;
       if (options.fresh) {
         // If fresh, then get a new password

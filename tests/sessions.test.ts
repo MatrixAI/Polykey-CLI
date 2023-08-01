@@ -92,6 +92,7 @@ describe('sessions', () => {
             cwd: agentDir,
           },
         ));
+
         testUtils.expectProcessError(exitCode, stderr, [
           new clientErrors.ErrorClientAuthDenied(),
         ]);

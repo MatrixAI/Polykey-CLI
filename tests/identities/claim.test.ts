@@ -10,7 +10,7 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import { sysexits } from '@matrixai/polykey/dist/utils';
 import * as identitiesUtils from '@matrixai/polykey/dist/identities/utils';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 

@@ -6,7 +6,7 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import { sysexits } from '@matrixai/polykey/dist/errors';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('ping', () => {
