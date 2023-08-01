@@ -8,7 +8,7 @@ import { sysexits } from '@matrixai/polykey/dist/utils';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import NodeManager from '@matrixai/polykey/dist/nodes/NodeManager';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('add', () => {

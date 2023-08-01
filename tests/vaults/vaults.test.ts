@@ -10,7 +10,7 @@ import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
 import * as vaultsUtils from '@matrixai/polykey/dist/vaults/utils';
 import sysexits from '@matrixai/polykey/dist/utils/sysexits';
 import NotificationsManager from '@matrixai/polykey/dist/notifications/NotificationsManager';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('CLI vaults', () => {

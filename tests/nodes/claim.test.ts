@@ -5,7 +5,7 @@ import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('claim', () => {

@@ -17,7 +17,7 @@ class CommandBootstrap extends CommandPolykey {
       const bootstrapUtils = await import(
         '@matrixai/polykey/dist/bootstrap/utils'
       );
-      const keysUtils = await import('@matrixai/polykey/dist/keys/utils/index');
+      const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
       const password = await binProcessors.processNewPassword(
         options.passwordFile,
         this.fs,

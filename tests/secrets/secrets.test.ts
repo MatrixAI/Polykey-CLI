@@ -4,7 +4,7 @@ import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
 import { vaultOps } from '@matrixai/polykey/dist/vaults';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils/index';
+import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('CLI secrets', () => {
