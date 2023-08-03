@@ -10,6 +10,8 @@ Building the package:
 nix-build -E '(import ./pkgs.nix {}).callPackage ./default.nix {}'
 ```
 
+### Nix/NixOS
+
 Building the releases:
 
 ```sh
@@ -25,6 +27,8 @@ Install into Nix user profile:
 ```sh
 nix-env -f ./release.nix --install --attr application
 ```
+
+### Docker
 
 Install into Docker:
 
@@ -53,12 +57,12 @@ npm run lint
 npm run lintfix
 ```
 
-### Calling Executables
+### Calling Commands
 
-When calling executables in development, use this style:
+When calling commands in development, use this style:
 
-```
-npm run typescript-demo-lib -- p1 p2 p3
+```sh
+npm run polykey -- p1 p2 p3
 ```
 
 The `--` is necessary to make `npm` understand that the parameters are for your own executable, and not parameters to `npm`.
@@ -125,16 +129,6 @@ The folder structure for the executable should look like this.
     - linux-x64
         - (node files)
 
-#### utp-native
-
-Including utp-native is simpler, you just need to add it as an asset for pkg.
-Add the following lines to the package.json.
-```json
-"pkg": {
-    "assets": "node_modules/utp-native/**/*"
-  }
-```
-
 #### threads.js
 
 To make sure that the worker threads work properly you need to include the compiled worker scripts as an asset.
@@ -195,3 +189,65 @@ npm publish --access public
 git push
 git push --tags
 ```
+### Packaging Cross-Platform Executables
+
+We use `pkg` to package the source code into executables.
+
+This requires a specific version of `pkg` and also `node-gyp-build`.
+
+Configuration for `pkg` is done in:
+
+* `package.json` - Pins `pkg` and `node-gyp-build`, and configures assets and scripts.
+* `utils.nix` - Pins `pkg` for Nix usage
+* `release.nix` - Build expressions for executables
+
+## Deployment
+
+Image deployments are done automatically through the CI/CD. However manual scripts are available below for deployment.
+
+### Deploying to AWS ECR:
+
+#### Using skopeo
+
+```sh
+tag='manual'
+registry_image='015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
+
+# Authenticates skopeo
+aws ecr get-login-password \
+  | skopeo login \
+  --username AWS \
+  --password-stdin \
+  "$registry_image"
+
+build="$(nix-build ./release.nix --attr docker)"
+# This will push both the default image tag and the latest tag
+./scripts/deploy-image.sh "$build" "$tag" "$registry_image"
+```
+
+#### Using docker
+
+```sh
+tag='manual'
+registry_image='015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
+
+aws ecr get-login-password \
+  | docker login \
+  --username AWS \
+  --password-stdin \
+  "$registry_image"
+
+build="$(nix-build ./release.nix --attr docker)"
+loaded="$(docker load --input "$build")"
+image_name="$(cut -d':' -f2 <<< "$loaded" | tr -d ' ')"
+default_tag="$(cut -d':' -f3 <<< "$loaded")"
+
+docker tag "${image_name}:${default_tag}" "${registry_image}:${default_tag}"
+docker tag "${image_name}:${default_tag}" "${registry_image}:${tag}"
+docker tag "${image_name}:${default_tag}" "${registry_image}:latest"
+
+docker push "${registry_image}:${default_tag}"
+docker push "${registry_image}:${tag}"
+docker push "${registry_image}:latest"
+```
+

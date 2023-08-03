@@ -40,7 +40,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MatrixAI/Polykey-CLI"
+    "url": "https://github.com/MatrixAI/Polykey-CLI.git"
   },
   "bin": {
     "polykey": "dist/polykey.js",
