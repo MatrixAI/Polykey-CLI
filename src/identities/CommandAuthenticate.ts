@@ -1,9 +1,9 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { ClientRPCResponseResult } from '@matrixai/polykey/dist/client/types';
-import type { AuthProcessMessage } from '@matrixai/polykey/dist/client/handlers/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
+import type { AuthProcessMessage } from 'polykey/dist/client/handlers/types';
 import type { ReadableStream } from 'stream/web';
-import * as identitiesUtils from '@matrixai/polykey/dist/identities/utils';
+import * as identitiesUtils from 'polykey/dist/identities/utils';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -25,12 +25,12 @@ class CommandAuthenticate extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (providerId, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
-      const { never } = await import('@matrixai/polykey/dist/utils');
+      const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

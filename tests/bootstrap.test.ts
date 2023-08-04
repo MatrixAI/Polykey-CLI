@@ -2,9 +2,9 @@ import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { errors as statusErrors } from '@matrixai/polykey/dist/status';
-import { errors as bootstrapErrors } from '@matrixai/polykey/dist/bootstrap';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
+import { errors as statusErrors } from 'polykey/dist/status';
+import { errors as bootstrapErrors } from 'polykey/dist/bootstrap';
+import * as keysUtils from 'polykey/dist/keys/utils';
 import * as testUtils from './utils';
 
 describe('bootstrap', () => {

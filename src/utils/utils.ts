@@ -1,11 +1,11 @@
-import type { POJO } from '@matrixai/polykey/dist/types';
+import type { POJO } from 'polykey/dist/types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
-import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
-import * as clientUtils from '@matrixai/polykey/dist/client/utils/utils';
-import * as clientErrors from '@matrixai/polykey/dist/client/errors';
-import * as utils from '@matrixai/polykey/dist/utils';
-import * as rpcErrors from '@matrixai/polykey/dist/rpc/errors';
+import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import * as clientUtils from 'polykey/dist/client/utils/utils';
+import * as clientErrors from 'polykey/dist/client/errors';
+import * as utils from 'polykey/dist/utils';
+import * as rpcErrors from 'polykey/dist/rpc/errors';
 import * as binProcessors from './processors';
 import * as binErrors from '../errors';
 

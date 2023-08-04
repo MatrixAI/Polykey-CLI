@@ -1,5 +1,5 @@
 import process from 'process';
-import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
+import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import * as binUtils from './utils';
 import * as binErrors from '../errors';
 

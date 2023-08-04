@@ -2,9 +2,9 @@ import path from 'path';
 import fs from 'fs';
 import prompts from 'prompts';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Session from '@matrixai/polykey/dist/sessions/Session';
-import config from '@matrixai/polykey/dist/config';
-import * as errors from '@matrixai/polykey/dist/errors';
+import Session from 'polykey/dist/sessions/Session';
+import config from 'polykey/dist/config';
+import * as errors from 'polykey/dist/errors';
 import * as testUtils from '../utils';
 
 /**

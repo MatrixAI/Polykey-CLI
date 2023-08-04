@@ -7,10 +7,10 @@ import path from 'path';
 import fs from 'fs';
 import prompts from 'prompts';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { Session } from '@matrixai/polykey/dist/sessions';
-import { sleep } from '@matrixai/polykey/dist/utils';
-import config from '@matrixai/polykey/dist/config';
-import * as clientErrors from '@matrixai/polykey/dist/client/errors';
+import { Session } from 'polykey/dist/sessions';
+import { sleep } from 'polykey/dist/utils';
+import config from 'polykey/dist/config';
+import * as clientErrors from 'polykey/dist/client/errors';
 import * as testUtils from './utils';
 
 jest.mock('prompts');

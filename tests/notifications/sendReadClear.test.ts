@@ -1,11 +1,11 @@
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import type { Notification } from '@matrixai/polykey/dist/notifications/types';
-import type { StatusLive } from '@matrixai/polykey/dist/status/types';
+import type { NodeId } from 'polykey/dist/ids/types';
+import type { Host, Port } from 'polykey/dist/network/types';
+import type { Notification } from 'polykey/dist/notifications/types';
+import type { StatusLive } from 'polykey/dist/status/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('send/read/claim', () => {

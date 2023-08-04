@@ -1,10 +1,10 @@
-import type { StatusLive } from '@matrixai/polykey/dist/status/types';
+import type { StatusLive } from 'polykey/dist/status/types';
 import type Logger from '@matrixai/logger';
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
-import * as utils from '@matrixai/polykey/dist/utils/utils';
-import * as validationUtils from '@matrixai/polykey/dist/validation/utils';
+import * as utils from 'polykey/dist/utils/utils';
+import * as validationUtils from 'polykey/dist/validation/utils';
 import * as execUtils from './exec';
 
 async function setupTestAgent(logger: Logger) {

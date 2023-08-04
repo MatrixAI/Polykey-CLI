@@ -1,8 +1,8 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { IdentityInfoMessage } from '@matrixai/polykey/dist/client/handlers/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { IdentityInfoMessage } from 'polykey/dist/client/handlers/types';
 import type { ReadableStream } from 'stream/web';
-import type { ClientRPCResponseResult } from '@matrixai/polykey/dist/client/types';
+import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -46,10 +46,10 @@ class CommandSearch extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (searchTerms, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

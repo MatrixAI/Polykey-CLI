@@ -6,7 +6,7 @@
  * @module
  */
 import commander from 'commander';
-import config from '@matrixai/polykey/dist/config';
+import config from 'polykey/dist/config';
 import * as binParsers from '../utils/parsers';
 
 /**
@@ -14,7 +14,7 @@ import * as binParsers from '../utils/parsers';
  * This is a directory on the filesystem
  * This is optional, if it is not specified, we will derive
  * platform-specific default node path
- * On unknown platforms the the default is undefined
+ * On unknown platforms the default is undefined
  */
 const nodePath = new commander.Option(
   '-np, --node-path <path>',
@@ -39,7 +39,7 @@ const verbose = new commander.Option('-v, --verbose', 'Log Verbose Messages')
   .default(0);
 
 /**
- * Ignore any existing state during side-effectful construction
+ * Ignore any existing state during side-effectual construction
  */
 const fresh = new commander.Option(
   '--fresh',
@@ -88,7 +88,7 @@ const connConnectTime = new commander.Option(
   'Timeout value for connection establishment between nodes',
 )
   .argParser(binParsers.parseInteger)
-  .default(config.defaults.nodeConnectionManagerConfig.connConnectTime);
+  .default(config.defaults.nodeConnectionManagerConfig.connectionConnectTime);
 
 const passwordFile = new commander.Option(
   '-pf, --password-file <path>',
@@ -157,7 +157,7 @@ const noPing = new commander.Option('--no-ping', 'Skip ping step').default(
   true,
 );
 
-// We can't reference the object here so we recreate the list of choices
+// We can't reference the object here, so we recreate the list of choices
 const passwordLimitChoices = [
   'min',
   'max',

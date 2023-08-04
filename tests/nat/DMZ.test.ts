@@ -3,8 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from '@matrixai/polykey/dist/status/Status';
-import config from '@matrixai/polykey/dist/config';
+import Status from 'polykey/dist/status/Status';
+import config from 'polykey/dist/config';
 import * as testNatUtils from './utils';
 import * as testUtils from '../utils';
 import {

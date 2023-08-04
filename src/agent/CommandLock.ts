@@ -1,5 +1,5 @@
 import path from 'path';
-import config from '@matrixai/polykey/dist/config';
+import config from 'polykey/dist/config';
 import CommandPolykey from '../CommandPolykey';
 
 class CommandLock extends CommandPolykey {
@@ -9,7 +9,7 @@ class CommandLock extends CommandPolykey {
     this.description('Lock the Client and Clear the Existing Token');
     this.action(async (options) => {
       const { default: Session } = await import(
-        '@matrixai/polykey/dist/sessions/Session'
+        'polykey/dist/sessions/Session'
       );
       const session = new Session({
         sessionTokenPath: path.join(

@@ -1,4 +1,4 @@
-import type { FileSystem } from '@matrixai/polykey/dist/types';
+import type { FileSystem } from 'polykey/dist/types';
 import commander from 'commander';
 import Logger, {
   StreamHandler,

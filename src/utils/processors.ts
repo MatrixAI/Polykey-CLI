@@ -1,21 +1,20 @@
-import type { FileSystem } from '@matrixai/polykey/dist/types';
-import type { RecoveryCode } from '@matrixai/polykey/dist/keys/types';
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
+import type { FileSystem } from 'polykey/dist/types';
+import type { RecoveryCode } from 'polykey/dist/keys/types';
+import type { NodeId } from 'polykey/dist/ids/types';
 import type {
   StatusStarting,
   StatusLive,
   StatusStopping,
   StatusDead,
-} from '@matrixai/polykey/dist/status/types';
-import type { SessionToken } from '@matrixai/polykey/dist/sessions/types';
+} from 'polykey/dist/status/types';
+import type { SessionToken } from 'polykey/dist/sessions/types';
 import path from 'path';
 import prompts from 'prompts';
 import Logger from '@matrixai/logger';
-import Status from '@matrixai/polykey/dist/status/Status';
-import * as clientUtils from '@matrixai/polykey/dist/client/utils/utils';
-import { arrayZip } from '@matrixai/polykey/dist/utils';
-import config from '@matrixai/polykey/dist/config';
+import Status from 'polykey/dist/status/Status';
+import * as clientUtils from 'polykey/dist/client/utils/utils';
+import { arrayZip } from 'polykey/dist/utils';
+import config from 'polykey/dist/config';
 import * as binErrors from '../errors';
 
 /**
@@ -203,14 +202,14 @@ async function processRecoveryCode(
 async function processClientOptions(
   nodePath: string,
   nodeId?: NodeId,
-  clientHost?: Host,
-  clientPort?: Port,
+  clientHost?: string,
+  clientPort?: number,
   fs = require('fs'),
   logger = new Logger(processClientOptions.name),
 ): Promise<{
   nodeId: NodeId;
-  clientHost: Host;
-  clientPort: Port;
+  clientHost: string;
+  clientPort: number;
 }> {
   if (nodeId != null && clientHost != null && clientPort != null) {
     return {
@@ -266,8 +265,8 @@ async function processClientOptions(
 async function processClientStatus(
   nodePath: string,
   nodeId?: NodeId,
-  clientHost?: Host,
-  clientPort?: Port,
+  clientHost?: string,
+  clientPort?: number,
   fs = require('fs'),
   logger = new Logger(processClientStatus.name),
 ): Promise<
@@ -275,22 +274,22 @@ async function processClientStatus(
       statusInfo: StatusStarting | StatusStopping | StatusDead;
       status: Status;
       nodeId: NodeId | undefined;
-      clientHost: Host | undefined;
-      clientPort: Port | undefined;
+      clientHost: string | undefined;
+      clientPort: number | undefined;
     }
   | {
       statusInfo: StatusLive;
       status: Status;
       nodeId: NodeId;
-      clientHost: Host;
-      clientPort: Port;
+      clientHost: string;
+      clientPort: number;
     }
   | {
       statusInfo: undefined;
       status: undefined;
       nodeId: NodeId;
-      clientHost: Host;
-      clientPort: Port;
+      clientHost: string;
+      clientPort: number;
     }
 > {
   if (nodeId != null && clientHost != null && clientPort != null) {

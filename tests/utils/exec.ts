@@ -1,5 +1,5 @@
 import type { ChildProcess } from 'child_process';
-import type ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
+import type ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import childProcess from 'child_process';
 import fs from 'fs';
 import path from 'path';

@@ -1,5 +1,5 @@
-import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
-import sysexits from '@matrixai/polykey/dist/utils/sysexits';
+import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import sysexits from 'polykey/dist/utils/sysexits';
 
 class ErrorBin<T> extends ErrorPolykey<T> {}
 

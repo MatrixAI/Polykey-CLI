@@ -1,11 +1,11 @@
-import type { Host } from '@matrixai/polykey/dist/network/types';
-import type { NodeId } from '@matrixai/polykey/dist/ids';
+import type { Host } from 'polykey/dist/network/types';
+import type { NodeId } from 'polykey/dist/ids';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import * as keysUtils from 'polykey/dist/keys/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('reset', () => {

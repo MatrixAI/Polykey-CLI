@@ -1,6 +1,6 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { NodeId } from 'polykey/dist/ids/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -25,12 +25,12 @@ class CommandPull extends CommandPolykey {
     this.action(
       async (vaultNameOrId, targetNodeId: NodeId | undefined, options) => {
         const { default: PolykeyClient } = await import(
-          '@matrixai/polykey/dist/PolykeyClient'
+          'polykey/dist/PolykeyClient'
         );
         const { default: WebSocketClient } = await import(
-          '@matrixai/polykey/dist/websockets/WebSocketClient'
+          'polykey/dist/websockets/WebSocketClient'
         );
-        const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
+        const nodesUtils = await import('polykey/dist/nodes/utils');
         const clientOptions = await binProcessors.processClientOptions(
           options.nodePath,
           options.nodeId,

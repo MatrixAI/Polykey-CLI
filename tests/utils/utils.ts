@@ -1,10 +1,10 @@
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import type { NodeAddress } from '@matrixai/polykey/dist/nodes/types';
+import type { NodeId } from 'polykey/dist/ids/types';
+import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import type { Host, Port } from 'polykey/dist/network/types';
+import type { NodeAddress } from 'polykey/dist/nodes/types';
 import { IdInternal } from '@matrixai/id';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
-import { promise } from '@matrixai/polykey/dist/utils/utils';
+import * as keysUtils from 'polykey/dist/keys/utils';
+import { promise } from 'polykey/dist/utils/utils';
 
 function generateRandomNodeId(): NodeId {
   const random = keysUtils.getRandomBytes(16).toString('hex');

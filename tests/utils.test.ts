@@ -1,7 +1,7 @@
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import * as rpcErrors from '@matrixai/polykey/dist/rpc/errors';
+import type { Host, Port } from 'polykey/dist/network/types';
+import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import * as rpcErrors from 'polykey/dist/rpc/errors';
 import * as binUtils from '@/utils/utils';
 import * as testUtils from './utils';
 

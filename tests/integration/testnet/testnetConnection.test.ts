@@ -1,14 +1,11 @@
-import type {
-  NodeIdEncoded,
-  SeedNodes,
-} from '@matrixai/polykey/dist/nodes/types';
+import type { NodeIdEncoded, SeedNodes } from 'polykey/dist/nodes/types';
 import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
-import { PolykeyAgent } from '@matrixai/polykey';
-import config from '@matrixai/polykey/dist/config';
-import { sleep } from '@matrixai/polykey/dist/utils';
+import { PolykeyAgent } from 'polykey';
+import config from 'polykey/dist/config';
+import { sleep } from 'polykey/dist/utils';
 import * as testUtils from '../../utils';
 
 test('dummy test', async () => {});

@@ -1,7 +1,7 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
 import path from 'path';
-import config from '@matrixai/polykey/dist/config';
+import config from 'polykey/dist/config';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -17,13 +17,13 @@ class CommandLockAll extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const { default: Session } = await import(
-        '@matrixai/polykey/dist/sessions/Session'
+        'polykey/dist/sessions/Session'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

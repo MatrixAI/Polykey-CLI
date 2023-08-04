@@ -14,10 +14,8 @@ class CommandBootstrap extends CommandPolykey {
     this.addOption(binOptions.passwordOpsLimit);
     this.addOption(binOptions.passwordMemLimit);
     this.action(async (options) => {
-      const bootstrapUtils = await import(
-        '@matrixai/polykey/dist/bootstrap/utils'
-      );
-      const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
+      const bootstrapUtils = await import('polykey/dist/bootstrap/utils');
+      const keysUtils = await import('polykey/dist/keys/utils');
       const password = await binProcessors.processNewPassword(
         options.passwordFile,
         this.fs,

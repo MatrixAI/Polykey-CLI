@@ -1,9 +1,9 @@
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from '@matrixai/polykey/dist/status/Status';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import config from '@matrixai/polykey/dist/config';
+import Status from 'polykey/dist/status/Status';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import config from 'polykey/dist/config';
 import * as testUtils from '../utils';
 
 describe('status', () => {

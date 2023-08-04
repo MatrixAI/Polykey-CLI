@@ -1,7 +1,7 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { GestaltId } from '@matrixai/polykey/dist/gestalts/types';
-import type { GestaltMessage } from '@matrixai/polykey/dist/client/handlers/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { GestaltId } from 'polykey/dist/gestalts/types';
+import type { GestaltMessage } from 'polykey/dist/client/handlers/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -25,13 +25,13 @@ class CommandGet extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (gestaltId: GestaltId, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
-      const utils = await import('@matrixai/polykey/dist/utils');
-      const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
+      const utils = await import('polykey/dist/utils');
+      const nodesUtils = await import('polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

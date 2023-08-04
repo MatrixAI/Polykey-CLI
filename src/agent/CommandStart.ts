@@ -4,14 +4,14 @@ import type {
   AgentChildProcessInput,
   AgentChildProcessOutput,
 } from '../types';
-import type PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import type { RecoveryCode } from '@matrixai/polykey/dist/keys/types';
+import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import type { RecoveryCode } from 'polykey/dist/keys/types';
 import path from 'path';
 import childProcess from 'child_process';
 import process from 'process';
-import * as keysErrors from '@matrixai/polykey/dist/keys/errors';
-import { promise, dirEmpty } from '@matrixai/polykey/dist/utils';
-import config from '@matrixai/polykey/dist/config';
+import * as keysErrors from 'polykey/dist/keys/errors';
+import { promise, dirEmpty } from 'polykey/dist/utils';
+import config from 'polykey/dist/config';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -45,10 +45,10 @@ class CommandStart extends CommandPolykey {
       options.clientPort =
         options.clientPort ?? config.defaults.networkConfig.clientPort;
       const { default: PolykeyAgent } = await import(
-        '@matrixai/polykey/dist/PolykeyAgent'
+        'polykey/dist/PolykeyAgent'
       );
-      const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
-      const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
+      const nodesUtils = await import('polykey/dist/nodes/utils');
+      const keysUtils = await import('polykey/dist/keys/utils');
       let password: string | undefined;
       if (options.fresh) {
         // If fresh, then get a new password

@@ -1,18 +1,18 @@
-import type { RecoveryCode } from '@matrixai/polykey/dist/keys/types';
-import type { StatusLive } from '@matrixai/polykey/dist/status/types';
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
+import type { RecoveryCode } from 'polykey/dist/keys/types';
+import type { StatusLive } from 'polykey/dist/status/types';
+import type { NodeId } from 'polykey/dist/ids/types';
+import type { Host, Port } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import process from 'process';
 import * as jestMockProps from 'jest-mock-props';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from '@matrixai/polykey/dist/status/Status';
-import * as statusErrors from '@matrixai/polykey/dist/status/errors';
-import config from '@matrixai/polykey/dist/config';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
-import { promise } from '@matrixai/polykey/dist/utils';
+import Status from 'polykey/dist/status/Status';
+import * as statusErrors from 'polykey/dist/status/errors';
+import config from 'polykey/dist/config';
+import * as keysUtils from 'polykey/dist/keys/utils';
+import { promise } from 'polykey/dist/utils';
 import * as testUtils from '../utils';
 
 describe('start', () => {

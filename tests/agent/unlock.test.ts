@@ -1,8 +1,8 @@
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Session from '@matrixai/polykey/dist/sessions/Session';
-import config from '@matrixai/polykey/dist/config';
+import Session from 'polykey/dist/sessions/Session';
+import config from 'polykey/dist/config';
 import * as testUtils from '../utils';
 
 describe('unlock', () => {

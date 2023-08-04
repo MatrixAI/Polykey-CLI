@@ -1,6 +1,6 @@
-import type { Notification } from '@matrixai/polykey/dist/notifications/types';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
+import type { Notification } from 'polykey/dist/notifications/types';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -30,13 +30,13 @@ class CommandRead extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const notificationsUtils = await import(
-        '@matrixai/polykey/dist/notifications/utils'
+        'polykey/dist/notifications/utils'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
