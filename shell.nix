@@ -11,7 +11,6 @@ in
       gitAndTools.gh
       skopeo
       jq
-      jetbrains.webstorm
     ];
     PKG_CACHE_PATH = utils.pkgCachePath;
     PKG_IGNORE_TAG = 1;

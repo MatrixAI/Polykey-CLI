@@ -1,5 +1,41 @@
 # Polykey-CLI
 
+staging:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/staging/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/staging)
+master:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/master/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/master)
+
+Polykey is an open-source decentralized secrets management and sharing system. It is made for today's decentralized world of people, services and devices.
+
+* Decentralized Encrypted Storage - No storage of secrets on third parties, secrets are stored on your device and synchronised point-to-point between Polykey nodes.
+* Secure Peer-to-Peer Communications - Polykey bootstraps TLS keys by federating trusted social identities (e.g. GitHub).
+* Secure Computational Workflows - Share secrets (passwords, keys, tokens and certificates) with people, between teams, and across machine infrastructure.
+
+<p align="center">
+  <img src="./images/cli_demo.gif" alt="Polykey CLI Demo"/>
+</p>
+
+Polykey synthesizes a unified workflow between interactive password management and infrastructure key management.
+
+You have complete end-to-end control and privacy over your secrets, with no third-party data collection.
+
+Polykey runs on distributed keynodes referred to as "nodes". Any computing system can run multiple keynodes. Each node manages one or more vaults which are encrypted filesystems with automatic version history. Vaults can be shared between the nodes.
+
+This repository is the core library for Polykey.
+
+The Polykey project is split up into these main repositories:
+
+* [Polykey](https://github.com/MatrixAI/Polykey) - Polykey Core Library
+* [Polykey-CLI](https://github.com/MatrixAI/Polykey-CLI) - CLI of Polykey
+* [Polykey-Desktop](https://github.com/MatrixAI/Polykey-Desktop) - Polykey Desktop (Windows, Mac, Linux) application
+* [Polykey-Mobile](https://github.com/MatrixAI/Polykey-Mobile) - Polykey Mobile (iOS & Android) Application
+
+Have a bug or a feature-request? Please submit it the issues of the relevant subproject above.
+
+For tutorials, how-to guides, reference and theory, see the [docs](https://polykey.io/docs).
+
+Have a question? Join our [discussion board](https://github.com/MatrixAI/Polykey/discussions).
+
+Our main website is https://polykey.io
+
 ## Installation
 
 Note that JavaScript libraries are not packaged in Nix. Only JavaScript applications are.

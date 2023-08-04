@@ -49,15 +49,15 @@ module.exports = {
     "^.+\\.(t|j)sx?$": [
       "@swc/jest",
       {
-        jsc: {
-          parser: {
-            syntax: "typescript",
-            tsx: true,
-            decorators: compilerOptions.experimentalDecorators,
-            dynamicImport: true,
+        "jsc": {
+          "parser": {
+            "syntax": "typescript",
+            "dynamicImport": true,
+            "tsx": true,
+            "decorators": compilerOptions.experimentalDecorators,
           },
-          target: compilerOptions.target.toLowerCase(),
-          keepClassNames: true,
+          "target": compilerOptions.target.toLowerCase(),
+          "keepClassNames": true,
         },
       }
     ],
