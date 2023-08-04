@@ -1,16 +1,16 @@
-import type { NodeAddress } from '@matrixai/polykey/dist/nodes/types';
-import type { VaultId, VaultName } from '@matrixai/polykey/dist/vaults/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import type { GestaltNodeInfo } from '@matrixai/polykey/dist/gestalts/types';
+import type { NodeAddress } from 'polykey/dist/nodes/types';
+import type { VaultId, VaultName } from 'polykey/dist/vaults/types';
+import type { Host, Port } from 'polykey/dist/network/types';
+import type { GestaltNodeInfo } from 'polykey/dist/gestalts/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import * as vaultsUtils from '@matrixai/polykey/dist/vaults/utils';
-import sysexits from '@matrixai/polykey/dist/utils/sysexits';
-import NotificationsManager from '@matrixai/polykey/dist/notifications/NotificationsManager';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import * as vaultsUtils from 'polykey/dist/vaults/utils';
+import sysexits from 'polykey/dist/utils/sysexits';
+import NotificationsManager from 'polykey/dist/notifications/NotificationsManager';
+import * as keysUtils from 'polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('CLI vaults', () => {

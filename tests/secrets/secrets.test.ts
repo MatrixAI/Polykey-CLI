@@ -1,10 +1,10 @@
-import type { VaultName } from '@matrixai/polykey/dist/vaults/types';
+import type { VaultName } from 'polykey/dist/vaults/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import { vaultOps } from '@matrixai/polykey/dist/vaults';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import { vaultOps } from 'polykey/dist/vaults';
+import * as keysUtils from 'polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
 describe('CLI secrets', () => {

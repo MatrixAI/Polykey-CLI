@@ -1,7 +1,7 @@
 import prompts from 'prompts';
 import mockedEnv from 'mocked-env';
-import * as clientUtils from '@matrixai/polykey/dist/client/utils';
-import * as clientErrors from '@matrixai/polykey/dist/client/errors';
+import * as clientUtils from 'polykey/dist/client/utils';
+import * as clientErrors from 'polykey/dist/client/errors';
 import * as binUtils from '@/utils';
 import * as testUtils from './utils';
 

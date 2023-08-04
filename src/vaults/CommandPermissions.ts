@@ -1,5 +1,5 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
 import * as binProcessors from '../utils/processors';
 import * as binUtils from '../utils';
 import CommandPolykey from '../CommandPolykey';
@@ -17,10 +17,10 @@ class CommandPermissions extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (vaultName, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

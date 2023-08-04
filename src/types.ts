@@ -1,14 +1,14 @@
 import type { LogLevel } from '@matrixai/logger';
-import type { POJO } from '@matrixai/polykey/dist/types';
-import type { RecoveryCode } from '@matrixai/polykey/dist/keys/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import type { StatusLive } from '@matrixai/polykey/dist/status/types';
-import type { NodeIdEncoded } from '@matrixai/polykey/dist/ids/types';
-import type { PrivateKey } from '@matrixai/polykey/dist/keys/types';
+import type { POJO } from 'polykey/dist/types';
+import type { RecoveryCode } from 'polykey/dist/keys/types';
+import type { Host, Port } from 'polykey/dist/network/types';
+import type { StatusLive } from 'polykey/dist/status/types';
+import type { NodeIdEncoded } from 'polykey/dist/ids/types';
+import type { PrivateKey } from 'polykey/dist/keys/types';
 import type {
   PasswordOpsLimit,
   PasswordMemLimit,
-} from '@matrixai/polykey/dist/keys/types';
+} from 'polykey/dist/keys/types';
 import type { QUICConfig } from '@matrixai/quic';
 
 type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {

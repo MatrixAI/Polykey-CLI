@@ -1,20 +1,17 @@
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
-import type {
-  IdentityId,
-  ProviderId,
-} from '@matrixai/polykey/dist/identities/types';
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type { ClaimLinkIdentity } from '@matrixai/polykey/dist/claims/payloads';
-import type { SignedClaim } from '@matrixai/polykey/dist/claims/types';
+import type { Host, Port } from 'polykey/dist/network/types';
+import type { IdentityId, ProviderId } from 'polykey/dist/identities/types';
+import type { NodeId } from 'polykey/dist/ids/types';
+import type { ClaimLinkIdentity } from 'polykey/dist/claims/payloads';
+import type { SignedClaim } from 'polykey/dist/claims/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import { sysexits } from '@matrixai/polykey/dist/utils';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import * as identitiesUtils from '@matrixai/polykey/dist/identities/utils';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
-import { encodeProviderIdentityId } from '@matrixai/polykey/dist/identities/utils';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import { sysexits } from 'polykey/dist/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import * as identitiesUtils from 'polykey/dist/identities/utils';
+import * as keysUtils from 'polykey/dist/keys/utils';
+import { encodeProviderIdentityId } from 'polykey/dist/identities/utils';
 import TestProvider from '../TestProvider';
 import * as testUtils from '../utils';
 

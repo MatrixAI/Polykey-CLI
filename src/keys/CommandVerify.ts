@@ -1,6 +1,6 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { PublicKeyJWK } from '@matrixai/polykey/dist/keys/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { PublicKeyJWK } from 'polykey/dist/keys/types';
 import * as binErrors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -26,13 +26,13 @@ class CommandVerify extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (filePath, signaturePath, nodeIdOrJwkFile, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
-      const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
-      const keysUtils = await import('@matrixai/polykey/dist/keys/utils');
+      const nodesUtils = await import('polykey/dist/nodes/utils');
+      const keysUtils = await import('polykey/dist/keys/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

@@ -19,10 +19,10 @@ import 'threads';
 process.removeAllListeners('SIGINT');
 process.removeAllListeners('SIGTERM');
 import Logger, { StreamHandler, formatting } from '@matrixai/logger';
-import PolykeyAgent from '@matrixai/polykey/dist/PolykeyAgent';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import ErrorPolykey from '@matrixai/polykey/dist/ErrorPolykey';
-import { promisify, promise } from '@matrixai/polykey/dist/utils';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import { promisify, promise } from 'polykey/dist/utils';
 import * as binUtils from './utils';
 
 process.title = 'polykey-agent';

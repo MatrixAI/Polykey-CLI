@@ -1,7 +1,7 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { NodeId } from '@matrixai/polykey/dist/ids/types';
-import type { Host, Port } from '@matrixai/polykey/dist/network/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { NodeId } from 'polykey/dist/ids/types';
+import type { Host, Port } from 'polykey/dist/network/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -20,14 +20,14 @@ class CommandFind extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (nodeId: NodeId, options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
-      const nodesUtils = await import('@matrixai/polykey/dist/nodes/utils');
-      const networkUtils = await import('@matrixai/polykey/dist/network/utils');
-      const nodesErrors = await import('@matrixai/polykey/dist/nodes/errors');
+      const nodesUtils = await import('polykey/dist/nodes/utils');
+      const networkUtils = await import('polykey/dist/network/utils');
+      const nodesErrors = await import('polykey/dist/nodes/errors');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

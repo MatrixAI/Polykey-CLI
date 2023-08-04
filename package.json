@@ -66,13 +66,13 @@
     "lintfix": "eslint '{src,tests,scripts}/**/*.{js,ts}' --fix",
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
-    "pkg": "node ./scripts/pkg.js --no-dict=leveldown.js",
+    "pkg": "node ./scripts/pkg.js",
     "polykey": "ts-node src/polykey.ts",
     "start": "ts-node src/polykey.ts -- agent start --verbose",
     "dev": "nodemon src/polykey.ts -- agent start --verbose"
   },
   "dependencies": {
-    "@matrixai/polykey": "/home/faulkes/matixWorkspace/gitRepos/Polykey",
+    "polykey": "^1.1.1",
     "@matrixai/logger": "^3.1.0",
     "@matrixai/errors": "^1.1.7",
     "@matrixai/quic": "^0.0.12",

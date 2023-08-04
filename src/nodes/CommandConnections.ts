@@ -1,6 +1,6 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
-import type { NodeConnectionMessage } from '@matrixai/polykey/dist/client/handlers/types';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { NodeConnectionMessage } from 'polykey/dist/client/handlers/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils/utils';
 import * as binProcessors from '../utils/processors';
@@ -12,10 +12,10 @@ class CommandAdd extends CommandPolykey {
     this.description('list all active node connections');
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

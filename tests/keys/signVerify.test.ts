@@ -1,11 +1,11 @@
-import type { StatusLive } from '@matrixai/polykey/dist/status/types';
-import type { Signature } from '@matrixai/polykey/dist/keys/types';
+import type { StatusLive } from 'polykey/dist/status/types';
+import type { Signature } from 'polykey/dist/keys/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as keysUtils from '@matrixai/polykey/dist/keys/utils';
-import * as nodesUtils from '@matrixai/polykey/dist/nodes/utils';
-import sysexits from '@matrixai/polykey/dist/utils/sysexits';
+import * as keysUtils from 'polykey/dist/keys/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
+import sysexits from 'polykey/dist/utils/sysexits';
 import * as testUtils from '../utils';
 
 describe('sign-verify', () => {

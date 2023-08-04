@@ -1,5 +1,5 @@
-import type PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-import type WebSocketClient from '@matrixai/polykey/dist/websockets/WebSocketClient';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
 import * as binErrors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -24,10 +24,10 @@ class CommandEdit extends CommandPolykey {
       const os = await import('os');
       const { execSync } = await import('child_process');
       const { default: PolykeyClient } = await import(
-        '@matrixai/polykey/dist/PolykeyClient'
+        'polykey/dist/PolykeyClient'
       );
       const { default: WebSocketClient } = await import(
-        '@matrixai/polykey/dist/websockets/WebSocketClient'
+        'polykey/dist/websockets/WebSocketClient'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

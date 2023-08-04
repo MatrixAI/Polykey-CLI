@@ -1,12 +1,12 @@
 // Import { spawn } from 'child_process';
 // import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-// import * as vaultsPB from '@matrixai/polykey/dist/proto/js/polykey/v1/vaults/vaults_pb';
-// import * as secretsPB from '@matrixai/polykey/dist/proto/js/polykey/v1/secrets/secrets_pb';
-// import PolykeyClient from '@matrixai/polykey/dist/PolykeyClient';
-// import * as utils from '@matrixai/polykey/dist/utils';
+// import * as vaultsPB from 'polykey/dist/proto/js/polykey/v1/vaults/vaults_pb';
+// import * as secretsPB from 'polykey/dist/proto/js/polykey/v1/secrets/secrets_pb';
+// import PolykeyClient from 'polykey/dist/PolykeyClient';
+// import * as utils from 'polykey/dist/utils';
 // import * as binUtils from '../utils';
 // import * as CLIErrors from '../errors';
-// import * as grpcErrors from '@matrixai/polykey/dist/grpc/errors';
+// import * as grpcErrors from 'polykey/dist/grpc/errors';
 
 // import CommandPolykey from '../CommandPolykey';
 // import * as binOptions from '../utils/options';

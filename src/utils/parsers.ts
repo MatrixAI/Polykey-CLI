@@ -1,6 +1,6 @@
 import commander from 'commander';
-import * as validationUtils from '@matrixai/polykey/dist/validation/utils';
-import * as validationErrors from '@matrixai/polykey/dist/validation/errors';
+import * as validationUtils from 'polykey/dist/validation/utils';
+import * as validationErrors from 'polykey/dist/validation/errors';
 
 /**
  * Converts a validation parser to commander argument parser
