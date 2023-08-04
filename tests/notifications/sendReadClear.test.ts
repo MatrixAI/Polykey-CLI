@@ -1,5 +1,4 @@
 import type { NodeId } from 'polykey/dist/ids/types';
-import type { Host, Port } from 'polykey/dist/network/types';
 import type { Notification } from 'polykey/dist/notifications/types';
 import type { StatusLive } from 'polykey/dist/status/types';
 import path from 'path';

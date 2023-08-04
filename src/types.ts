@@ -15,6 +15,7 @@ type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
   nodeId: NodeIdEncoded;
 };
 
+// TODO: fix this... We don't need a dependecy on `@matrixai/quic
 type PolykeyQUICConfig = {
   // Optionals
   keepAliveIntervalTime?: number;

@@ -14,7 +14,7 @@ let
       buildPhase = ''
         npm run pkg -- \
           --output=out \
-          --bin=polykey-cli \
+          --bin=polykey \
           --node-version=${utils.nodeVersion} \
           --platform=linux \
           --arch=${arch}
@@ -35,7 +35,7 @@ let
       buildPhase = ''
         npm run pkg -- \
           --output=out.exe \
-          --bin=polykey-cli \
+          --bin=polykey \
           --node-version=${utils.nodeVersion} \
           --platform=win32 \
           --arch=${arch}
@@ -56,7 +56,7 @@ let
       buildPhase = ''
         npm run pkg -- \
           --output=out \
-          --bin=polykey-cli \
+          --bin=polykey \
           --node-version=${utils.nodeVersion} \
           --platform=darwin \
           --arch=${arch}
@@ -80,7 +80,7 @@ in
         mkdir -m 1777 tmp
       '';
       config = {
-        Entrypoint = "/polykey-cli";
+        Entrypoint = "polykey";
       };
     };
     package = {
