@@ -46,8 +46,6 @@
     "polykey": "dist/polykey.js",
     "pk": "dist/polykey.js"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "pkg": {
     "assets": [
       "dist/**/*.json"
