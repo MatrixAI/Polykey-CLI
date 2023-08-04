@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
-import { PolykeyAgent } from 'polykey';
+import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import config from 'polykey/dist/config';
 import { sleep } from 'polykey/dist/utils';
 import * as testUtils from '../../utils';

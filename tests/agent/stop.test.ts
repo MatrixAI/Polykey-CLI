@@ -13,7 +13,7 @@ describe('stop', () => {
   let dataDir: string;
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
-      path.join(globalThis.testDir, 'polykey-test-'),
+      path.join(globalThis.tmpDir, 'polykey-test-'),
     );
   });
   afterEach(async () => {
