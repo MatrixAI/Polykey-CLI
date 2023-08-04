@@ -14,11 +14,11 @@ describe('send/read/claim', () => {
   ]);
   let dataDir: string;
   let senderId: NodeId;
-  let senderHost: Host;
-  let senderPort: Port;
+  let senderHost: string;
+  let senderPort: number;
   let receiverId: NodeId;
-  let receiverHost: Host;
-  let receiverPort: Port;
+  let receiverHost: string;
+  let receiverPort: number;
   let senderAgentStatus: StatusLive;
   let senderAgentClose: () => Promise<void>;
   let senderAgentDir: string;
