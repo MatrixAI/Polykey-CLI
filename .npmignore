@@ -1,0 +1,17 @@
+.*
+/*.nix
+/nix
+/tsconfig.json
+/tsconfig.build.json
+/babel.config.js
+/jest.config.js
+/nodemon.json
+/scripts
+/src
+/tests
+/tmp
+/docs
+/benches
+/build
+/builds
+/dist/tsbuildinfo
