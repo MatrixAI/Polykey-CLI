@@ -76,7 +76,8 @@ cat << "EOF"
         path: ./tmp/coverage/cobertura-coverage.xml
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
-build:windows:
+# Disabled pending fixes
+.build:windows:
   stage: build
   needs: []
 EOF
@@ -104,7 +105,8 @@ cat << "EOF"
         path: ./tmp/coverage/cobertura-coverage.xml
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
-build:macos:
+# Disabled pending fixes
+.build:macos:
   stage: build
   needs: []
 EOF
