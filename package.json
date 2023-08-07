@@ -48,7 +48,10 @@
   },
   "pkg": {
     "assets": [
-      "dist/**/*.json"
+      "dist/**/*.json",
+      "node_modules/tslib/**/*.js",
+      "node_modules/tsyringe/**/*.js",
+      "node_modules/uWebSockets.js/**/*.js"
     ],
     "scripts": [
       "dist/lib/workers/worker.js"

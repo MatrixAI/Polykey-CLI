@@ -69,29 +69,29 @@ rec {
     '';
   });
   pkgBuilds = {
-    "3.5" = {
+    "3.4" = {
       "linux-x64" = fetchurl {
-        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.5/node-v18.15.0-linux-x64";
-        sha256 = "0glr88p9higdwsffg3l243kpixqcf1mb7fawq62rj9n7b275lwx4";
+        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.4/node-v18.5.0-linux-x64";
+        sha256 = "0b7iimvh2gldvbqfjpx0qvzg8d59miv1ca03vwv6rb7c2bi5isi5";
       };
       "win32-x64" = fetchurl {
-        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.5/node-v18.15.0-win-x64";
-        sha256 = "1d51w02m5jv7fgk3brkv3wizn1l75rai1zyq8m9vlm1za1gaha8p";
+        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.4/node-v18.5.0-win-x64";
+        sha256 = "0jxrxgcggpzzx54gaai24zfywhq6fr0nm75iihpn248hv13sdsg0";
       };
       "macos-x64" = fetchurl {
-        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.5/node-v18.15.0-macos-x64";
-        sha256 = "1qcih9l3vncg05glhr45avcz2p5sqk7sp9776q4133xg88s09k0k";
+        url = "https://github.com/vercel/pkg-fetch/releases/download/v3.4/node-v18.5.0-macos-x64";
+        sha256 = "0dg46fw3ik2wxmhymcj3ih0wx5789f2fhfq39m6c1m52kvssgib3";
       };
       # No build for v18.15.0 macos-arm64 build
       # "macos-arm64" = fetchurl {
-      #   url = "https://github.com/vercel/pkg-fetch/releases/download/v3.4/node-v16.15.0-macos-arm64";
-      #   sha256 = "VNCPKjPQjLhzyX8d/FJ/dvDQcA9Gv9YZ6Wf2EcDCARI=";
+      #   url = "https://github.com/vercel/pkg-fetch/releases/download/v3.4/node-v18.5.0-macos-arm64";
+      #   sha256 = "1znxssrwcg8nxfr03x1dfz49qq70ik33nj42dxr566vanayifa94";
       # };
     };
   };
   pkgCachePath =
     let
-      pkgBuild = pkgBuilds."3.5";
+      pkgBuild = pkgBuilds."3.4";
       fetchedName = n: builtins.replaceStrings ["node"] ["fetched"] n;
     in
       linkFarm "pkg-cache"
