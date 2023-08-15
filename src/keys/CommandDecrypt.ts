@@ -1,6 +1,6 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -61,7 +61,7 @@ class CommandDecrypt extends CommandPolykey {
             encoding: 'binary',
           });
         } catch (e) {
-          throw new binErrors.ErrorCLIFileRead(e.message, {
+          throw new errors.ErrorPolykeyCLIFileRead(e.message, {
             data: {
               errno: e.errno,
               syscall: e.syscall,

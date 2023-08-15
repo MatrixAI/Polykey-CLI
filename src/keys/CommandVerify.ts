@@ -1,7 +1,7 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
 import type { PublicKeyJWK } from 'polykey/dist/keys/types';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -73,7 +73,7 @@ class CommandVerify extends CommandPolykey {
             encoding: 'binary',
           });
         } catch (e) {
-          throw new binErrors.ErrorCLIFileRead(e.message, {
+          throw new errors.ErrorPolykeyCLIFileRead(e.message, {
             data: {
               errno: e.errno,
               syscall: e.syscall,
@@ -99,7 +99,7 @@ class CommandVerify extends CommandPolykey {
             // Checking if the JWK is valid
             keysUtils.publicKeyFromJWK(publicJWK);
           } catch (e) {
-            throw new binErrors.ErrorCLIPublicJWKFileRead(
+            throw new errors.ErrorPolykeyCLIPublicJWKFileRead(
               'Failed to parse JWK file',
               { cause: e },
             );

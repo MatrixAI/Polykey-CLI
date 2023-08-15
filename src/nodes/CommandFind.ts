@@ -7,7 +7,7 @@ import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
 import * as binParsers from '../utils/parsers';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 class CommandFind extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -105,7 +105,7 @@ class CommandFind extends CommandPolykey {
         );
         // Like ping it should error when failing to find node for automation reasons.
         if (!result.success) {
-          throw new binErrors.ErrorCLINodeFindFailed(result.message);
+          throw new errors.ErrorPolykeyCLINodeFindFailed(result.message);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

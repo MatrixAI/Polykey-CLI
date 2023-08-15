@@ -84,9 +84,7 @@
   },
   "dependencies": {
     "@matrixai/errors": "^1.1.7",
-    "@matrixai/id": "^3.3.6",
     "@matrixai/logger": "^3.1.0",
-    "@matrixai/quic": "^0.0.12",
     "commander": "^8.3.0",
     "polykey": "^1.1.5-alpha.0",
     "threads": "^1.6.5"

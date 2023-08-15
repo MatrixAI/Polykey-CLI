@@ -1,7 +1,7 @@
 import process from 'process';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import * as binUtils from './utils';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 class ExitHandlers {
   /**
@@ -64,7 +64,7 @@ class ExitHandlers {
       return;
     }
     this._exiting = true;
-    const error = new binErrors.ErrorBinUnhandledRejection(undefined, {
+    const error = new errors.ErrorPolykeyCLIUnhandledRejection(undefined, {
       cause: e,
     });
     process.stderr.write(
@@ -88,7 +88,7 @@ class ExitHandlers {
       return;
     }
     this._exiting = true;
-    const error = new binErrors.ErrorBinUncaughtException(undefined, {
+    const error = new errors.ErrorPolykeyCLIUncaughtException(undefined, {
       cause: e,
     });
     process.stderr.write(
@@ -104,7 +104,7 @@ class ExitHandlers {
 
   protected deadlockHandler = async () => {
     if (process.exitCode == null) {
-      const e = new binErrors.ErrorBinAsynchronousDeadlock<undefined>();
+      const e = new errors.ErrorPolykeyCLIAsynchronousDeadlock<undefined>();
       process.stderr.write(
         binUtils.outputFormatter({
           type: this._errFormat,

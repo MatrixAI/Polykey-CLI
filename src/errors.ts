@@ -1,109 +1,162 @@
-import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import type { Class } from '@matrixai/errors';
+import { AbstractError } from '@matrixai/errors';
 import sysexits from 'polykey/dist/utils/sysexits';
 
-class ErrorBin<T> extends ErrorPolykey<T> {}
+/**
+ * Root error for Polykey CLI.
+ * Application errors may need to be serialised over program boundaries.
+ * For example presenting errors on the terminal, or sending errors over
+ * the network.
+ */
+class ErrorPolykeyCLI<T> extends AbstractError<T> {
+  static description: string = 'Polykey CLI error';
+  exitCode: number = sysexits.GENERAL;
 
-class ErrorBinUncaughtException<T> extends ErrorBin<T> {
-  static description = '';
+  public static fromJSON<T extends Class<any>>(
+    this: T,
+    json: any,
+  ): InstanceType<T> {
+    if (
+      typeof json !== 'object' ||
+      json.type !== this.name ||
+      typeof json.data !== 'object' ||
+      typeof json.data.message !== 'string' ||
+      isNaN(Date.parse(json.data.timestamp)) ||
+      typeof json.data.description !== 'string' ||
+      typeof json.data.data !== 'object' ||
+      typeof json.data.exitCode !== 'number' ||
+      ('stack' in json.data && typeof json.data.stack !== 'string')
+    ) {
+      throw new TypeError(`Cannot decode JSON to ${this.name}`);
+    }
+    const e = new this(json.data.message, {
+      timestamp: new Date(json.data.timestamp),
+      data: json.data.data,
+      cause: json.data.cause,
+    });
+    e.exitCode = json.data.exitCode;
+    e.stack = json.data.stack;
+    return e;
+  }
+
+  public toJSON(): any {
+    const json = super.toJSON();
+    json.data.description = this.description;
+    json.data.exitCode = this.exitCode;
+    return json;
+  }
+}
+
+/**
+ * Uncaught exceptions is a logic error.
+ * If these exceptions occur, there is a bug.
+ */
+class ErrorPolykeyCLIUncaughtException<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Uncaught exception';
   exitCode = sysexits.SOFTWARE;
 }
 
-class ErrorBinUnhandledRejection<T> extends ErrorBin<T> {
-  static description = '';
+/**
+ * Unhandled rejections is a logic error.
+ * If these exceptions occur, there is a bug.
+ */
+class ErrorPolykeyCLIUnhandledRejection<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Unhandled rejection';
   exitCode = sysexits.SOFTWARE;
 }
 
-class ErrorBinAsynchronousDeadlock<T> extends ErrorBin<T> {
+/**
+ * Asychronous deadlocks is a logic error.
+ * If these exceptions occur, there is a bug.
+ */
+class ErrorPolykeyCLIAsynchronousDeadlock<T> extends ErrorPolykeyCLI<T> {
   static description =
-    'PolykeyAgent process exited unexpectedly, likely due to promise deadlock';
+    'Process exited unexpectedly, likely due to promise deadlock';
   exitCode = sysexits.SOFTWARE;
 }
 
-class ErrorCLI<T> extends ErrorBin<T> {}
-
-class ErrorCLINodePath<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLINodePath<T> extends ErrorPolykeyCLI<T> {
   static description = 'Cannot derive default node path from unknown platform';
   exitCode = sysexits.USAGE;
 }
 
-class ErrorCLIClientOptions<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIClientOptions<T> extends ErrorPolykeyCLI<T> {
   static description = 'Missing required client options';
   exitCode = sysexits.USAGE;
 }
 
-class ErrorCLIPasswordWrong<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIPasswordWrong<T> extends ErrorPolykeyCLI<T> {
   static description = 'Wrong password, please try again';
   exitCode = sysexits.USAGE;
 }
 
-class ErrorCLIPasswordMissing<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIPasswordMissing<T> extends ErrorPolykeyCLI<T> {
   static description =
     'Password is necessary, provide it via --password-file, PK_PASSWORD or when prompted';
   exitCode = sysexits.USAGE;
 }
 
-class ErrorCLIPasswordFileRead<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIPasswordFileRead<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to read password file';
   exitCode = sysexits.NOINPUT;
 }
 
-class ErrorCLIRecoveryCodeFileRead<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIRecoveryCodeFileRead<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to read recovery code file';
   exitCode = sysexits.NOINPUT;
 }
 
-class ErrorCLIPrivateKeyFileRead<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIPrivateKeyFileRead<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to read private key Pem file';
   exitCode = sysexits.NOINPUT;
 }
 
-class ErrorCLIPublicJWKFileRead<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIPublicJWKFileRead<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to read public JWK file';
   exitCode = sysexits.NOINPUT;
 }
 
-class ErrorCLIFileRead<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIFileRead<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to read file';
   exitCode = sysexits.NOINPUT;
 }
 
-class ErrorCLIPolykeyAgentStatus<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIAgentStatus<T> extends ErrorPolykeyCLI<T> {
   static description = 'PolykeyAgent agent status';
   exitCode = sysexits.TEMPFAIL;
 }
 
-class ErrorCLIPolykeyAgentProcess<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLIAgentProcess<T> extends ErrorPolykeyCLI<T> {
   static description = 'PolykeyAgent process could not be started';
   exitCode = sysexits.OSERR;
 }
 
-class ErrorCLINodeFindFailed<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLINodeFindFailed<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to find the node in the DHT';
   exitCode = 1;
 }
 
-class ErrorCLINodePingFailed<T> extends ErrorCLI<T> {
+class ErrorPolykeyCLINodePingFailed<T> extends ErrorPolykeyCLI<T> {
   static description = 'Node was not online or not found.';
   exitCode = 1;
 }
 
 export {
-  ErrorBin,
-  ErrorBinUncaughtException,
-  ErrorBinUnhandledRejection,
-  ErrorBinAsynchronousDeadlock,
-  ErrorCLI,
-  ErrorCLINodePath,
-  ErrorCLIClientOptions,
-  ErrorCLIPasswordWrong,
-  ErrorCLIPasswordMissing,
-  ErrorCLIPasswordFileRead,
-  ErrorCLIRecoveryCodeFileRead,
-  ErrorCLIPrivateKeyFileRead,
-  ErrorCLIPublicJWKFileRead,
-  ErrorCLIFileRead,
-  ErrorCLIPolykeyAgentStatus,
-  ErrorCLIPolykeyAgentProcess,
-  ErrorCLINodeFindFailed,
-  ErrorCLINodePingFailed,
+  ErrorPolykeyCLI,
+  ErrorPolykeyCLIUncaughtException,
+  ErrorPolykeyCLIUnhandledRejection,
+  ErrorPolykeyCLIAsynchronousDeadlock,
+  ErrorPolykeyCLINodePath,
+  ErrorPolykeyCLIClientOptions,
+  ErrorPolykeyCLIPasswordWrong,
+  ErrorPolykeyCLIPasswordMissing,
+  ErrorPolykeyCLIPasswordFileRead,
+  ErrorPolykeyCLIRecoveryCodeFileRead,
+  ErrorPolykeyCLIPrivateKeyFileRead,
+  ErrorPolykeyCLIPublicJWKFileRead,
+  ErrorPolykeyCLIFileRead,
+  ErrorPolykeyCLIAgentStatus,
+  ErrorPolykeyCLIAgentProcess,
+  ErrorPolykeyCLINodeFindFailed,
+  ErrorPolykeyCLINodePingFailed,
 };

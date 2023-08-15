@@ -16,7 +16,7 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 class CommandStart extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -158,7 +158,7 @@ class CommandStart extends CommandPolykey {
             return;
           } else {
             rejectAgentProcessP(
-              new binErrors.ErrorCLIPolykeyAgentProcess(
+              new errors.ErrorPolykeyCLIAgentProcess(
                 'Agent process responded with error',
                 messageOut.error,
               ),
@@ -169,14 +169,14 @@ class CommandStart extends CommandPolykey {
         // Handle error event during abnormal spawning, this is rare
         agentProcess.once('error', (e) => {
           rejectAgentProcessP(
-            new binErrors.ErrorCLIPolykeyAgentProcess(e.message),
+            new errors.ErrorPolykeyCLIAgentProcess(e.message),
           );
         });
         // If the process exits during initial execution of polykey-agent script
         // Then it is an exception, because the agent process is meant to be a long-running daemon
         agentProcess.once('close', (code, signal) => {
           rejectAgentProcessP(
-            new binErrors.ErrorCLIPolykeyAgentProcess(
+            new errors.ErrorPolykeyCLIAgentProcess(
               'Agent process closed during fork',
               {
                 data: {
@@ -195,7 +195,7 @@ class CommandStart extends CommandPolykey {
         agentProcess.send(messageIn, (e) => {
           if (e != null) {
             rejectAgentProcessP(
-              new binErrors.ErrorCLIPolykeyAgentProcess(
+              new errors.ErrorPolykeyCLIAgentProcess(
                 'Failed sending agent process message',
               ),
             );
@@ -218,7 +218,7 @@ class CommandStart extends CommandPolykey {
           });
         } catch (e) {
           if (e instanceof keysErrors.ErrorKeyPairParse) {
-            throw new binErrors.ErrorCLIPasswordWrong();
+            throw new errors.ErrorPolykeyCLIPasswordWrong();
           }
           throw e;
         }

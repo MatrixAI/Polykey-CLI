@@ -15,7 +15,7 @@ import Status from 'polykey/dist/status/Status';
 import * as clientUtils from 'polykey/dist/client/utils/utils';
 import { arrayZip } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 /**
  * Prompts for existing password
@@ -86,7 +86,7 @@ async function processPassword(
     try {
       password = (await fs.promises.readFile(passwordFile, 'utf-8')).trim();
     } catch (e) {
-      throw new binErrors.ErrorCLIPasswordFileRead(e.message, {
+      throw new errors.ErrorPolykeyCLIPasswordFileRead(e.message, {
         data: {
           errno: e.errno,
           syscall: e.syscall,
@@ -101,7 +101,7 @@ async function processPassword(
   } else {
     password = await promptPassword();
     if (password === undefined) {
-      throw new binErrors.ErrorCLIPasswordMissing();
+      throw new errors.ErrorPolykeyCLIPasswordMissing();
     }
   }
   return password;
@@ -131,7 +131,7 @@ async function processNewPassword(
         await fs.promises.readFile(passwordNewFile, 'utf-8')
       ).trim();
     } catch (e) {
-      throw new binErrors.ErrorCLIPasswordFileRead(e.message, {
+      throw new errors.ErrorPolykeyCLIPasswordFileRead(e.message, {
         data: {
           errno: e.errno,
           syscall: e.syscall,
@@ -148,7 +148,7 @@ async function processNewPassword(
   } else {
     passwordNew = await promptNewPassword();
     if (passwordNew === undefined) {
-      throw new binErrors.ErrorCLIPasswordMissing();
+      throw new errors.ErrorPolykeyCLIPasswordMissing();
     }
   }
   return passwordNew;
@@ -172,7 +172,7 @@ async function processRecoveryCode(
         await fs.promises.readFile(recoveryCodeFile, 'utf-8')
       ).trim();
     } catch (e) {
-      throw new binErrors.ErrorCLIRecoveryCodeFileRead(e.message, {
+      throw new errors.ErrorPolykeyCLIRecoveryCodeFileRead(e.message, {
         data: {
           errno: e.errno,
           syscall: e.syscall,
@@ -228,7 +228,7 @@ async function processClientOptions(
     });
     const statusInfo = await status.readStatus();
     if (statusInfo === undefined || statusInfo.status !== 'LIVE') {
-      throw new binErrors.ErrorCLIPolykeyAgentStatus('agent is not live');
+      throw new errors.ErrorPolykeyCLIAgentStatus('agent is not live');
     }
     return {
       nodeId: statusInfo.data.nodeId,
@@ -252,7 +252,7 @@ async function processClientOptions(
         }
       })
       .join('; ');
-    throw new binErrors.ErrorCLIClientOptions(errorMsg);
+    throw new errors.ErrorPolykeyCLIClientOptions(errorMsg);
   }
 }
 
@@ -355,7 +355,7 @@ async function processClientStatus(
         }
       })
       .join('; ');
-    throw new binErrors.ErrorCLIClientOptions(errorMsg);
+    throw new errors.ErrorPolykeyCLIClientOptions(errorMsg);
   }
 }
 
@@ -379,7 +379,7 @@ async function processAuthentication(
     try {
       password = (await fs.promises.readFile(passwordFile, 'utf-8')).trim();
     } catch (e) {
-      throw new binErrors.ErrorCLIPasswordFileRead(e.message, {
+      throw new errors.ErrorPolykeyCLIPasswordFileRead(e.message, {
         data: {
           errno: e.errno,
           syscall: e.syscall,
