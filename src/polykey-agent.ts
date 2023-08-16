@@ -113,8 +113,8 @@ async function main(_argv = process.argv): Promise<number> {
     nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
     clientHost: pkAgent.webSocketServerClient.getHost(),
     clientPort: pkAgent.webSocketServerClient.getPort(),
-    agentHost: pkAgent.quicServerAgent.host,
-    agentPort: pkAgent.quicServerAgent.port,
+    agentHost: pkAgent.quicSocket.host,
+    agentPort: pkAgent.quicSocket.port,
   };
   try {
     await processSend(messageOut);

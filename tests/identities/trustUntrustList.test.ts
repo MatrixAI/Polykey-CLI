@@ -76,8 +76,8 @@ describe('trust/untrust/list', () => {
       },
     });
     nodeId = node.keyRing.getNodeId();
-    nodeHost = node.quicServerAgent.host as unknown as Host;
-    nodePort = node.quicServerAgent.port as unknown as Port;
+    nodeHost = node.quicSocket.host as unknown as Host;
+    nodePort = node.quicSocket.port as unknown as Port;
     node.identitiesManager.registerProvider(provider);
     await node.identitiesManager.putToken(provider.id, identity, {
       accessToken: 'def456',

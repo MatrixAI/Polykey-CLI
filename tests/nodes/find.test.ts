@@ -63,8 +63,8 @@ describe('find', () => {
       },
     });
     remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
-    remoteOnlineHost = remoteOnline.quicServerAgent.host as unknown as Host;
-    remoteOnlinePort = remoteOnline.quicServerAgent.port as unknown as Port;
+    remoteOnlineHost = remoteOnline.quicSocket.host as unknown as Host;
+    remoteOnlinePort = remoteOnline.quicSocket.port as unknown as Port;
     await testUtils.nodesConnect(polykeyAgent, remoteOnline);
     // Setting up an offline remote keynode
     remoteOffline = await PolykeyAgent.createPolykeyAgent({
@@ -82,8 +82,8 @@ describe('find', () => {
       },
     });
     remoteOfflineNodeId = remoteOffline.keyRing.getNodeId();
-    remoteOfflineHost = remoteOffline.quicServerAgent.host as unknown as Host;
-    remoteOfflinePort = remoteOffline.quicServerAgent.port as unknown as Port;
+    remoteOfflineHost = remoteOffline.quicSocket.host as unknown as Host;
+    remoteOfflinePort = remoteOffline.quicSocket.port as unknown as Port;
     await testUtils.nodesConnect(polykeyAgent, remoteOffline);
     await remoteOffline.stop();
   });

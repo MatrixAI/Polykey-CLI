@@ -76,13 +76,13 @@ function trackTimers() {
 async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   // Add remote node's details to local node
   await localNode.nodeManager.setNode(remoteNode.keyRing.getNodeId(), {
-    host: remoteNode.quicServerAgent.host as unknown as Host,
-    port: remoteNode.quicServerAgent.port as unknown as Port,
+    host: remoteNode.quicSocket.host as unknown as Host,
+    port: remoteNode.quicSocket.port as unknown as Port,
   } as NodeAddress);
   // Add local node's details to remote node
   await remoteNode.nodeManager.setNode(localNode.keyRing.getNodeId(), {
-    host: localNode.quicServerAgent.host as unknown as Host,
-    port: localNode.quicServerAgent.port as unknown as Port,
+    host: localNode.quicSocket.host as unknown as Host,
+    port: localNode.quicSocket.port as unknown as Port,
   } as NodeAddress);
 }
 

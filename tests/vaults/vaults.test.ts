@@ -256,14 +256,14 @@ describe('CLI vaults', () => {
       const targetNodeId = targetPolykeyAgent.keyRing.getNodeId();
       const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
       await polykeyAgent.nodeManager.setNode(targetNodeId, {
-        host: targetPolykeyAgent.quicServerAgent.host as unknown as Host,
-        port: targetPolykeyAgent.quicServerAgent.port as unknown as Port,
+        host: targetPolykeyAgent.quicSocket.host as unknown as Host,
+        port: targetPolykeyAgent.quicSocket.port as unknown as Port,
       });
       await targetPolykeyAgent.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
         {
-          host: polykeyAgent.quicServerAgent.host as unknown as Host,
-          port: polykeyAgent.quicServerAgent.port as unknown as Port,
+          host: polykeyAgent.quicSocket.host as unknown as Host,
+          port: polykeyAgent.quicSocket.port as unknown as Port,
         },
       );
       await polykeyAgent.acl.setNodePerm(targetNodeId, {
@@ -835,8 +835,8 @@ describe('CLI vaults', () => {
           const remoteOnlineNodeIdEncoded =
             nodesUtils.encodeNodeId(remoteOnlineNodeId);
           await polykeyAgent.nodeManager.setNode(remoteOnlineNodeId, {
-            host: remoteOnline.quicServerAgent.host as unknown as Host,
-            port: remoteOnline.quicServerAgent.port as unknown as Port,
+            host: remoteOnline.quicSocket.host as unknown as Host,
+            port: remoteOnline.quicSocket.port as unknown as Port,
           } as NodeAddress);
 
           await remoteOnline.gestaltGraph.setNode({
