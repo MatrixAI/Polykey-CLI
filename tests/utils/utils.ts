@@ -1,15 +1,7 @@
-import type { NodeId } from 'polykey/dist/ids/types';
 import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import type { Host, Port } from 'polykey/dist/network/types';
 import type { NodeAddress } from 'polykey/dist/nodes/types';
-import { IdInternal } from '@matrixai/id';
-import * as keysUtils from 'polykey/dist/keys/utils';
 import { promise } from 'polykey/dist/utils/utils';
-
-function generateRandomNodeId(): NodeId {
-  const random = keysUtils.getRandomBytes(16).toString('hex');
-  return IdInternal.fromString<NodeId>(random);
-}
 
 function testIf(condition: boolean) {
   return condition ? test : test.skip;
@@ -86,4 +78,4 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   } as NodeAddress);
 }
 
-export { generateRandomNodeId, testIf, describeIf, trackTimers, nodesConnect };
+export { testIf, describeIf, trackTimers, nodesConnect };

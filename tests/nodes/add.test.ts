@@ -3,19 +3,19 @@ import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { IdInternal } from '@matrixai/id';
-import { sysexits } from 'polykey/dist/utils';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
 import NodeManager from 'polykey/dist/nodes/NodeManager';
+import * as ids from 'polykey/dist/ids';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as keysUtils from 'polykey/dist/keys/utils';
+import sysexits from 'polykey/dist/utils/sysexits';
 import * as testUtils from '../utils';
 
 describe('add', () => {
   const logger = new Logger('add test', LogLevel.WARN, [new StreamHandler()]);
   const password = 'helloworld';
-  const validNodeId = testUtils.generateRandomNodeId();
-  const invalidNodeId = IdInternal.fromString<NodeId>('INVALIDID');
+  const nodeIdGenerator = ids.createNodeIdGenerator();
+  const validNodeId = nodeIdGenerator();
   const validHost = '0.0.0.0';
   const invalidHost = 'INVALIDHOST';
   const port = 55555;
@@ -95,7 +95,7 @@ describe('add', () => {
         [
           'nodes',
           'add',
-          nodesUtils.encodeNodeId(invalidNodeId),
+          'INVALIDNODEID',
           validHost,
           `${port}`,
         ],

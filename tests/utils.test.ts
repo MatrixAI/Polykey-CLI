@@ -1,5 +1,6 @@
 import type { Host, Port } from 'polykey/dist/network/types';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as rpcErrors from 'polykey/dist/rpc/errors';
 import * as binUtils from '@/utils/utils';
@@ -87,11 +88,12 @@ describe('bin/utils', () => {
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'errors in human and json format',
     () => {
+      const nodeIdGenerator = ids.createNodeIdGenerator();
       const timestamp = new Date();
       const data = { string: 'one', number: 1 };
       const host = '127.0.0.1' as Host;
       const port = 55555 as Port;
-      const nodeId = testUtils.generateRandomNodeId();
+      const nodeId = nodeIdGenerator();
       const standardError = new TypeError('some error');
       const pkError = new ErrorPolykey<undefined>('some pk error', {
         timestamp,
