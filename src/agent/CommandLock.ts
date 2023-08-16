@@ -14,7 +14,7 @@ class CommandLock extends CommandPolykey {
       const session = new Session({
         sessionTokenPath: path.join(
           options.nodePath,
-          config.defaults.tokenBase,
+          config.paths.tokenBase,
         ),
         fs: this.fs,
         logger: this.logger.getChild(Session.name),

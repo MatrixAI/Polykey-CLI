@@ -52,11 +52,11 @@ describe('stop', () => {
         logger,
       );
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -85,11 +85,11 @@ describe('stop', () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, password);
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -183,11 +183,11 @@ describe('stop', () => {
       //  docker may not run this fast enough
       const password = 'abc123';
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -270,11 +270,11 @@ describe('stop', () => {
         logger,
       );
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,

@@ -9,24 +9,10 @@ import type {
   PasswordOpsLimit,
   PasswordMemLimit,
 } from 'polykey/dist/keys/types';
-import type { QUICConfig } from '@matrixai/quic';
 
 type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
   nodeId: NodeIdEncoded;
 };
-
-// TODO: fix this... We don't need a dependecy on `@matrixai/quic
-type PolykeyQUICConfig = {
-  // Optionals
-  keepAliveIntervalTime?: number;
-  maxIdleTimeout?: number;
-  // Disabled, set internally
-  ca?: never;
-  key?: never;
-  cert?: never;
-  verifyPeer?: never;
-  verifyAllowFail?: never;
-} & Partial<QUICConfig>;
 
 /**
  * PolykeyAgent Starting Input when Backgrounded
@@ -61,25 +47,20 @@ type AgentChildProcessInput = {
       holePunchInitialInterval?: number;
     };
     networkConfig?: {
-      // Agent QUICSocket config
       agentHost?: Host;
       agentPort?: Port;
-      ipv6Only?: boolean;
-      // RPCServer for client service
       clientHost?: Host;
       clientPort?: Port;
-      // Websocket server config
-      maxReadableStreamBytes?: number;
-      connectionIdleTimeoutTime?: number;
-      pingIntervalTime?: number;
-      pingTimeoutTime?: number;
-      // RPC config
+      ipv6Only?: boolean;
+      agentKeepAliveIntervalTime?: number;
+      agentMaxIdleTimeout?: number;
+      clientMaxIdleTimeoutTime?: number;
+      clientPingIntervalTime?: number;
+      clientPingTimeoutTime?: number;
       clientParserBufferByteLimit?: number;
-      handlerTimeoutTime?: number;
-      handlerTimeoutGraceTime?: number;
+      clientHandlerTimeoutTime?: number;
+      clientHandlerTimeoutGraceTime?: number;
     };
-    quicServerConfig?: PolykeyQUICConfig;
-    quicClientConfig?: PolykeyQUICConfig;
     fresh?: boolean;
   };
 };

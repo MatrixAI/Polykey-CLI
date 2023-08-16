@@ -43,7 +43,7 @@ describe('sessions', () => {
     'serial commands refresh the session token',
     async () => {
       const session = await Session.createSession({
-        sessionTokenPath: path.join(agentDir, config.defaults.tokenBase),
+        sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
         fs,
         logger,
       });

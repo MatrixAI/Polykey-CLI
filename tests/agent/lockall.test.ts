@@ -45,7 +45,7 @@ describe('lockall', () => {
     });
     expect(exitCode).toBe(0);
     const session = await Session.createSession({
-      sessionTokenPath: path.join(agentDir, config.defaults.tokenBase),
+      sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
       fs,
       logger,
     });
@@ -93,7 +93,7 @@ describe('lockall', () => {
         command: globalThis.testCmd,
       });
       const session = await Session.createSession({
-        sessionTokenPath: path.join(agentDir, config.defaults.tokenBase),
+        sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
         fs,
         logger,
       });
