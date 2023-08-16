@@ -37,10 +37,17 @@
   ],
   "description": "Polykey CLI",
   "keywords": [
+    "polykey",
+    "polykey-cli",
     "secrets",
-    "password"
+    "secrets-management",
+    "password",
+    "password-management",
+    "key",
+    "key-management",
+    "zero-trust"
   ],
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/MatrixAI/Polykey-CLI.git"
