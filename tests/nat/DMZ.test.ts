@@ -95,11 +95,11 @@ describe.skip('DMZ', () => {
       expect(signal).toBe('SIGTERM');
       // Check for graceful exit
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,

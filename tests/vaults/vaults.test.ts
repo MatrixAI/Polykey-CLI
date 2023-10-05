@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as vaultsUtils from 'polykey/dist/vaults/utils';
 import sysexits from 'polykey/dist/utils/sysexits';
@@ -22,11 +23,10 @@ describe('CLI vaults', () => {
   let command: Array<string>;
   let vaultNumber: number;
   let vaultName: VaultName;
-
-  const nodeId1 = testUtils.generateRandomNodeId();
-  const nodeId2 = testUtils.generateRandomNodeId();
-  const nodeId3 = testUtils.generateRandomNodeId();
-
+  const nodeIdGenerator = ids.createNodeIdGenerator();
+  const nodeId1 = nodeIdGenerator();
+  const nodeId2 = nodeIdGenerator();
+  const nodeId3 = nodeIdGenerator();
   const node1: GestaltNodeInfo = {
     nodeId: nodeId1,
   };
@@ -36,13 +36,11 @@ describe('CLI vaults', () => {
   const node3: GestaltNodeInfo = {
     nodeId: nodeId3,
   };
-
   // Helper functions
   function genVaultName() {
     vaultNumber++;
     return `vault-${vaultNumber}` as VaultName;
   }
-
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
@@ -256,14 +254,14 @@ describe('CLI vaults', () => {
       const targetNodeId = targetPolykeyAgent.keyRing.getNodeId();
       const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
       await polykeyAgent.nodeManager.setNode(targetNodeId, {
-        host: targetPolykeyAgent.quicServerAgent.host as unknown as Host,
-        port: targetPolykeyAgent.quicServerAgent.port as unknown as Port,
+        host: targetPolykeyAgent.quicSocket.host as unknown as Host,
+        port: targetPolykeyAgent.quicSocket.port as unknown as Port,
       });
       await targetPolykeyAgent.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
         {
-          host: polykeyAgent.quicServerAgent.host as unknown as Host,
-          port: polykeyAgent.quicServerAgent.port as unknown as Port,
+          host: polykeyAgent.quicSocket.host as unknown as Host,
+          port: polykeyAgent.quicSocket.port as unknown as Port,
         },
       );
       await polykeyAgent.acl.setNodePerm(targetNodeId, {
@@ -408,7 +406,7 @@ describe('CLI vaults', () => {
             vaultName,
           );
           const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
-          const targetNodeId = testUtils.generateRandomNodeId();
+          const targetNodeId = nodeIdGenerator();
           const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
           await polykeyAgent.gestaltGraph.setNode({
             nodeId: targetNodeId,
@@ -454,7 +452,7 @@ describe('CLI vaults', () => {
         );
         const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
         const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = testUtils.generateRandomNodeId();
+        const targetNodeId = nodeIdGenerator();
         const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
         await polykeyAgent.gestaltGraph.setNode({
           nodeId: targetNodeId,
@@ -533,7 +531,7 @@ describe('CLI vaults', () => {
         );
         const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
         const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = testUtils.generateRandomNodeId();
+        const targetNodeId = nodeIdGenerator();
         const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
         await polykeyAgent.gestaltGraph.setNode({
           nodeId: targetNodeId,
@@ -835,8 +833,8 @@ describe('CLI vaults', () => {
           const remoteOnlineNodeIdEncoded =
             nodesUtils.encodeNodeId(remoteOnlineNodeId);
           await polykeyAgent.nodeManager.setNode(remoteOnlineNodeId, {
-            host: remoteOnline.quicServerAgent.host as unknown as Host,
-            port: remoteOnline.quicServerAgent.port as unknown as Port,
+            host: remoteOnline.quicSocket.host as unknown as Host,
+            port: remoteOnline.quicSocket.port as unknown as Port,
           } as NodeAddress);
 
           await remoteOnline.gestaltGraph.setNode({

@@ -60,8 +60,8 @@ describe('discover/get', () => {
       },
     });
     nodeAId = nodeA.keyRing.getNodeId();
-    nodeAHost = nodeA.quicServerAgent.host as unknown as Host;
-    nodeAPort = nodeA.quicServerAgent.port as unknown as Port;
+    nodeAHost = nodeA.quicSocket.host as unknown as Host;
+    nodeAPort = nodeA.quicSocket.port as unknown as Port;
     nodeB = await PolykeyAgent.createPolykeyAgent({
       password,
       nodePath: path.join(dataDir, 'nodeB'),

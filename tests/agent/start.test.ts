@@ -88,11 +88,11 @@ describe('start', () => {
       ).toBe(true);
       agentProcess.kill('SIGTERM');
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -183,11 +183,11 @@ describe('start', () => {
       );
       expect(polykeyAgentOut).toHaveLength(0);
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -467,11 +467,11 @@ describe('start', () => {
         logger,
       );
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -581,11 +581,11 @@ describe('start', () => {
       await testUtils.processExit(agentProcess2);
       // Check for graceful exit
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -603,11 +603,11 @@ describe('start', () => {
       const password1 = 'abc123';
       const password2 = 'new password';
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -751,11 +751,11 @@ describe('start', () => {
     'start with network configuration',
     async () => {
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -811,11 +811,11 @@ describe('start', () => {
     'start with --private-key-file override',
     async () => {
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -910,11 +910,8 @@ describe('start', () => {
       async () => {
         const password = 'abc123';
         const nodePath = path.join(dataDir, 'polykey');
-        const statusPath = path.join(nodePath, config.defaults.statusBase);
-        const statusLockPath = path.join(
-          nodePath,
-          config.defaults.statusLockBase,
-        );
+        const statusPath = path.join(nodePath, config.paths.statusBase);
+        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
         const status = new Status({
           statusPath,
           statusLockPath,
@@ -977,11 +974,8 @@ describe('start', () => {
       async () => {
         const password = 'abc123';
         const nodePath = path.join(dataDir, 'polykey');
-        const statusPath = path.join(nodePath, config.defaults.statusBase);
-        const statusLockPath = path.join(
-          nodePath,
-          config.defaults.statusLockBase,
-        );
+        const statusPath = path.join(nodePath, config.paths.statusBase);
+        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
         const status = new Status({
           statusPath,
           statusLockPath,

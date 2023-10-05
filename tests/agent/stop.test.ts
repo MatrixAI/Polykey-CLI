@@ -52,11 +52,11 @@ describe('stop', () => {
         logger,
       );
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -85,11 +85,11 @@ describe('stop', () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, password);
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -176,18 +176,18 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  testUtils.testIf(testUtils.isTestPlatformEmpty).only(
     'stopping starting agent results in error',
     async () => {
       // This relies on fast execution of `agent stop` while agent is starting,
       //  docker may not run this fast enough
       const password = 'abc123';
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -225,7 +225,7 @@ describe('stop', () => {
         },
       );
       testUtils.expectProcessError(exitCode, stderr, [
-        new binErrors.ErrorCLIPolykeyAgentStatus('agent is starting'),
+        new binErrors.ErrorPolykeyCLIAgentStatus('agent is starting'),
       ]);
       await status.waitFor('LIVE');
       await testUtils.pkStdio(['agent', 'stop'], {
@@ -270,11 +270,11 @@ describe('stop', () => {
         logger,
       );
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,

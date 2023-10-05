@@ -38,10 +38,7 @@ class CommandLockAll extends CommandPolykey {
         this.fs,
       );
       const session = new Session({
-        sessionTokenPath: path.join(
-          options.nodePath,
-          config.defaults.tokenBase,
-        ),
+        sessionTokenPath: path.join(options.nodePath, config.paths.tokenBase),
         fs: this.fs,
         logger: this.logger.getChild(Session.name),
       });

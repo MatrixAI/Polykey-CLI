@@ -7,7 +7,7 @@ import * as clientErrors from 'polykey/dist/client/errors';
 import * as utils from 'polykey/dist/utils';
 import * as rpcErrors from 'polykey/dist/rpc/errors';
 import * as binProcessors from './processors';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 /**
  * Convert verbosity to LogLevel
@@ -199,7 +199,7 @@ async function retryAuthentication<T>(
     // Prompt the user for password
     const password = await binProcessors.promptPassword();
     if (password == null) {
-      throw new binErrors.ErrorCLIPasswordMissing();
+      throw new errors.ErrorPolykeyCLIPasswordMissing();
     }
     // Augment existing metadata
     const auth = {

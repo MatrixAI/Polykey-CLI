@@ -30,18 +30,30 @@
     },
     {
       "name": "Emma Casolin"
+    },
+    {
+      "name": "Amy Yan"
     }
   ],
   "description": "Polykey CLI",
   "keywords": [
+    "polykey",
+    "polykey-cli",
     "secrets",
-    "password"
+    "secrets-management",
+    "password",
+    "password-management",
+    "key",
+    "key-management",
+    "zero-trust"
   ],
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/MatrixAI/Polykey-CLI.git"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "polykey": "dist/polykey.js",
     "pk": "dist/polykey.js"
@@ -61,12 +73,14 @@
     "prepare": "tsc -p ./tsconfig.build.json",
     "build": "shx rm -rf ./dist && tsc -p ./tsconfig.build.json",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
+    "tsx": "tsx",
     "ts-node": "ts-node",
     "test": "jest",
-    "lint": "eslint '{src,tests,scripts}/**/*.{js,ts}'",
-    "lintfix": "eslint '{src,tests,scripts}/**/*.{js,ts}' --fix",
+    "lint": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}'",
+    "lintfix": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}' --fix",
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
+    "bench": "tsc -p ./tsconfig.build.json && shx rm -rf ./benches/results && tsx ./benches/index.ts",
     "pkg": "node ./scripts/pkg.js",
     "polykey": "ts-node src/polykey.ts",
     "start": "ts-node src/polykey.ts -- agent start --verbose",
@@ -74,11 +88,9 @@
   },
   "dependencies": {
     "@matrixai/errors": "^1.1.7",
-    "@matrixai/id": "^3.3.6",
     "@matrixai/logger": "^3.1.0",
-    "@matrixai/quic": "^0.0.12",
     "commander": "^8.3.0",
-    "polykey": "^1.1.5-alpha.0",
+    "polykey": "^1.1.5-feature-agent-migration-stage2.0",
     "threads": "^1.6.5"
   },
   "devDependencies": {
@@ -105,6 +117,7 @@
     "pkg": "^5.8.1",
     "prettier": "^2.6.2",
     "shx": "^0.3.4",
+    "tsx": "^3.12.7",
     "ts-jest": "^28.0.5",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^3.9.0",

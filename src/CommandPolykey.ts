@@ -8,7 +8,7 @@ import Logger, {
 } from '@matrixai/logger';
 import * as binUtils from './utils';
 import * as binOptions from './utils/options';
-import * as binErrors from './errors';
+import * as errors from './errors';
 
 /**
  * Singleton logger constructed once for all commands
@@ -91,7 +91,7 @@ class CommandPolykey extends commander.Command {
       // If the node path is undefined
       // this means there is an unknown platform
       if (opts.nodePath == null) {
-        throw new binErrors.ErrorCLINodePath();
+        throw new errors.ErrorPolykeyCLINodePath();
       }
       await fn(...args);
     });

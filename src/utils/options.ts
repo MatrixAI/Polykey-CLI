@@ -21,7 +21,7 @@ const nodePath = new commander.Option(
   'Path to Node State',
 )
   .env('PK_NODE_PATH')
-  .default(config.defaults.nodePath);
+  .default(config.defaultsUser.nodePath);
 
 /**
  * Formatting choice of human, json, defaults to human
@@ -76,19 +76,19 @@ const clientPort = new commander.Option(
 const agentHost = new commander.Option('-ah, --agent-host <host>', 'Agent host')
   .env('PK_AGENT_HOST')
   .argParser(binParsers.parseHost)
-  .default(config.defaults.networkConfig.agentHost);
+  .default(config.defaultsUser.agentServiceHost);
 
 const agentPort = new commander.Option('-ap, --agent-port <port>', 'Agent Port')
   .env('PK_AGENT_PORT')
   .argParser(binParsers.parsePort)
-  .default(config.defaults.networkConfig.agentPort);
+  .default(config.defaultsUser.agentServicePort);
 
 const connConnectTime = new commander.Option(
   '--connection-timeout <ms>',
   'Timeout value for connection establishment between nodes',
 )
   .argParser(binParsers.parseInteger)
-  .default(config.defaults.nodeConnectionManagerConfig.connectionConnectTime);
+  .default(config.defaultsSystem.nodesConnectionConnectTimeoutTime);
 
 const passwordFile = new commander.Option(
   '-pf, --password-file <path>',
@@ -134,7 +134,7 @@ const network = new commander.Option(
 )
   .argParser(binParsers.parseNetwork)
   .env('PK_NETWORK')
-  .default(config.defaults.network.mainnet);
+  .default(config.network.mainnet);
 
 const workers = new commander.Option(
   '-w --workers <count>',

@@ -30,11 +30,11 @@ describe('status', () => {
       // This test must create its own agent process
       const password = 'abc123';
       const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.defaults.statusBase),
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
         statusLockPath: path.join(
           dataDir,
           'polykey',
-          config.defaults.statusLockBase,
+          config.paths.statusLockBase,
         ),
         fs,
         logger,
@@ -154,8 +154,8 @@ describe('status', () => {
       testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
     )('status on LIVE agent', async () => {
       const status = new Status({
-        statusPath: path.join(agentDir, config.defaults.statusBase),
-        statusLockPath: path.join(agentDir, config.defaults.statusLockBase),
+        statusPath: path.join(agentDir, config.paths.statusBase),
+        statusLockPath: path.join(agentDir, config.paths.statusLockBase),
         fs,
         logger,
       });
@@ -190,8 +190,8 @@ describe('status', () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, agentPassword);
       const status = new Status({
-        statusPath: path.join(agentDir, config.defaults.statusBase),
-        statusLockPath: path.join(agentDir, config.defaults.statusLockBase),
+        statusPath: path.join(agentDir, config.paths.statusBase),
+        statusLockPath: path.join(agentDir, config.paths.statusLockBase),
         fs,
         logger,
       });

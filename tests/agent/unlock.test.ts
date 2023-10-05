@@ -25,7 +25,7 @@ describe('unlock', () => {
   )('unlock acquires session token', async () => {
     // Fresh session, to delete the token
     const session = await Session.createSession({
-      sessionTokenPath: path.join(agentDir, config.defaults.tokenBase),
+      sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
       fs,
       logger,
       fresh: true,

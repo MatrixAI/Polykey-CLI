@@ -4,7 +4,7 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
-import * as binErrors from '../errors';
+import * as errors from '../errors';
 
 class CommandStop extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -37,7 +37,7 @@ class CommandStop extends CommandPolykey {
         this.logger.info('Agent is already stopping');
         return;
       } else if (statusInfo?.status === 'STARTING') {
-        throw new binErrors.ErrorCLIPolykeyAgentStatus('agent is starting');
+        throw new errors.ErrorPolykeyCLIAgentStatus('agent is starting');
       }
       const auth = await binProcessors.processAuthentication(
         options.passwordFile,

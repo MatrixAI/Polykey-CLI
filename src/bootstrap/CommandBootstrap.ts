@@ -26,14 +26,16 @@ class CommandBootstrap extends CommandPolykey {
       );
       const recoveryCodeOut = await bootstrapUtils.bootstrapState({
         password,
-        nodePath: options.nodePath,
-        keyRingConfig: {
-          recoveryCode: recoveryCodeIn,
-          privateKeyPath: options.privateKeyFile,
-          passwordOpsLimit:
-            keysUtils.passwordOpsLimits[options.passwordOpsLimit],
-          passwordMemLimit:
-            keysUtils.passwordMemLimits[options.passwordMemLimit],
+        options: {
+          nodePath: options.nodePath,
+          keys: {
+            recoveryCode: recoveryCodeIn,
+            privateKeyPath: options.privateKeyFile,
+            passwordOpsLimit:
+              keysUtils.passwordOpsLimits[options.passwordOpsLimit],
+            passwordMemLimit:
+              keysUtils.passwordMemLimits[options.passwordMemLimit],
+          },
         },
         fresh: options.fresh,
         fs: this.fs,
