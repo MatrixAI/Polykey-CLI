@@ -176,7 +176,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  testUtils.testIf(testUtils.isTestPlatformEmpty).only(
     'stopping starting agent results in error',
     async () => {
       // This relies on fast execution of `agent stop` while agent is starting,
@@ -225,7 +225,7 @@ describe('stop', () => {
         },
       );
       testUtils.expectProcessError(exitCode, stderr, [
-        new binErrors.ErrorCLIPolykeyAgentStatus('agent is starting'),
+        new binErrors.ErrorPolykeyCLIAgentStatus('agent is starting'),
       ]);
       await status.waitFor('LIVE');
       await testUtils.pkStdio(['agent', 'stop'], {

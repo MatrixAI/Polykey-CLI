@@ -4,7 +4,11 @@ import type {
   AgentChildProcessInput,
   AgentChildProcessOutput,
 } from '../types';
-import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import type {
+  default as PolykeyAgent,
+  PolykeyAgentOptions,
+} from 'polykey/dist/PolykeyAgent';
+import type { DeepPartial } from 'polykey/dist/types';
 import type { RecoveryCode } from 'polykey/dist/keys/types';
 import path from 'path';
 import childProcess from 'child_process';
@@ -90,10 +94,15 @@ class CommandStart extends CommandPolykey {
       const [seedNodes, defaults] = options.seedNodes;
       let seedNodes_ = seedNodes;
       if (defaults) seedNodes_ = { ...options.network, ...seedNodes };
-      const agentConfig = {
-        password,
+      const agentOptions: DeepPartial<PolykeyAgentOptions> = {
         nodePath: options.nodePath,
-        keyRingConfig: {
+        clientServiceHost: options.clientHost,
+        clientServicePort: options.clientPort,
+        agentServiceHost: options.agentHost,
+        agentServicePort: options.agentPort,
+        seedNodes: seedNodes_,
+        workers: options.workers,
+        keys: {
           recoveryCode: recoveryCodeIn,
           privateKeyPath: options.privateKeyFile,
           passwordOpsLimit:
@@ -101,15 +110,6 @@ class CommandStart extends CommandPolykey {
           passwordMemLimit:
             keysUtils.passwordMemLimits[options.passwordMemLimit],
         },
-        networkConfig: {
-          clientHost: options.clientHost,
-          clientPort: options.clientPort,
-          agentHost: options.agentHost,
-          agentPort: options.agentPort,
-        },
-        seedNodes: seedNodes_,
-        workers: options.workers,
-        fresh: options.fresh,
       };
       let statusLiveData: AgentStatusLiveData;
       let recoveryCodeOut: RecoveryCode | undefined;
@@ -190,7 +190,11 @@ class CommandStart extends CommandPolykey {
         const messageIn: AgentChildProcessInput = {
           logLevel: this.logger.getEffectiveLevel(),
           format: options.format,
-          agentConfig,
+          agentConfig: {
+            password,
+            options: agentOptions,
+            fresh: options.fresh,
+          },
         };
         agentProcess.send(messageIn, (e) => {
           if (e != null) {
@@ -214,7 +218,9 @@ class CommandStart extends CommandPolykey {
           pkAgent = await PolykeyAgent.createPolykeyAgent({
             fs: this.fs,
             logger: this.logger.getChild(PolykeyAgent.name),
-            ...agentConfig,
+            password,
+            options: agentOptions,
+            fresh: options.fresh,
           });
         } catch (e) {
           if (e instanceof keysErrors.ErrorKeyPairParse) {

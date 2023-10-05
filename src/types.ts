@@ -1,14 +1,9 @@
 import type { LogLevel } from '@matrixai/logger';
-import type { POJO } from 'polykey/dist/types';
+import type { PolykeyAgentOptions } from 'polykey/dist/PolykeyAgent';
+import type { POJO, DeepPartial } from 'polykey/dist/types';
 import type { RecoveryCode } from 'polykey/dist/keys/types';
-import type { Host, Port } from 'polykey/dist/network/types';
 import type { StatusLive } from 'polykey/dist/status/types';
 import type { NodeIdEncoded } from 'polykey/dist/ids/types';
-import type { PrivateKey } from 'polykey/dist/keys/types';
-import type {
-  PasswordOpsLimit,
-  PasswordMemLimit,
-} from 'polykey/dist/keys/types';
 
 type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
   nodeId: NodeIdEncoded;
@@ -26,41 +21,7 @@ type AgentChildProcessInput = {
   workers?: number;
   agentConfig: {
     password: string;
-    nodePath?: string;
-    keyRingConfig?: {
-      recoveryCode?: RecoveryCode;
-      privateKey?: PrivateKey;
-      privateKeyPath?: string;
-      passwordOpsLimit?: PasswordOpsLimit;
-      passwordMemLimit?: PasswordMemLimit;
-      strictMemoryLock?: boolean;
-    };
-    certManagerConfig?: {
-      certDuration?: number;
-    };
-    nodeConnectionManagerConfig?: {
-      connConnectTime?: number;
-      connTimeoutTime?: number;
-      initialClosestNodes?: number;
-      pingTimeout?: number;
-      holePunchTimeout?: number;
-      holePunchInitialInterval?: number;
-    };
-    networkConfig?: {
-      agentHost?: Host;
-      agentPort?: Port;
-      clientHost?: Host;
-      clientPort?: Port;
-      ipv6Only?: boolean;
-      agentKeepAliveIntervalTime?: number;
-      agentMaxIdleTimeout?: number;
-      clientMaxIdleTimeoutTime?: number;
-      clientPingIntervalTime?: number;
-      clientPingTimeoutTime?: number;
-      clientParserBufferByteLimit?: number;
-      clientHandlerTimeoutTime?: number;
-      clientHandlerTimeoutGraceTime?: number;
-    };
+    options: DeepPartial<PolykeyAgentOptions>;
     fresh?: boolean;
   };
 };
