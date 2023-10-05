@@ -44,38 +44,38 @@ describe('allow/disallow/permissions', () => {
     nodePath = path.join(dataDir, 'polykey');
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     pkAgent.identitiesManager.registerProvider(provider);
     // Set up a gestalt to modify the permissions of
     const nodePathGestalt = path.join(dataDir, 'gestalt');
     node = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: nodePathGestalt,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath: nodePathGestalt,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     nodeId = node.keyRing.getNodeId();
-    nodeHost = node.quicSocket.host as unknown as Host;
-    nodePort = node.quicSocket.port as unknown as Port;
+    nodeHost = node.agentServiceHost;
+    nodePort = node.agentServicePort;
     node.identitiesManager.registerProvider(provider);
     await node.identitiesManager.putToken(provider.id, identity, {
       accessToken: 'def456',

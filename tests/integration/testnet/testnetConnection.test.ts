@@ -6,6 +6,7 @@ import Logger, { LogLevel, StreamHandler, formatting } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import config from 'polykey/dist/config';
 import { sleep } from 'polykey/dist/utils';
+import * as keysUtils from 'polykey/dist/keys/utils';
 import * as testUtils from '../../utils';
 
 test('dummy test', async () => {});
@@ -14,7 +15,7 @@ describe.skip('testnet connection', () => {
   const logger = new Logger('TCT', LogLevel.WARN, [new StreamHandler()]);
   const format = formatting.format`${formatting.keys}:${formatting.msg}`;
   logger.handlers.forEach((handler) => handler.setFormatter(format));
-  const seedNodes = Object.entries(config.defaults.network.testnet);
+  const seedNodes = Object.entries(config.network.testnet);
   const seedNodeId1 = seedNodes[0][0] as NodeIdEncoded;
   const seedNodeAddress1 = seedNodes[0][1];
   let dataDir: string;
@@ -237,31 +238,38 @@ describe.skip('testnet connection', () => {
     // Console.log('Starting Agent1');
     const agent1 = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: nodePath1,
-      seedNodes,
-      networkConfig: {
-        // ProxyHost: localhost,
-        agentHost: localhost,
-        clientHost: localhost,
-        agentPort: 55551,
+      options: {
+        nodePath: nodePath1,
+        seedNodes,
+        agentServiceHost: localhost,
+        clientServiceHost: localhost,
+        agentServicePort: 55551,
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
-
       logger: logger.getChild('A1'),
     });
     // Console.log('Starting Agent2');
     logger.setLevel(LogLevel.WARN);
     const agent2 = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: nodePath2,
-      seedNodes,
-      networkConfig: {
-        agentHost: localhost,
-        clientHost: localhost,
-        agentPort: 55552,
+      options: {
+        nodePath: nodePath2,
+        seedNodes,
+        agentServiceHost: localhost,
+        clientServiceHost: localhost,
+        agentServicePort: 55552,
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger: logger.getChild('A2'),
     });
-
     try {
       logger.setLevel(LogLevel.WARN);
       // Console.log('syncing 1');

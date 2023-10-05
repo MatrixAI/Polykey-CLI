@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
+import * as keysUtils from 'polykey/dist/keys/utils';
 
 // This is a 'scratch paper' test file for quickly running tests in the CI
 describe('scratch', () => {
@@ -28,7 +29,16 @@ describe('scratch', () => {
   test('can create an agent', async () => {
     const pk = await PolykeyAgent.createPolykeyAgent({
       password: 'password',
-      nodePath,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
+      },
       fresh: true,
       logger,
     });

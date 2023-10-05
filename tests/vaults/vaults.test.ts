@@ -1,6 +1,5 @@
 import type { NodeAddress } from 'polykey/dist/nodes/types';
 import type { VaultId, VaultName } from 'polykey/dist/vaults/types';
-import type { Host, Port } from 'polykey/dist/network/types';
 import type { GestaltNodeInfo } from 'polykey/dist/gestalts/types';
 import path from 'path';
 import fs from 'fs';
@@ -49,13 +48,17 @@ describe('CLI vaults', () => {
     await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: dataDir,
-      logger: logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
+      options: {
+        nodePath: dataDir,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
+      logger: logger,
     });
     await polykeyAgent.gestaltGraph.setNode(node1);
     await polykeyAgent.gestaltGraph.setNode(node2);
@@ -224,21 +227,20 @@ describe('CLI vaults', () => {
       );
       const targetPolykeyAgent = await PolykeyAgent.createPolykeyAgent({
         password,
-        nodePath: dataDir2,
-        networkConfig: {
-          agentHost: '127.0.0.1' as Host,
-          clientHost: '127.0.0.1' as Host,
+        options: {
+          nodePath: dataDir2,
+          agentServiceHost: '127.0.0.1',
+          clientServiceHost: '127.0.0.1',
+          keys: {
+            passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+            passwordMemLimit: keysUtils.passwordMemLimits.min,
+            strictMemoryLock: false,
+          },
         },
         logger: logger,
-        keyRingConfig: {
-          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-          passwordMemLimit: keysUtils.passwordMemLimits.min,
-          strictMemoryLock: false,
-        },
       });
-      const vaultId = await targetPolykeyAgent.vaultManager.createVault(
-        vaultName,
-      );
+      const vaultId =
+        await targetPolykeyAgent.vaultManager.createVault(vaultName);
       await targetPolykeyAgent.vaultManager.withVaults(
         [vaultId],
         async (vault) => {
@@ -254,14 +256,14 @@ describe('CLI vaults', () => {
       const targetNodeId = targetPolykeyAgent.keyRing.getNodeId();
       const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
       await polykeyAgent.nodeManager.setNode(targetNodeId, {
-        host: targetPolykeyAgent.quicSocket.host as unknown as Host,
-        port: targetPolykeyAgent.quicSocket.port as unknown as Port,
+        host: targetPolykeyAgent.agentServiceHost,
+        port: targetPolykeyAgent.agentServicePort,
       });
       await targetPolykeyAgent.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
         {
-          host: polykeyAgent.quicSocket.host as unknown as Host,
-          port: polykeyAgent.quicSocket.port as unknown as Port,
+          host: polykeyAgent.agentServiceHost,
+          port: polykeyAgent.agentServicePort,
         },
       );
       await polykeyAgent.acl.setNodePerm(targetNodeId, {
@@ -294,9 +296,8 @@ describe('CLI vaults', () => {
       });
       expect(result.exitCode).toBe(0);
 
-      const clonedVaultId = await polykeyAgent.vaultManager.getVaultId(
-        vaultName,
-      );
+      const clonedVaultId =
+        await polykeyAgent.vaultManager.getVaultId(vaultName);
 
       await polykeyAgent.vaultManager.withVaults(
         [clonedVaultId!],
@@ -320,9 +321,8 @@ describe('CLI vaults', () => {
       result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
       expect(result.exitCode).toBe(0);
 
-      const secondClonedVaultId = (await polykeyAgent.vaultManager.getVaultId(
-        vaultName,
-      ))!;
+      const secondClonedVaultId =
+        (await polykeyAgent.vaultManager.getVaultId(vaultName))!;
       await polykeyAgent.vaultManager.withVaults(
         [secondClonedVaultId!],
         async (secondClonedVault) => {
@@ -402,9 +402,8 @@ describe('CLI vaults', () => {
         try {
           // We don't want to actually send a notification
           mockedSendNotification.mockImplementation(async (_) => {});
-          const vaultId = await polykeyAgent.vaultManager.createVault(
-            vaultName,
-          );
+          const vaultId =
+            await polykeyAgent.vaultManager.createVault(vaultName);
           const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
           const targetNodeId = nodeIdGenerator();
           const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
@@ -817,24 +816,24 @@ describe('CLI vaults', () => {
         try {
           remoteOnline = await PolykeyAgent.createPolykeyAgent({
             password,
+            options: {
+              nodePath: path.join(dataDir, 'remoteOnline'),
+              agentServiceHost: '127.0.0.1',
+              clientServiceHost: '127.0.0.1',
+              keys: {
+                passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+                passwordMemLimit: keysUtils.passwordMemLimits.min,
+                strictMemoryLock: false,
+              },
+            },
             logger,
-            nodePath: path.join(dataDir, 'remoteOnline'),
-            networkConfig: {
-              agentHost: '127.0.0.1' as Host,
-              clientHost: '127.0.0.1' as Host,
-            },
-            keyRingConfig: {
-              passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-              passwordMemLimit: keysUtils.passwordMemLimits.min,
-              strictMemoryLock: false,
-            },
           });
           const remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
           const remoteOnlineNodeIdEncoded =
             nodesUtils.encodeNodeId(remoteOnlineNodeId);
           await polykeyAgent.nodeManager.setNode(remoteOnlineNodeId, {
-            host: remoteOnline.quicSocket.host as unknown as Host,
-            port: remoteOnline.quicSocket.port as unknown as Port,
+            host: remoteOnline.agentServiceHost,
+            port: remoteOnline.agentServicePort,
           } as NodeAddress);
 
           await remoteOnline.gestaltGraph.setNode({

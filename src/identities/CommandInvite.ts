@@ -1,5 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { WebSocketClient } from '@matrixai/ws';
 import type { NodeId } from 'polykey/dist/ids/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -24,9 +24,8 @@ class CommandClaim extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { default: WebSocketClient } = await import(
-        'polykey/dist/websockets/WebSocketClient'
-      );
+      const { WebSocketClient } = await import('@matrixai/ws');
+      const clientUtils = await import('polykey/dist/client/utils');
       const nodesUtils = await import('polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
@@ -44,17 +43,27 @@ class CommandClaim extends CommandPolykey {
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
-        if (webSocketClient != null) await webSocketClient.destroy(true);
+        if (webSocketClient != null) {
+          await webSocketClient.destroy({ force: true });
+        }
       });
       try {
         webSocketClient = await WebSocketClient.createWebSocketClient({
-          expectedNodeIds: [clientOptions.nodeId],
+          config: {
+            verifyPeer: true,
+            verifyCallback: async (certs) => {
+              await clientUtils.verifyServerCertificateChain(
+                [clientOptions.nodeId],
+                certs,
+              );
+            },
+          },
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
           logger: this.logger.getChild(WebSocketClient.name),
         });
         pkClient = await PolykeyClient.createPolykeyClient({
-          streamFactory: (ctx) => webSocketClient.startConnection(ctx),
+          streamFactory: () => webSocketClient.connection.newStream(),
           nodePath: options.nodePath,
           logger: this.logger.getChild(PolykeyClient.name),
         });

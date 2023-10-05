@@ -1,5 +1,4 @@
 import type { NodeId, NodeIdEncoded } from 'polykey/dist/ids/types';
-import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
@@ -25,35 +24,35 @@ describe('claim', () => {
     nodePath = path.join(dataDir, 'keynode');
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        seedNodes: {}, // Explicitly no seed nodes on startup
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
-      seedNodes: {}, // Explicitly no seed nodes on startup
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     localId = pkAgent.keyRing.getNodeId();
     // Setting up a remote keynode
     remoteNode = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: path.join(dataDir, 'remoteNode'),
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        seedNodes: {}, // Explicitly no seed nodes on startup
+        nodePath: path.join(dataDir, 'remoteNode'),
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
-      seedNodes: {}, // Explicitly no seed nodes on startup
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     remoteId = remoteNode.keyRing.getNodeId();
     remoteIdEncoded = nodesUtils.encodeNodeId(remoteId);

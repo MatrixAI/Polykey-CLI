@@ -1,12 +1,12 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
-import type { IdentityInfoMessage } from 'polykey/dist/client/handlers/types';
+import type { WebSocketClient } from '@matrixai/ws';
+import type { IdentityInfoMessage } from 'polykey/dist/client/types';
 import type { ReadableStream } from 'stream/web';
 import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandSearch extends CommandPolykey {
@@ -25,12 +25,12 @@ class CommandSearch extends CommandPolykey {
     this.option(
       '-aii, --auth-identity-id [authIdentityId]',
       'Name of your own authenticated identity to find connected identities of',
-      parsers.parseIdentityId,
+      binParsers.parseIdentityId,
     );
     this.option(
       '-ii, --identity-id [identityId]',
       'Name of the digital identity to search for',
-      parsers.parseIdentityId,
+      binParsers.parseIdentityId,
     );
     this.option(
       '-d, --disconnected',
@@ -39,7 +39,7 @@ class CommandSearch extends CommandPolykey {
     this.option(
       '-l, --limit [number]',
       'Limit the number of search results to display to a specific number',
-      parsers.parseInteger,
+      binParsers.parseInteger,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
@@ -48,9 +48,8 @@ class CommandSearch extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { default: WebSocketClient } = await import(
-        'polykey/dist/websockets/WebSocketClient'
-      );
+      const { WebSocketClient } = await import('@matrixai/ws');
+      const clientUtils = await import('polykey/dist/client/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -67,17 +66,27 @@ class CommandSearch extends CommandPolykey {
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
-        if (webSocketClient != null) await webSocketClient.destroy(true);
+        if (webSocketClient != null) {
+          await webSocketClient.destroy({ force: true });
+        }
       });
       try {
         webSocketClient = await WebSocketClient.createWebSocketClient({
-          expectedNodeIds: [clientOptions.nodeId],
+          config: {
+            verifyPeer: true,
+            verifyCallback: async (certs) => {
+              await clientUtils.verifyServerCertificateChain(
+                [clientOptions.nodeId],
+                certs,
+              );
+            },
+          },
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
           logger: this.logger.getChild(WebSocketClient.name),
         });
         pkClient = await PolykeyClient.createPolykeyClient({
-          streamFactory: (ctx) => webSocketClient.startConnection(ctx),
+          streamFactory: () => webSocketClient.connection.newStream(),
           nodePath: options.nodePath,
           logger: this.logger.getChild(PolykeyClient.name),
         });

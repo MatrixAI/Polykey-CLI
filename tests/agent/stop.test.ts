@@ -176,7 +176,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty).only(
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'stopping starting agent results in error',
     async () => {
       // This relies on fast execution of `agent stop` while agent is starting,

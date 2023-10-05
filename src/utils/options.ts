@@ -165,6 +165,7 @@ const passwordLimitChoices = [
   'moderate',
   'sensitive',
 ];
+
 const passwordOpsLimit = new commander.Option(
   '--password-ops-limit <passwordOpsLimit>',
   'Limit the password generation operations',
