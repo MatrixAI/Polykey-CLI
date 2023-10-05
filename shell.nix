@@ -6,7 +6,7 @@ let
 in
   mkShell {
     nativeBuildInputs = [
-      nodejs
+      nodejs_20
       shellcheck
       gitAndTools.gh
       skopeo
