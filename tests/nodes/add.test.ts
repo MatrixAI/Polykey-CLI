@@ -1,4 +1,3 @@
-import type { NodeId } from 'polykey/dist/ids/types';
 import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
@@ -92,13 +91,7 @@ describe('add', () => {
     'fails to add a node (invalid node ID)',
     async () => {
       const { exitCode } = await testUtils.pkStdio(
-        [
-          'nodes',
-          'add',
-          'INVALIDNODEID',
-          validHost,
-          `${port}`,
-        ],
+        ['nodes', 'add', 'INVALIDNODEID', validHost, `${port}`],
         {
           env: {
             PK_NODE_PATH: nodePath,

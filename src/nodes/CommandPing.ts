@@ -67,7 +67,9 @@ class CommandPing extends CommandPolykey {
         const status = { success: false, message: '' };
         status.success = statusMessage ? statusMessage.success : false;
         if (!status.success && !error) {
-          error = new errors.ErrorPolykeyCLINodePingFailed('No response received');
+          error = new errors.ErrorPolykeyCLINodePingFailed(
+            'No response received',
+          );
         }
         if (status.success) status.message = 'Node is Active.';
         else status.message = error.message;

@@ -911,10 +911,7 @@ describe('start', () => {
         const password = 'abc123';
         const nodePath = path.join(dataDir, 'polykey');
         const statusPath = path.join(nodePath, config.paths.statusBase);
-        const statusLockPath = path.join(
-          nodePath,
-          config.paths.statusLockBase,
-        );
+        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
         const status = new Status({
           statusPath,
           statusLockPath,
@@ -978,10 +975,7 @@ describe('start', () => {
         const password = 'abc123';
         const nodePath = path.join(dataDir, 'polykey');
         const statusPath = path.join(nodePath, config.paths.statusBase);
-        const statusLockPath = path.join(
-          nodePath,
-          config.paths.statusLockBase,
-        );
+        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
         const status = new Status({
           statusPath,
           statusLockPath,

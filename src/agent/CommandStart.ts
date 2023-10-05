@@ -41,9 +41,9 @@ class CommandStart extends CommandPolykey {
     this.addOption(binOptions.passwordMemLimit);
     this.action(async (options) => {
       options.clientHost =
-        options.clientHost ?? config.defaults.networkConfig.clientHost;
+        options.clientHost ?? config.defaultsUser.clientServiceHost;
       options.clientPort =
-        options.clientPort ?? config.defaults.networkConfig.clientPort;
+        options.clientPort ?? config.defaultsUser.clientServicePort;
       const { default: PolykeyAgent } = await import(
         'polykey/dist/PolykeyAgent'
       );
@@ -228,8 +228,8 @@ class CommandStart extends CommandPolykey {
           nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
           clientHost: pkAgent.webSocketServerClient.getHost(),
           clientPort: pkAgent.webSocketServerClient.getPort(),
-          agentHost: pkAgent.quicSocket.host,
-          agentPort: pkAgent.quicSocket.port,
+          agentHost: pkAgent.nodeConnectionManager.host,
+          agentPort: pkAgent.nodeConnectionManager.port,
         };
       }
       process.stdout.write(
