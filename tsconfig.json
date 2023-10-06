@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
-    "tsBuildInfoFile": "./dist/tsbuildinfo",
+    "outDir": "./tmp/build",
+    "tsBuildInfoFile": "./tmp/build/tsbuildinfo",
     "incremental": true,
     "sourceMap": true,
     "declaration": true,

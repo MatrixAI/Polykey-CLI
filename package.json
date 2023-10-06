@@ -60,7 +60,6 @@
   },
   "pkg": {
     "assets": [
-      "dist/**/*.json",
       "node_modules/tslib/**/*.js",
       "node_modules/tsyringe/**/*.js",
       "node_modules/uWebSockets.js/**/*.js"
@@ -71,7 +70,8 @@
   },
   "scripts": {
     "prepare": "tsc -p ./tsconfig.build.json",
-    "build": "shx rm -rf ./dist && tsc -p ./tsconfig.build.json",
+    "prebuild": "shx rm -rf ./tmp/build && tsc -p ./tsconfig.build.json",
+    "build": "shx rm -rf ./dist && node ./scripts/build-esbuild.mjs",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
     "tsx": "tsx",
     "ts-node": "ts-node",
@@ -90,7 +90,7 @@
     "@matrixai/errors": "^1.2.0",
     "@matrixai/logger": "^3.1.0",
     "commander": "^8.3.0",
-    "polykey": "/home/faulkes/matrixcode/polykey/Polykey",
+    "polykey": "/home/faulkes/matixWorkspace/gitRepos/Polykey",
     "threads": "^1.6.5"
   },
   "devDependencies": {
