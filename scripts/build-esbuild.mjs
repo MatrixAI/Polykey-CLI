@@ -2,10 +2,7 @@
 import * as esbuild from 'esbuild';
 
 await esbuild.build({
-  entryPoints: [
-    'tmp/build/polykey.js',
-    'tmp/build/polykeyWorker.js'
-  ],
+  entryPoints: ['tmp/build/polykey.js', 'tmp/build/polykeyWorker.js'],
   bundle: true,
   platform: 'node',
   outdir: 'dist',
@@ -16,6 +13,6 @@ await esbuild.build({
     '../Polykey/node_modules/fd-lock/*',
   ],
   treeShaking: true,
-  // minify: true, // breaks the program, look into more.
+  // Minify: true, // breaks the program, look into more.
   // sourcemap: 'inline', // Bloats the final size significanly
-})
+});
