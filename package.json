@@ -89,7 +89,7 @@
   "dependencies": {
     "@matrixai/errors": "^1.2.0",
     "@matrixai/logger": "^3.1.0",
-    "@matrixai/ws": "^1.1.5",
+    "@matrixai/ws": "^1.1.6",
     "commander": "^8.3.0",
     "polykey": "/home/faulkes/matixWorkspace/gitRepos/Polykey",
     "threads": "^1.6.5"

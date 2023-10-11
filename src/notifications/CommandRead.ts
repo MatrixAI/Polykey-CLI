@@ -33,9 +33,7 @@ class CommandRead extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const { default: clientUtils } = await import(
-        'polykey/dist/client/utils/utils'
-      );
+      const clientUtils = await import('polykey/dist/client/utils/utils');
       const notificationsUtils = await import(
         'polykey/dist/notifications/utils'
       );
