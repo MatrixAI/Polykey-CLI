@@ -219,8 +219,8 @@ async function retryAuthentication<T>(
 }
 
 function remoteErrorCause(e: any): [any, number] {
-  let errorCause = e;
-  let depth = 0;
+  const errorCause = e;
+  const depth = 0;
   // FIXME: review later
   // while (errorCause instanceof errors.ErrorPolykeyRemote) {
   //   errorCause = errorCause.cause;

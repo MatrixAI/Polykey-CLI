@@ -24,6 +24,9 @@ class CommandStat extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
+      const { default: clientUtils } = await import(
+        'polykey/dist/client/utils/utils'
+      );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -46,7 +49,15 @@ class CommandStat extends CommandPolykey {
       });
       try {
         webSocketClient = await WebSocketClient.createWebSocketClient({
-          // ExpectedNodeIds: [clientOptions.nodeId], // FIXME: need to use custom verification now
+          config: {
+            verifyPeer: true,
+            verifyCallback: async (certs) => {
+              await clientUtils.verifyServerCertificateChain(
+                [clientOptions.nodeId],
+                certs,
+              );
+            },
+          },
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
           logger: this.logger.getChild(WebSocketClient.name),
