@@ -111,10 +111,10 @@ async function main(_argv = process.argv): Promise<number> {
     recoveryCode: pkAgent.keyRing.recoveryCode,
     pid: process.pid,
     nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
-    clientHost: pkAgent.webSocketServerClient.getHost(),
-    clientPort: pkAgent.webSocketServerClient.getPort(),
-    agentHost: pkAgent.nodeConnectionManager.host,
-    agentPort: pkAgent.nodeConnectionManager.port,
+    clientHost: pkAgent.clientServiceHost,
+    clientPort: pkAgent.clientServicePort,
+    agentHost: pkAgent.agentServiceHost,
+    agentPort: pkAgent.agentServicePort,
   };
   try {
     await processSend(messageOut);

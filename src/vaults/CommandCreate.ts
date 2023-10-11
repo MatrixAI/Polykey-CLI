@@ -1,5 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type WebSocketClient from 'polykey/dist/websockets/WebSocketClient';
+import type { WebSocketClient } from '@matrixai/ws';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -19,9 +19,7 @@ class CommandCreate extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { default: WebSocketClient } = await import(
-        'polykey/dist/websockets/WebSocketClient'
-      );
+      const { WebSocketClient } = await import('@matrixai/ws');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -38,17 +36,19 @@ class CommandCreate extends CommandPolykey {
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
-        if (webSocketClient != null) await webSocketClient.destroy(true);
+        if (webSocketClient != null) {
+          await webSocketClient.destroy({ force: true });
+        }
       });
       try {
         webSocketClient = await WebSocketClient.createWebSocketClient({
-          expectedNodeIds: [clientOptions.nodeId],
+          // ExpectedNodeIds: [clientOptions.nodeId], // FIXME: need to use custom verification now
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
           logger: this.logger.getChild(WebSocketClient.name),
         });
         pkClient = await PolykeyClient.createPolykeyClient({
-          streamFactory: (ctx) => webSocketClient.startConnection(ctx),
+          streamFactory: () => webSocketClient.connection.newStream(),
           nodePath: options.nodePath,
           logger: this.logger.getChild(PolykeyClient.name),
         });

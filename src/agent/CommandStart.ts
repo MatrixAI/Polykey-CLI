@@ -232,10 +232,10 @@ class CommandStart extends CommandPolykey {
         statusLiveData = {
           pid: process.pid,
           nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
-          clientHost: pkAgent.webSocketServerClient.getHost(),
-          clientPort: pkAgent.webSocketServerClient.getPort(),
-          agentHost: pkAgent.nodeConnectionManager.host,
-          agentPort: pkAgent.nodeConnectionManager.port,
+          clientHost: pkAgent.clientServiceHost,
+          clientPort: pkAgent.clientServicePort,
+          agentHost: pkAgent.agentServiceHost,
+          agentPort: pkAgent.agentServicePort,
         };
       }
       process.stdout.write(
