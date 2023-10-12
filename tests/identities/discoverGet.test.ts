@@ -47,34 +47,34 @@ describe('discover/get', () => {
     // Setting up remote nodes
     nodeA = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: path.join(dataDir, 'nodeA'),
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath: path.join(dataDir, 'nodeA'),
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     nodeAId = nodeA.keyRing.getNodeId();
-    nodeAHost = nodeA.quicSocket.host as unknown as Host;
-    nodeAPort = nodeA.quicSocket.port as unknown as Port;
+    nodeAHost = nodeA.agentServiceHost;
+    nodeAPort = nodeA.agentServicePort;
     nodeB = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: path.join(dataDir, 'nodeB'),
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath: path.join(dataDir, 'nodeB'),
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     nodeBId = nodeB.keyRing.getNodeId();
     await testUtils.nodesConnect(nodeA, nodeB);
@@ -82,17 +82,17 @@ describe('discover/get', () => {
     // Cannot use global shared agent since we need to register a provider
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     pkAgent.identitiesManager.registerProvider(testProvider);
     // Add node claim to gestalt

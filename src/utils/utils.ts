@@ -4,6 +4,7 @@ import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import * as clientUtils from 'polykey/dist/client/utils/utils';
 import * as clientErrors from 'polykey/dist/client/errors';
+import * as networkErrors from 'polykey/dist/network/errors';
 import * as utils from 'polykey/dist/utils';
 import * as binProcessors from './processors';
 import * as errors from '../errors';
@@ -108,23 +109,21 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
     let currError = msg.data;
     let indent = '  ';
     while (currError != null) {
-      // TODO: review this.
-      // if (currError instanceof rpcErrors.ErrorRPCRemote) {
-      //   output += `${currError.name}: ${currError.description}`;
-      //   if (currError.message && currError.message !== '') {
-      //     output += ` - ${currError.message}`;
-      //   }
-      //   if (currError.metadata != null) {
-      //     output += '\n';
-      //     for (const [key, value] of Object.entries(currError.metadata)) {
-      //       output += `${indent}${key}\t${value}\n`;
-      //     }
-      //   }
-      //   output += `${indent}timestamp\t${currError.timestamp}\n`;
-      //   output += `${indent}cause: `;
-      //   currError = currError.cause;
-      // } else
-      if (currError instanceof ErrorPolykey) {
+      if (currError instanceof networkErrors.ErrorPolykeyRemote) {
+        output += `${currError.name}: ${currError.description}`;
+        if (currError.message && currError.message !== '') {
+          output += ` - ${currError.message}`;
+        }
+        if (currError.metadata != null) {
+          output += '\n';
+          for (const [key, value] of Object.entries(currError.metadata)) {
+            output += `${indent}${key}\t${value}\n`;
+          }
+        }
+        output += `${indent}timestamp\t${currError.timestamp}\n`;
+        output += `${indent}cause: `;
+        currError = currError.cause;
+      } else if (currError instanceof ErrorPolykey) {
         output += `${currError.name}: ${currError.description}`;
         if (currError.message && currError.message !== '') {
           output += ` - ${currError.message}`;

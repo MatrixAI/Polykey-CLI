@@ -24,6 +24,7 @@ import * as nodesUtils from 'polykey/dist/nodes/utils';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import { promisify, promise } from 'polykey/dist/utils';
 import * as binUtils from './utils';
+import * as binErrors from './errors';
 
 process.title = 'polykey-agent';
 
@@ -62,7 +63,7 @@ async function main(_argv = process.argv): Promise<number> {
       ...messageIn.agentConfig,
     });
   } catch (e) {
-    if (e instanceof ErrorPolykey) {
+    if (e instanceof ErrorPolykey || e instanceof binErrors.ErrorPolykeyCLI) {
       process.stderr.write(
         binUtils.outputFormatter({
           type: errFormat,

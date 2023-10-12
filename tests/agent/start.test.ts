@@ -919,7 +919,7 @@ describe('start', () => {
           logger,
         });
         const mockedConfigDefaultsNetwork = jestMockProps
-          .spyOnProp(config.defaults, 'network')
+          .spyOnProp(config, 'network')
           .mockValue({
             mainnet: {
               [seedNodeId2]: {
@@ -983,7 +983,7 @@ describe('start', () => {
           logger,
         });
         const mockedConfigDefaultsNetwork = jestMockProps
-          .spyOnProp(config.defaults, 'network')
+          .spyOnProp(config, 'network')
           .mockValue({
             mainnet: {},
             testnet: {

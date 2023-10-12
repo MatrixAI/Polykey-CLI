@@ -74,60 +74,58 @@ describe('sessions', () => {
       await session.stop();
     },
   );
-  testUtils
-    .testIf(testUtils.isTestPlatformEmpty)
-    .only(
-      'unattended commands with invalid authentication should fail',
-      async () => {
-        let exitCode, stderr;
-        // Password and Token set
-        ({ exitCode, stderr } = await testUtils.pkStdio(
-          ['agent', 'status', '--format', 'json'],
-          {
-            env: {
-              PK_NODE_PATH: agentDir,
-              PK_PASSWORD: 'invalid',
-              PK_TOKEN: 'token',
-            },
-            cwd: agentDir,
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'unattended commands with invalid authentication should fail',
+    async () => {
+      let exitCode, stderr;
+      // Password and Token set
+      ({ exitCode, stderr } = await testUtils.pkStdio(
+        ['agent', 'status', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: agentDir,
+            PK_PASSWORD: 'invalid',
+            PK_TOKEN: 'token',
           },
-        ));
+          cwd: agentDir,
+        },
+      ));
 
-        testUtils.expectProcessError(exitCode, stderr, [
-          new clientErrors.ErrorClientAuthDenied(),
-        ]);
-        // Password set
-        ({ exitCode, stderr } = await testUtils.pkStdio(
-          ['agent', 'status', '--format', 'json'],
-          {
-            env: {
-              PK_NODE_PATH: agentDir,
-              PK_PASSWORD: 'invalid',
-              PK_TOKEN: undefined,
-            },
-            cwd: agentDir,
+      testUtils.expectProcessError(exitCode, stderr, [
+        new clientErrors.ErrorClientAuthDenied(),
+      ]);
+      // Password set
+      ({ exitCode, stderr } = await testUtils.pkStdio(
+        ['agent', 'status', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: agentDir,
+            PK_PASSWORD: 'invalid',
+            PK_TOKEN: undefined,
           },
-        ));
-        testUtils.expectProcessError(exitCode, stderr, [
-          new clientErrors.ErrorClientAuthDenied(),
-        ]);
-        // Token set
-        ({ exitCode, stderr } = await testUtils.pkStdio(
-          ['agent', 'status', '--format', 'json'],
-          {
-            env: {
-              PK_NODE_PATH: agentDir,
-              PK_PASSWORD: undefined,
-              PK_TOKEN: 'token',
-            },
-            cwd: agentDir,
+          cwd: agentDir,
+        },
+      ));
+      testUtils.expectProcessError(exitCode, stderr, [
+        new clientErrors.ErrorClientAuthDenied(),
+      ]);
+      // Token set
+      ({ exitCode, stderr } = await testUtils.pkStdio(
+        ['agent', 'status', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: agentDir,
+            PK_PASSWORD: undefined,
+            PK_TOKEN: 'token',
           },
-        ));
-        testUtils.expectProcessError(exitCode, stderr, [
-          new clientErrors.ErrorClientAuthDenied(),
-        ]);
-      },
-    );
+          cwd: agentDir,
+        },
+      ));
+      testUtils.expectProcessError(exitCode, stderr, [
+        new clientErrors.ErrorClientAuthDenied(),
+      ]);
+    },
+  );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'prompt for password to authenticate attended commands',
     async () => {

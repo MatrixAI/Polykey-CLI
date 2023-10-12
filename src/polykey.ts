@@ -26,6 +26,7 @@ import CommandIdentities from './identities';
 import CommandNotifications from './notifications';
 import CommandPolykey from './CommandPolykey';
 import * as binUtils from './utils';
+import * as binErrors from './errors';
 
 process.title = 'polykey';
 
@@ -76,7 +77,10 @@ async function main(argv = process.argv): Promise<number> {
         // use 64 for EX_USAGE
         process.exitCode = 64;
       }
-    } else if (e instanceof ErrorPolykey) {
+    } else if (
+      e instanceof ErrorPolykey ||
+      e instanceof binErrors.ErrorPolykeyCLI
+    ) {
       process.stderr.write(
         binUtils.outputFormatter({
           type: errFormat,

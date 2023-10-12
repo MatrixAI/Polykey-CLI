@@ -1,5 +1,4 @@
 import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import type { Host, Port } from 'polykey/dist/network/types';
 import type { NodeAddress } from 'polykey/dist/nodes/types';
 import { promise } from 'polykey/dist/utils/utils';
 
@@ -68,13 +67,13 @@ function trackTimers() {
 async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   // Add remote node's details to local node
   await localNode.nodeManager.setNode(remoteNode.keyRing.getNodeId(), {
-    host: remoteNode.quicSocket.host as unknown as Host,
-    port: remoteNode.quicSocket.port as unknown as Port,
+    host: remoteNode.agentServiceHost,
+    port: remoteNode.agentServicePort,
   } as NodeAddress);
   // Add local node's details to remote node
   await remoteNode.nodeManager.setNode(localNode.keyRing.getNodeId(), {
-    host: localNode.quicSocket.host as unknown as Host,
-    port: localNode.quicSocket.port as unknown as Port,
+    host: localNode.agentServiceHost,
+    port: localNode.agentServicePort,
   } as NodeAddress);
 }
 

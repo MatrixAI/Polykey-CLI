@@ -1,4 +1,3 @@
-import type { Host } from 'polykey/dist/network/types';
 import type { NodeId } from 'polykey/dist/ids';
 import path from 'path';
 import fs from 'fs';
@@ -22,17 +21,17 @@ describe('reset', () => {
     nodePath = path.join(dataDir, 'polykey');
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     oldNodeId = pkAgent.keyRing.getNodeId();
   }, globalThis.defaultTimeout * 2);
@@ -100,7 +99,7 @@ describe('reset', () => {
             // this is fixed.
             PK_NODE_ID: nodesUtils.encodeNodeId(oldNodeId),
             PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.webSocketServerClient.getPort()}`,
+            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
           },
           cwd: dataDir,
         },
@@ -118,7 +117,7 @@ describe('reset', () => {
             // this is fixed.
             PK_NODE_ID: nodesUtils.encodeNodeId(oldNodeId),
             PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.webSocketServerClient.getPort()}`,
+            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
           },
           cwd: dataDir,
         },

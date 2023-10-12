@@ -1,5 +1,4 @@
 import type { NodeId } from 'polykey/dist/ids/types';
-import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
@@ -26,54 +25,54 @@ describe('ping', () => {
     nodePath = path.join(dataDir, 'keynode');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        seedNodes: {}, // Explicitly no seed nodes on startup
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
+        nodes: {
+          connectionConnectTimeoutTime: 2000,
+          connectionKeepAliveTimeoutTime: 1000,
+        },
       },
-      nodeConnectionManagerConfig: {
-        connectionConnectTime: 2000,
-        connectionTimeoutTime: 1000,
-      },
-      seedNodes: {}, // Explicitly no seed nodes on startup
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     // Setting up a remote keynode
     remoteOnline = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: path.join(dataDir, 'remoteOnline'),
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath: path.join(dataDir, 'remoteOnline'),
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
     await testUtils.nodesConnect(polykeyAgent, remoteOnline);
     // Setting up an offline remote keynode
     remoteOffline = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath: path.join(dataDir, 'remoteOffline'),
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath: path.join(dataDir, 'remoteOffline'),
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     remoteOfflineNodeId = remoteOffline.keyRing.getNodeId();
     await testUtils.nodesConnect(polykeyAgent, remoteOffline);
