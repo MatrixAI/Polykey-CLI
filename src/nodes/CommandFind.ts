@@ -23,7 +23,7 @@ class CommandFind extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils/utils');
+      const clientUtils = await import('polykey/dist/client/utils');
       const nodesUtils = await import('polykey/dist/nodes/utils');
       const networkUtils = await import('polykey/dist/network/utils');
       const nodesErrors = await import('polykey/dist/nodes/errors');

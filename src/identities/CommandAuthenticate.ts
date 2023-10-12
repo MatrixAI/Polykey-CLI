@@ -1,7 +1,7 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { WebSocketClient } from '@matrixai/ws';
 import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
-import type { AuthProcessMessage } from 'polykey/dist/client/handlers/types';
+import type { AuthProcessMessage } from 'polykey/dist/client/types';
 import type { ReadableStream } from 'stream/web';
 import * as identitiesUtils from 'polykey/dist/identities/utils';
 import CommandPolykey from '../CommandPolykey';
@@ -28,7 +28,7 @@ class CommandAuthenticate extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils/utils');
+      const clientUtils = await import('polykey/dist/client/utils');
       const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

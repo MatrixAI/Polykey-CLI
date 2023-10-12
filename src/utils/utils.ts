@@ -2,7 +2,7 @@ import type { POJO } from 'polykey/dist/types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import * as clientUtils from 'polykey/dist/client/utils/utils';
+import * as clientUtils from 'polykey/dist/client/utils';
 import * as clientErrors from 'polykey/dist/client/errors';
 import * as networkErrors from 'polykey/dist/network/errors';
 import * as utils from 'polykey/dist/utils';

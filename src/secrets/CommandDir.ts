@@ -23,7 +23,7 @@ class CommandDir extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils/utils');
+      const clientUtils = await import('polykey/dist/client/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

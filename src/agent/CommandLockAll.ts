@@ -20,7 +20,7 @@ class CommandLockAll extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils/utils');
+      const clientUtils = await import('polykey/dist/client/utils');
       const { default: Session } = await import(
         'polykey/dist/sessions/Session'
       );

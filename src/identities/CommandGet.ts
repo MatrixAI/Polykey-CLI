@@ -1,7 +1,7 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { WebSocketClient } from '@matrixai/ws';
 import type { GestaltId } from 'polykey/dist/gestalts/types';
-import type { GestaltMessage } from 'polykey/dist/client/handlers/types';
+import type { GestaltMessage } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -28,7 +28,7 @@ class CommandGet extends CommandPolykey {
         'polykey/dist/PolykeyClient'
       );
       const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils/utils');
+      const clientUtils = await import('polykey/dist/client/utils');
       const utils = await import('polykey/dist/utils');
       const nodesUtils = await import('polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
