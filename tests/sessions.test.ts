@@ -24,9 +24,8 @@ describe('sessions', () => {
   let agentClose;
   let dataDir: string;
   beforeEach(async () => {
-    ({ agentDir, agentPassword, agentClose } = await testUtils.setupTestAgent(
-      logger,
-    ));
+    ({ agentDir, agentPassword, agentClose } =
+      await testUtils.setupTestAgent(logger));
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );

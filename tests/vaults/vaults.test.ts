@@ -239,9 +239,8 @@ describe('CLI vaults', () => {
         },
         logger: logger,
       });
-      const vaultId = await targetPolykeyAgent.vaultManager.createVault(
-        vaultName,
-      );
+      const vaultId =
+        await targetPolykeyAgent.vaultManager.createVault(vaultName);
       await targetPolykeyAgent.vaultManager.withVaults(
         [vaultId],
         async (vault) => {
@@ -297,9 +296,8 @@ describe('CLI vaults', () => {
       });
       expect(result.exitCode).toBe(0);
 
-      const clonedVaultId = await polykeyAgent.vaultManager.getVaultId(
-        vaultName,
-      );
+      const clonedVaultId =
+        await polykeyAgent.vaultManager.getVaultId(vaultName);
 
       await polykeyAgent.vaultManager.withVaults(
         [clonedVaultId!],
@@ -323,9 +321,8 @@ describe('CLI vaults', () => {
       result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
       expect(result.exitCode).toBe(0);
 
-      const secondClonedVaultId = (await polykeyAgent.vaultManager.getVaultId(
-        vaultName,
-      ))!;
+      const secondClonedVaultId =
+        (await polykeyAgent.vaultManager.getVaultId(vaultName))!;
       await polykeyAgent.vaultManager.withVaults(
         [secondClonedVaultId!],
         async (secondClonedVault) => {
@@ -405,9 +402,8 @@ describe('CLI vaults', () => {
         try {
           // We don't want to actually send a notification
           mockedSendNotification.mockImplementation(async (_) => {});
-          const vaultId = await polykeyAgent.vaultManager.createVault(
-            vaultName,
-          );
+          const vaultId =
+            await polykeyAgent.vaultManager.createVault(vaultName);
           const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
           const targetNodeId = nodeIdGenerator();
           const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
