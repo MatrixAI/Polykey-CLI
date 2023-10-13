@@ -3,7 +3,7 @@ import type { WebSocketClient } from '@matrixai/ws';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandAuthenticated extends CommandPolykey {
@@ -14,7 +14,7 @@ class CommandAuthenticated extends CommandPolykey {
     this.option(
       '-pi, --provider-id [providerId]',
       'Digital identity provider to retrieve tokens from',
-      parsers.parseProviderId,
+      binParsers.parseProviderId,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

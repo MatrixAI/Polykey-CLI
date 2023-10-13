@@ -4,7 +4,7 @@ import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandCreate extends CommandPolykey {
@@ -19,7 +19,7 @@ class CommandCreate extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret to be created, specified as <vaultName>:<directoryPath>',
-      parsers.parseSecretPath,
+      binParsers.parseSecretPath,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

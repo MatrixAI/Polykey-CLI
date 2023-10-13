@@ -1,9 +1,9 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { WebSocketClient } from '@matrixai/ws';
-import * as binProcessors from '../utils/processors';
-import * as parsers from '../utils/parsers';
-import * as binUtils from '../utils';
 import CommandPolykey from '../CommandPolykey';
+import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
+import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 
 class CommandStat extends CommandPolykey {
@@ -14,7 +14,7 @@ class CommandStat extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the secret, specified as <vaultName>:<directoryPath>',
-      parsers.parseSecretPath,
+      binParsers.parseSecretPath,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

@@ -6,7 +6,7 @@ import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandSearch extends CommandPolykey {
@@ -25,12 +25,12 @@ class CommandSearch extends CommandPolykey {
     this.option(
       '-aii, --auth-identity-id [authIdentityId]',
       'Name of your own authenticated identity to find connected identities of',
-      parsers.parseIdentityId,
+      binParsers.parseIdentityId,
     );
     this.option(
       '-ii, --identity-id [identityId]',
       'Name of the digital identity to search for',
-      parsers.parseIdentityId,
+      binParsers.parseIdentityId,
     );
     this.option(
       '-d, --disconnected',
@@ -39,7 +39,7 @@ class CommandSearch extends CommandPolykey {
     this.option(
       '-l, --limit [number]',
       'Limit the number of search results to display to a specific number',
-      parsers.parseInteger,
+      binParsers.parseInteger,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

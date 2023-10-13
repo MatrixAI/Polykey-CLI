@@ -5,7 +5,7 @@ import type { GestaltMessage } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandGet extends CommandPolykey {
@@ -18,7 +18,7 @@ class CommandGet extends CommandPolykey {
     this.argument(
       '<gestaltId>',
       'Node ID or `Provider ID:Identity ID`',
-      parsers.parseGestaltId,
+      binParsers.parseGestaltId,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

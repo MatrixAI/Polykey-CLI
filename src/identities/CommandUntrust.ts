@@ -4,7 +4,7 @@ import type { GestaltId } from 'polykey/dist/gestalts/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandUntrust extends CommandPolykey {
@@ -15,7 +15,7 @@ class CommandUntrust extends CommandPolykey {
     this.argument(
       '<gestaltId>',
       'Node ID or `Provider ID:Identity ID`',
-      parsers.parseGestaltId,
+      binParsers.parseGestaltId,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

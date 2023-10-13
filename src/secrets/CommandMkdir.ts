@@ -3,7 +3,7 @@ import type { WebSocketClient } from '@matrixai/ws';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandMkdir extends CommandPolykey {
@@ -14,7 +14,7 @@ class CommandMkdir extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the directory to be created, specified as <vaultName>:<directoryPath>',
-      parsers.parseSecretPath,
+      binParsers.parseSecretPath,
     );
     this.option('-r, --recursive', 'Create the directory recursively');
     this.addOption(binOptions.nodeId);

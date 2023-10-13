@@ -4,7 +4,7 @@ import type { GestaltId } from 'polykey/dist/gestalts/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
-import * as parsers from '../utils/parsers';
+import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
 class CommandDisallow extends CommandPolykey {
@@ -15,12 +15,12 @@ class CommandDisallow extends CommandPolykey {
     this.argument(
       '<gestaltId>',
       'Node ID or `Provider Id:Identity Id`',
-      parsers.parseGestaltId,
+      binParsers.parseGestaltId,
     );
     this.argument(
       '<permissions>',
       'Permission to unset',
-      parsers.parseGestaltAction,
+      binParsers.parseGestaltAction,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
