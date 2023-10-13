@@ -1,6 +1,10 @@
 import commander from 'commander';
 import * as validationUtils from 'polykey/dist/validation/utils';
 import * as validationErrors from 'polykey/dist/validation/errors';
+import * as ids from 'polykey/dist/ids';
+import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
+import * as networkUtils from 'polykey/dist/network/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
 
 /**
  * Converts a validation parser to commander argument parser
@@ -41,36 +45,6 @@ function validateParserToArgListParser<T>(
   };
 }
 
-const parseInteger = validateParserToArgParser(validationUtils.parseInteger);
-const parseNumber = validateParserToArgParser(validationUtils.parseNumber);
-const parseNodeId = validateParserToArgParser(validationUtils.parseNodeId);
-const parseGestaltId = validateParserToArgParser(
-  validationUtils.parseGestaltId,
-);
-const parseGestaltAction = validateParserToArgParser(
-  validationUtils.parseGestaltAction,
-);
-const parseHost = validateParserToArgParser(validationUtils.parseHost);
-const parseHostname = validateParserToArgParser(validationUtils.parseHostname);
-const parseHostOrHostname = validateParserToArgParser(
-  validationUtils.parseHostOrHostname,
-);
-const parsePort = validateParserToArgParser(validationUtils.parsePort);
-const parseNetwork = validateParserToArgParser(validationUtils.parseNetwork);
-const parseSeedNodes = validateParserToArgParser(
-  validationUtils.parseSeedNodes,
-);
-const parseProviderId = validateParserToArgParser(
-  validationUtils.parseProviderId,
-);
-const parseIdentityId = validateParserToArgParser(
-  validationUtils.parseIdentityId,
-);
-
-const parseProviderIdList = validateParserToArgListParser(
-  validationUtils.parseProviderId,
-);
-
 function parseCoreCount(v: string): number | undefined {
   switch (v) {
     case 'all':
@@ -99,7 +73,40 @@ function parseSecretPath(secretPath: string): [string, string, string?] {
   return [vaultName, directoryPath, undefined];
 }
 
+const parseInteger = validateParserToArgParser(validationUtils.parseInteger);
+const parseNumber = validateParserToArgParser(validationUtils.parseNumber);
+const parseNodeId = validateParserToArgParser(ids.parseNodeId);
+const parseGestaltId = validateParserToArgParser(
+  ids.parseGestaltId,
+);
+const parseGestaltAction = validateParserToArgParser(
+  gestaltsUtils.parseGestaltAction,
+);
+const parseHost = validateParserToArgParser(networkUtils.parseHost);
+const parseHostname = validateParserToArgParser(networkUtils.parseHostname);
+const parseHostOrHostname = validateParserToArgParser(
+  networkUtils.parseHostOrHostname,
+);
+const parsePort = validateParserToArgParser(networkUtils.parsePort);
+const parseNetwork = validateParserToArgParser(nodesUtils.parseNetwork);
+const parseSeedNodes = validateParserToArgParser(
+  nodesUtils.parseSeedNodes,
+);
+const parseProviderId = validateParserToArgParser(
+  ids.parseProviderId,
+);
+const parseIdentityId = validateParserToArgParser(
+  ids.parseIdentityId,
+);
+const parseProviderIdList = validateParserToArgListParser(
+  ids.parseProviderId,
+);
+
 export {
+  validateParserToArgParser,
+  validateParserToArgListParser,
+  parseCoreCount,
+  parseSecretPath,
   parseInteger,
   parseNumber,
   parseNodeId,
@@ -114,6 +121,4 @@ export {
   parseProviderId,
   parseIdentityId,
   parseProviderIdList,
-  parseCoreCount,
-  parseSecretPath,
 };
