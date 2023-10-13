@@ -77,6 +77,9 @@ const parseInteger = validateParserToArgParser(validationUtils.parseInteger);
 const parseNumber = validateParserToArgParser(validationUtils.parseNumber);
 const parseNodeId = validateParserToArgParser(ids.parseNodeId);
 const parseGestaltId = validateParserToArgParser(ids.parseGestaltId);
+const parseProviderId = validateParserToArgParser(ids.parseProviderId);
+const parseIdentityId = validateParserToArgParser(ids.parseIdentityId);
+const parseProviderIdList = validateParserToArgListParser(ids.parseProviderId);
 const parseGestaltAction = validateParserToArgParser(
   gestaltsUtils.parseGestaltAction,
 );
@@ -88,9 +91,6 @@ const parseHostOrHostname = validateParserToArgParser(
 const parsePort = validateParserToArgParser(networkUtils.parsePort);
 const parseNetwork = validateParserToArgParser(nodesUtils.parseNetwork);
 const parseSeedNodes = validateParserToArgParser(nodesUtils.parseSeedNodes);
-const parseProviderId = validateParserToArgParser(ids.parseProviderId);
-const parseIdentityId = validateParserToArgParser(ids.parseIdentityId);
-const parseProviderIdList = validateParserToArgListParser(ids.parseProviderId);
 
 export {
   validateParserToArgParser,
