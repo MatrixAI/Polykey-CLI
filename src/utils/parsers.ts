@@ -1,3 +1,5 @@
+import type { Host, Hostname, Port } from 'polykey/dist/network/types';
+import type { SeedNodes } from 'polykey/dist/nodes/types';
 import commander from 'commander';
 import * as validationUtils from 'polykey/dist/validation/utils';
 import * as validationErrors from 'polykey/dist/validation/errors';
@@ -73,24 +75,41 @@ function parseSecretPath(secretPath: string): [string, string, string?] {
   return [vaultName, directoryPath, undefined];
 }
 
-const parseInteger = validateParserToArgParser(validationUtils.parseInteger);
-const parseNumber = validateParserToArgParser(validationUtils.parseNumber);
-const parseNodeId = validateParserToArgParser(ids.parseNodeId);
-const parseGestaltId = validateParserToArgParser(ids.parseGestaltId);
-const parseProviderId = validateParserToArgParser(ids.parseProviderId);
-const parseIdentityId = validateParserToArgParser(ids.parseIdentityId);
-const parseProviderIdList = validateParserToArgListParser(ids.parseProviderId);
-const parseGestaltAction = validateParserToArgParser(
-  gestaltsUtils.parseGestaltAction,
+const parseInteger: (data: string) => number = validateParserToArgParser(
+  validationUtils.parseInteger,
 );
-const parseHost = validateParserToArgParser(networkUtils.parseHost);
-const parseHostname = validateParserToArgParser(networkUtils.parseHostname);
-const parseHostOrHostname = validateParserToArgParser(
-  networkUtils.parseHostOrHostname,
+const parseNumber: (data: string) => number = validateParserToArgParser(
+  validationUtils.parseNumber,
 );
-const parsePort = validateParserToArgParser(networkUtils.parsePort);
-const parseNetwork = validateParserToArgParser(nodesUtils.parseNetwork);
-const parseSeedNodes = validateParserToArgParser(nodesUtils.parseSeedNodes);
+const parseNodeId: (data: string) => ids.NodeId = validateParserToArgParser(
+  ids.parseNodeId,
+);
+const parseGestaltId: (data: string) => ids.GestaltId =
+  validateParserToArgParser(ids.parseGestaltId);
+const parseProviderId: (data: string) => ids.ProviderId =
+  validateParserToArgParser(ids.parseProviderId);
+const parseIdentityId: (data: string) => ids.IdentityId =
+  validateParserToArgParser(ids.parseIdentityId);
+const parseProviderIdList: (data: string) => ids.ProviderId[] =
+  validateParserToArgListParser(ids.parseProviderId);
+const parseGestaltAction: (data: string) => 'notify' | 'scan' | 'claim' =
+  validateParserToArgParser(gestaltsUtils.parseGestaltAction);
+const parseHost: (data: string) => Host = validateParserToArgParser(
+  networkUtils.parseHost,
+);
+const parseHostname: (data: string) => Hostname = validateParserToArgParser(
+  networkUtils.parseHostname,
+);
+const parseHostOrHostname: (data: string) => Host | Hostname =
+  validateParserToArgParser(networkUtils.parseHostOrHostname);
+const parsePort: (data: string) => Port = validateParserToArgParser(
+  networkUtils.parsePort,
+);
+const parseNetwork: (data: string) => SeedNodes = validateParserToArgParser(
+  nodesUtils.parseNetwork,
+);
+const parseSeedNodes: (data: string) => [SeedNodes, boolean] =
+  validateParserToArgParser(nodesUtils.parseSeedNodes);
 
 export {
   validateParserToArgParser,
