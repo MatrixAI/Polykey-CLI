@@ -110,8 +110,9 @@ class CommandList extends CommandPolykey {
             output.push(`permissions: ${gestalt.permissions ?? 'None'}`);
             // Listing nodes
             for (const node of gestalt.nodes) {
-              output.push(`${node.id}`);
+              output.push(`${node.nodeId}`);
             }
+            console.log(gestalt)
             // Listing identities
             for (const identity of gestalt.identities) {
               output.push(`${identity.providerId}:${identity.identityId}`);
