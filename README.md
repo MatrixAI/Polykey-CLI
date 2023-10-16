@@ -55,7 +55,8 @@ Note that JavaScript libraries are not packaged in Nix. Only JavaScript applicat
 Building the package:
 
 ```sh
-nix-build -E '(import ./pkgs.nix {}).callPackage ./default.nix {}'
+npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
+nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \"$npmDepsHash\"; }"
 ```
 
 ### Nix/NixOS
@@ -63,17 +64,17 @@ nix-build -E '(import ./pkgs.nix {}).callPackage ./default.nix {}'
 Building the releases:
 
 ```sh
-nix-build ./release.nix --attr application
-nix-build ./release.nix --attr docker
-nix-build ./release.nix --attr package.linux.x64.elf
-nix-build ./release.nix --attr package.windows.x64.exe
-nix-build ./release.nix --attr package.macos.x64.macho
+nix-build ./release.nix --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.linux.x64.elf --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.windows.x64.exe --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.macos.x64.macho --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 ```
 
 Install into Nix user profile:
 
 ```sh
-nix-env -f ./release.nix --install --attr application
+nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 ```
 
 ### Docker
@@ -157,48 +158,6 @@ You would need to add these paths to `tsconfig.json`:
   },
 ```
 
-### Native Module Toolchain
-
-There are some nuances when packaging with native modules.
-Included native modules are level witch include leveldown and utp-native.
-
-If a module is not set to public then pkg defaults to including it as bytecode.
-To avoid this breaking with the `--no-bytecode` flag we need to add `--public-packages "*"`
-
-#### leveldown
-
-To get leveldown to work with pkg we need to include the prebuilds with the executable.
-after building with pkg you need to copy from `node_modules/leveldown/prebuilds` -> `path_to_executable/prebuilds`
-You only need to include the prebuilds for the arch you are targeting. e.g. for linux-x64 you need `prebuild/linux-x64`.
-
-The folder structure for the executable should look like this.
-- linux_executable_elf
-- prebuilds
-    - linux-x64
-        - (node files)
-
-#### threads.js
-
-To make sure that the worker threads work properly you need to include the compiled worker scripts as an asset.
-This can be fixed by adding the following to `package.json`
-
-```json
-"pkg": {
-    "assets": "dist/bin/worker.js"
-  }
-```
-
-If you need to include multiple assets then add them as an array.
-
-```json
-"pkg": {
-    "assets": [
-      "node_modules/utp-native/**/*",
-      "dist/bin/worker.js"
-    ]
-  }
-```
-
 ### Docs Generation
 
 ```sh
@@ -209,26 +168,6 @@ See the docs at: https://matrixai.github.io/TypeScript-Demo-Lib/
 
 ### Publishing
 
-Publishing is handled automatically by the staging pipeline.
-
-Prerelease:
-
-```sh
-# npm login
-npm version prepatch --preid alpha # premajor/preminor/prepatch
-git push --follow-tags
-```
-
-Release:
-
-```sh
-# npm login
-npm version patch # major/minor/patch
-git push --follow-tags
-```
-
-Manually:
-
 ```sh
 # npm login
 npm version patch # major/minor/patch
@@ -237,17 +176,6 @@ npm publish --access public
 git push
 git push --tags
 ```
-### Packaging Cross-Platform Executables
-
-We use `pkg` to package the source code into executables.
-
-This requires a specific version of `pkg` and also `node-gyp-build`.
-
-Configuration for `pkg` is done in:
-
-* `package.json` - Pins `pkg` and `node-gyp-build`, and configures assets and scripts.
-* `utils.nix` - Pins `pkg` for Nix usage
-* `release.nix` - Build expressions for executables
 
 ## Deployment
 
