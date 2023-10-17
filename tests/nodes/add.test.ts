@@ -1,4 +1,3 @@
-import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
@@ -31,17 +30,17 @@ describe('add', () => {
     // Cannot use the shared global agent since we can't 'un-add' a node
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     await pkAgent.nodeGraph.stop();
     await pkAgent.nodeGraph.start({ fresh: true });

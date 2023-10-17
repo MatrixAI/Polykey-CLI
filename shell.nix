@@ -7,6 +7,7 @@ in
   mkShell {
     nativeBuildInputs = [
       nodejs
+      prefetch-npm-deps
       shellcheck
       gitAndTools.gh
       skopeo

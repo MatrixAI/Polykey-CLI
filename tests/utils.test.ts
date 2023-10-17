@@ -2,7 +2,7 @@ import type { Host, Port } from 'polykey/dist/network/types';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as rpcErrors from 'polykey/dist/rpc/errors';
+import * as polykeyErrors from 'polykey/dist/errors';
 import * as binUtils from '@/utils/utils';
 import * as testUtils from './utils';
 
@@ -99,7 +99,7 @@ describe('bin/utils', () => {
         timestamp,
         data,
       });
-      const remoteError = new rpcErrors.ErrorPolykeyRemote<any>(
+      const remoteError = new polykeyErrors.ErrorPolykeyRemote<any>(
         {
           nodeId: nodesUtils.encodeNodeId(nodeId),
           host,
@@ -109,7 +109,7 @@ describe('bin/utils', () => {
         'some remote error',
         { timestamp, cause: pkError },
       );
-      const twoRemoteErrors = new rpcErrors.ErrorPolykeyRemote<any>(
+      const twoRemoteErrors = new polykeyErrors.ErrorPolykeyRemote<any>(
         {
           nodeId: nodesUtils.encodeNodeId(nodeId),
           host,
@@ -119,7 +119,7 @@ describe('bin/utils', () => {
         'remote error',
         {
           timestamp,
-          cause: new rpcErrors.ErrorPolykeyRemote(
+          cause: new polykeyErrors.ErrorPolykeyRemote(
             {
               nodeId: nodesUtils.encodeNodeId(nodeId),
               host,

@@ -2,10 +2,10 @@ import type { POJO } from 'polykey/dist/types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import * as clientUtils from 'polykey/dist/client/utils/utils';
+import * as clientUtils from 'polykey/dist/client/utils';
 import * as clientErrors from 'polykey/dist/client/errors';
+import * as networkErrors from 'polykey/dist/network/errors';
 import * as utils from 'polykey/dist/utils';
-import * as rpcErrors from 'polykey/dist/rpc/errors';
 import * as binProcessors from './processors';
 import * as errors from '../errors';
 
@@ -109,7 +109,7 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
     let currError = msg.data;
     let indent = '  ';
     while (currError != null) {
-      if (currError instanceof rpcErrors.ErrorPolykeyRemote) {
+      if (currError instanceof networkErrors.ErrorPolykeyRemote) {
         output += `${currError.name}: ${currError.description}`;
         if (currError.message && currError.message !== '') {
           output += ` - ${currError.message}`;
@@ -220,7 +220,7 @@ async function retryAuthentication<T>(
 function remoteErrorCause(e: any): [any, number] {
   let errorCause = e;
   let depth = 0;
-  while (errorCause instanceof rpcErrors.ErrorPolykeyRemote) {
+  while (errorCause instanceof networkErrors.ErrorPolykeyRemote) {
     errorCause = errorCause.cause;
     depth++;
   }

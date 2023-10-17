@@ -3,23 +3,32 @@
 staging:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/staging/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/staging)
 master:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/master/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/master)
 
-Polykey is an open-source decentralized secrets management and sharing system. It is made for today's decentralized world of people, services and devices.
+Polykey is an open-source, peer-to-peer system that addresses the critical challenge in cybersecurity: the secure sharing and delegation of authority, in the form of secrets like keys, tokens, certificates, and passwords.
+
+It allows users including developers, organizations, and machines—to store these secrets in encrypted vaults on their own devices, and share them directly with trusted parties.
+
+All data is end-to-end encrypted, both in transit and at rest, eliminating the risk associated with third-party storage.
+
+Polykey provides a command line interface, desktop and mobile GUI, and a web-based control plane for organizational management.
+
+By treating secrets as tokenized authority, it offers a fresh approach to managing and delegating authority in zero-trust architectures without adding burdensome policy complexity - a pervasive issue in existing zero-trust systems.
+
+Unlike complex self-hosted secrets management systems that require specialized skills and infrastructure, Polykey is installed and running directly from the end-user device.
+
+It is built to automatically navigate network complexities like NAT traversal, connecting securely to other nodes without manual configuration.
+
+Key features:
 
 * Decentralized Encrypted Storage - No storage of secrets on third parties, secrets are stored on your device and synchronised point-to-point between Polykey nodes.
-* Secure Peer-to-Peer Communications - Polykey bootstraps TLS keys by federating trusted social identities (e.g. GitHub).
-* Secure Computational Workflows - Share secrets (passwords, keys, tokens and certificates) with people, between teams, and across machine infrastructure.
+* Secure Peer-to-Peer Communication - Polykey bootstraps TLS keys by federating trusted social identities (e.g. GitHub).
+* Secure Computational Workflows - Share static secrets (passwords, keys, tokens and certificates) with people, between teams, and across machine infrastructure. Create dynamic (short-lived) smart-tokens with embedded policy for more sophisticated zero-trust authority verification.
+* With Polykey Enterprise, you can create private networks of Polykey nodes and apply mandatory policy governing node behaviour.
 
 <p align="center">
   <img src="./images/cli_demo.gif" alt="Polykey CLI Demo"/>
 </p>
 
-Polykey synthesizes a unified workflow between interactive password management and infrastructure key management.
-
-You have complete end-to-end control and privacy over your secrets, with no third-party data collection.
-
-Polykey runs on distributed keynodes referred to as "nodes". Any computing system can run multiple keynodes. Each node manages one or more vaults which are encrypted filesystems with automatic version history. Vaults can be shared between the nodes.
-
-This repository is the core library for Polykey.
+This repository is the CLI for Polykey.
 
 The Polykey project is split up into these main repositories:
 
@@ -27,14 +36,17 @@ The Polykey project is split up into these main repositories:
 * [Polykey-CLI](https://github.com/MatrixAI/Polykey-CLI) - CLI of Polykey
 * [Polykey-Desktop](https://github.com/MatrixAI/Polykey-Desktop) - Polykey Desktop (Windows, Mac, Linux) application
 * [Polykey-Mobile](https://github.com/MatrixAI/Polykey-Mobile) - Polykey Mobile (iOS & Android) Application
+* [Polykey Enterprise](https://polykey.com) - Web Control Plane SaaS
 
 Have a bug or a feature-request? Please submit it the issues of the relevant subproject above.
 
-For tutorials, how-to guides, reference and theory, see the [docs](https://polykey.io/docs).
+For tutorials, how-to guides, reference and theory, see the [docs](https://polykey.com/docs).
 
 Have a question? Join our [discussion board](https://github.com/MatrixAI/Polykey/discussions).
 
-Our main website is https://polykey.io
+Have a security issue you want to let us know? You can contact us on our website.
+
+Our main website is https://polykey.com
 
 ## Installation
 
@@ -43,7 +55,8 @@ Note that JavaScript libraries are not packaged in Nix. Only JavaScript applicat
 Building the package:
 
 ```sh
-nix-build -E '(import ./pkgs.nix {}).callPackage ./default.nix {}'
+npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
+nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \"$npmDepsHash\"; }"
 ```
 
 ### Nix/NixOS
@@ -51,17 +64,17 @@ nix-build -E '(import ./pkgs.nix {}).callPackage ./default.nix {}'
 Building the releases:
 
 ```sh
-nix-build ./release.nix --attr application
-nix-build ./release.nix --attr docker
-nix-build ./release.nix --attr package.linux.x64.elf
-nix-build ./release.nix --attr package.windows.x64.exe
-nix-build ./release.nix --attr package.macos.x64.macho
+nix-build ./release.nix --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.linux.x64.elf --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.windows.x64.exe --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix-build ./release.nix --attr package.macos.x64.macho --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 ```
 
 Install into Nix user profile:
 
 ```sh
-nix-env -f ./release.nix --install --attr application
+nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 ```
 
 ### Docker
@@ -145,48 +158,6 @@ You would need to add these paths to `tsconfig.json`:
   },
 ```
 
-### Native Module Toolchain
-
-There are some nuances when packaging with native modules.
-Included native modules are level witch include leveldown and utp-native.
-
-If a module is not set to public then pkg defaults to including it as bytecode.
-To avoid this breaking with the `--no-bytecode` flag we need to add `--public-packages "*"`
-
-#### leveldown
-
-To get leveldown to work with pkg we need to include the prebuilds with the executable.
-after building with pkg you need to copy from `node_modules/leveldown/prebuilds` -> `path_to_executable/prebuilds`
-You only need to include the prebuilds for the arch you are targeting. e.g. for linux-x64 you need `prebuild/linux-x64`.
-
-The folder structure for the executable should look like this.
-- linux_executable_elf
-- prebuilds
-    - linux-x64
-        - (node files)
-
-#### threads.js
-
-To make sure that the worker threads work properly you need to include the compiled worker scripts as an asset.
-This can be fixed by adding the following to `package.json`
-
-```json
-"pkg": {
-    "assets": "dist/bin/worker.js"
-  }
-```
-
-If you need to include multiple assets then add them as an array.
-
-```json
-"pkg": {
-    "assets": [
-      "node_modules/utp-native/**/*",
-      "dist/bin/worker.js"
-    ]
-  }
-```
-
 ### Docs Generation
 
 ```sh
@@ -197,26 +168,6 @@ See the docs at: https://matrixai.github.io/TypeScript-Demo-Lib/
 
 ### Publishing
 
-Publishing is handled automatically by the staging pipeline.
-
-Prerelease:
-
-```sh
-# npm login
-npm version prepatch --preid alpha # premajor/preminor/prepatch
-git push --follow-tags
-```
-
-Release:
-
-```sh
-# npm login
-npm version patch # major/minor/patch
-git push --follow-tags
-```
-
-Manually:
-
 ```sh
 # npm login
 npm version patch # major/minor/patch
@@ -225,17 +176,6 @@ npm publish --access public
 git push
 git push --tags
 ```
-### Packaging Cross-Platform Executables
-
-We use `pkg` to package the source code into executables.
-
-This requires a specific version of `pkg` and also `node-gyp-build`.
-
-Configuration for `pkg` is done in:
-
-* `package.json` - Pins `pkg` and `node-gyp-build`, and configures assets and scripts.
-* `utils.nix` - Pins `pkg` for Nix usage
-* `release.nix` - Build expressions for executables
 
 ## Deployment
 

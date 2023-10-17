@@ -3,7 +3,6 @@ import type {
   IdentityId,
   ProviderId,
 } from 'polykey/dist/identities/types';
-import type { Host } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
@@ -122,17 +121,17 @@ describe('search', () => {
     // Cannot use global shared agent since we need to register a provider
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
     pkAgent.identitiesManager.registerProvider(provider1);
     pkAgent.identitiesManager.registerProvider(provider2);

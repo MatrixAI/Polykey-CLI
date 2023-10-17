@@ -24,6 +24,7 @@ import * as nodesUtils from 'polykey/dist/nodes/utils';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import { promisify, promise } from 'polykey/dist/utils';
 import * as binUtils from './utils';
+import * as binErrors from './errors';
 
 process.title = 'polykey-agent';
 
@@ -62,7 +63,7 @@ async function main(_argv = process.argv): Promise<number> {
       ...messageIn.agentConfig,
     });
   } catch (e) {
-    if (e instanceof ErrorPolykey) {
+    if (e instanceof ErrorPolykey || e instanceof binErrors.ErrorPolykeyCLI) {
       process.stderr.write(
         binUtils.outputFormatter({
           type: errFormat,
@@ -111,10 +112,10 @@ async function main(_argv = process.argv): Promise<number> {
     recoveryCode: pkAgent.keyRing.recoveryCode,
     pid: process.pid,
     nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
-    clientHost: pkAgent.webSocketServerClient.getHost(),
-    clientPort: pkAgent.webSocketServerClient.getPort(),
-    agentHost: pkAgent.nodeConnectionManager.host,
-    agentPort: pkAgent.nodeConnectionManager.port,
+    clientHost: pkAgent.clientServiceHost,
+    clientPort: pkAgent.clientServicePort,
+    agentHost: pkAgent.agentServiceHost,
+    agentPort: pkAgent.agentServicePort,
   };
   try {
     await processSend(messageOut);

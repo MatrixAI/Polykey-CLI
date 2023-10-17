@@ -12,7 +12,7 @@ import path from 'path';
 import prompts from 'prompts';
 import Logger from '@matrixai/logger';
 import Status from 'polykey/dist/status/Status';
-import * as clientUtils from 'polykey/dist/client/utils/utils';
+import * as clientUtils from 'polykey/dist/client/utils';
 import { arrayZip } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
 import * as errors from '../errors';

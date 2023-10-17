@@ -13,9 +13,8 @@ describe('unlock', () => {
   let agentPassword;
   let agentClose;
   beforeEach(async () => {
-    ({ agentDir, agentPassword, agentClose } = await testUtils.setupTestAgent(
-      logger,
-    ));
+    ({ agentDir, agentPassword, agentClose } =
+      await testUtils.setupTestAgent(logger));
   });
   afterEach(async () => {
     await agentClose();

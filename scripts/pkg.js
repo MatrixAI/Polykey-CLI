@@ -75,20 +75,11 @@ async function main(argv = process.argv) {
       restArgs.push(option);
     }
   }
-  let entryPoint;
-  if (binTarget == null) {
-    entryPoint = Object.values(packageJSON.bin ?? {})[0];
-  } else {
-    entryPoint = packageJSON.bin[binTarget];
-  }
-  if (entryPoint == null) {
-    throw new Error('Bin executable is required');
+  if (typeof binTarget !== 'string') {
+    throw new Error('Bin path is required');
   }
   if (typeof outPath !== 'string') {
     throw new Error('Output path is required');
-  }
-  if (entryPoint == null) {
-    throw new Error(`Unknown bin target: ${binTarget}`);
   }
   if (isNaN(parseInt(nodeVersion))) {
     throw new Error(`Unsupported node version: ${nodeVersion}`);
@@ -109,7 +100,7 @@ async function main(argv = process.argv) {
   pkgConfig.assets = pkgConfig.assets ?? {};
   const npmLsOut = childProcess.execFileSync(
     'npm',
-    ['ls', '--all', '--prod', '--parseable'],
+    ['ls', '--all', '--omit=dev', '--parseable'],
     {
       windowsHide: true,
       encoding: 'utf-8',
@@ -117,6 +108,7 @@ async function main(argv = process.argv) {
   );
   const nodePackages = npmLsOut.trim().split('\n');
   const projectRoot = path.join(__dirname, '..');
+  // This will only find native addons that is using `node-gyp-build`
   for (const nodePackage of nodePackages) {
     // If `build` or `prebuilds` directory exists with a `.node` file
     // then we expect to find the appropriate native addon
@@ -142,7 +134,7 @@ async function main(argv = process.argv) {
   const pkgPlatform = platforms[platform];
   const pkgArch = archs[arch];
   const pkgArgs = [
-    entryPoint,
+    binTarget,
     `--config=${pkgConfigPath}`,
     `--targets=node${nodeVersion}-${pkgPlatform}-${pkgArch}`,
     '--no-bytecode',

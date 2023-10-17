@@ -1,20 +1,18 @@
-import type { Host } from 'polykey/dist/network/types';
-import type { NodeId } from 'polykey/dist/ids';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import * as keysUtils from 'polykey/dist/keys/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
+import { sleep } from 'polykey/dist/utils';
 import * as testUtils from '../utils';
 
 describe('reset', () => {
   const logger = new Logger('reset test', LogLevel.WARN, [new StreamHandler()]);
-  const password = 'helloworld';
+  const password = 'helloWorld';
   let dataDir: string;
   let nodePath: string;
   let pkAgent: PolykeyAgent;
-  let oldNodeId: NodeId;
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
@@ -22,19 +20,18 @@ describe('reset', () => {
     nodePath = path.join(dataDir, 'polykey');
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
-      nodePath,
-      networkConfig: {
-        agentHost: '127.0.0.1' as Host,
-        clientHost: '127.0.0.1' as Host,
+      options: {
+        nodePath,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
       },
       logger,
-      keyRingConfig: {
-        passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-        passwordMemLimit: keysUtils.passwordMemLimits.min,
-        strictMemoryLock: false,
-      },
     });
-    oldNodeId = pkAgent.keyRing.getNodeId();
   }, globalThis.defaultTimeout * 2);
   afterEach(async () => {
     await pkAgent.stop();
@@ -88,6 +85,11 @@ describe('reset', () => {
         },
       ));
       expect(exitCode).toBe(0);
+      // Wait for keys changes to propagate to the network
+      await sleep(1000);
+      const nodeIdEncodedNew = nodesUtils.encodeNodeId(
+        pkAgent.keyRing.getNodeId(),
+      );
       // Get new keypair and nodeId and compare against old
       ({ exitCode, stdout } = await testUtils.pkStdio(
         ['keys', 'keypair', '--format', 'json'],
@@ -96,11 +98,9 @@ describe('reset', () => {
             PK_NODE_PATH: nodePath,
             PK_PASSWORD: 'password-new',
             PK_PASSWORD_NEW: 'some-password',
-            // Client server still using old nodeId, this should be removed if
-            // this is fixed.
-            PK_NODE_ID: nodesUtils.encodeNodeId(oldNodeId),
+            PK_NODE_ID: nodeIdEncodedNew,
             PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.webSocketServerClient.getPort()}`,
+            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
           },
           cwd: dataDir,
         },
@@ -114,11 +114,9 @@ describe('reset', () => {
           env: {
             PK_NODE_PATH: nodePath,
             PK_PASSWORD: 'password-new',
-            // Client server still using old nodeId, this should be removed if
-            // this is fixed.
-            PK_NODE_ID: nodesUtils.encodeNodeId(oldNodeId),
+            PK_NODE_ID: nodeIdEncodedNew,
             PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.webSocketServerClient.getPort()}`,
+            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
           },
           cwd: dataDir,
         },

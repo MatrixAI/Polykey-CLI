@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import * as utils from 'polykey/dist/utils/utils';
-import * as validationUtils from 'polykey/dist/validation/utils';
+import * as ids from 'polykey/dist/ids';
 import * as execUtils from './exec';
 
 async function setupTestAgent(logger: Logger) {
@@ -46,7 +46,7 @@ async function setupTestAgent(logger: Logger) {
   const data = await startedProm.p;
   const agentStatus: StatusLive = {
     status: 'LIVE',
-    data: { ...data, nodeId: validationUtils.parseNodeId(data.nodeId) },
+    data: { ...data, nodeId: ids.parseNodeId(data.nodeId) },
   };
   try {
     return {
