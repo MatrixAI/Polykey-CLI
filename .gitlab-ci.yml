@@ -378,6 +378,7 @@ integration:linux:
     - windows
   before_script:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
+    - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
     - Get-ChildItem -File ./builds/*-win-* | ForEach {& $_.FullName}
   rules:
