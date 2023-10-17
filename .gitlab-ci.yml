@@ -66,8 +66,11 @@ check:nix-dry:
   stage: check
   needs: []
   script:
-    - npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
-    - nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash"
+    - >
+      nix-shell --arg ci true --run $'
+      npmDepsHash="$(prefetch-npm-deps ./package-lock.json)";
+      nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash";
+      '
   rules:
     # Runs on feature and staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH =~ /^(?:feature.*|staging)$/ && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -229,20 +232,18 @@ integration:builds:
     - build:platforms
   script:
     - mkdir -p ./builds
-    - npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
     - >
+      nix-shell --arg ci true --run $'
+      npmDepsHash="$(prefetch-npm-deps ./package-lock.json)";
       build_application="$(nix-build \
         --max-jobs "$(nproc)" --cores "$(nproc)" \
         ./release.nix  \
         --attr application \
         --argstr npmDepsHash "$npmDepsHash" \
-      )"
-    - >
+      )";
       nix-store --export $( \
         nix-store --query --requisites "$build_application" \
-      ) | gzip > ./builds/polykey-cli.closure.gz
-    # non-nix targets
-    - >
+      ) | gzip > ./builds/polykey-cli.closure.gz;
       builds="$(nix-build \
         --max-jobs "$(nproc)" --cores "$(nproc)" \
         ./release.nix \
@@ -250,8 +251,9 @@ integration:builds:
         --attr package.linux.x64.elf \
         --attr package.windows.x64.exe \
         --attr package.macos.x64.macho \
-        --argstr npmDepsHash "$npmDepsHash")"
-    - cp -r $builds ./builds/
+        --argstr npmDepsHash "$npmDepsHash")";
+      cp -r $builds ./builds/;
+      '
   artifacts:
     paths:
       - ./builds/
