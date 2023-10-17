@@ -99,7 +99,8 @@
     "@matrixai/mdns-linux-x64": "*",
     "@matrixai/db": "*",
     "sodium-native": "*",
-    "fd-lock": "*"
+    "fd-lock": "*",
+    "threads": "*"
   },
   "devDependencies": {
     "@matrixai/errors": "^1.2.0",
