@@ -112,7 +112,6 @@ class CommandList extends CommandPolykey {
             for (const node of gestalt.nodes) {
               output.push(`${node.nodeId}`);
             }
-            console.log(gestalt)
             // Listing identities
             for (const identity of gestalt.identities) {
               output.push(`${identity.providerId}:${identity.identityId}`);
