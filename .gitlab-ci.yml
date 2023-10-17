@@ -44,18 +44,6 @@ stages:
   - integration # Cross-platform application bundling, integration tests, and pre-release
   - release     # Cross-platform distribution and deployment
 
-check:scratch:
-  stage: check
-  needs: []
-  script:
-    - >
-      nix-shell --arg ci true --run $'
-      npm test -- --ci tests/scratch.test.ts;
-      '
-  allow_failure: true
-  rules:
-    - when: manual
-
 check:lint:
   stage: check
   needs: []
@@ -78,7 +66,8 @@ check:nix-dry:
   stage: check
   needs: []
   script:
-    - nix-build -v -v --dry-run ./release.nix
+    - npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
+    - nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash"
   rules:
     # Runs on feature and staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH =~ /^(?:feature.*|staging)$/ && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -240,16 +229,18 @@ integration:builds:
     - build:platforms
   script:
     - mkdir -p ./builds
+    - npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
     - >
       build_application="$(nix-build \
         --max-jobs "$(nproc)" --cores "$(nproc)" \
         ./release.nix  \
         --attr application \
+        --argstr npmDepsHash "$npmDepsHash" \
       )"
     - >
       nix-store --export $( \
         nix-store --query --requisites "$build_application" \
-      ) | gzip > ./builds/js-polykey.closure.gz
+      ) | gzip > ./builds/polykey-cli.closure.gz
     # non-nix targets
     - >
       builds="$(nix-build \
@@ -259,7 +250,7 @@ integration:builds:
         --attr package.linux.x64.elf \
         --attr package.windows.x64.exe \
         --attr package.macos.x64.macho \
-        --attr package.macos.arm64.macho)"
+        --argstr npmDepsHash "$npmDepsHash")"
     - cp -r $builds ./builds/
   artifacts:
     paths:
@@ -281,7 +272,7 @@ integration:deployment:
   environment:
     name: 'testnet'
     deployment_tier: 'staging'
-    url: 'https://testnet.polykey.io'
+    url: 'https://testnet.polykey.com'
   variables:
     REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
     # Override CI_REGISTRY_IMAGE to point to ECR
@@ -321,7 +312,7 @@ integration:nix:
   script:
     - >
       build_application="$( \
-        gunzip -c ./builds/js-polykey.closure.gz | \
+        gunzip -c ./builds/polykey-cli.closure.gz | \
         nix-store --import | \
         tail -1 \
       )"
@@ -541,7 +532,7 @@ release:deployment:branch:
   environment:
     name: 'mainnet'
     deployment_tier: 'production'
-    url: 'https://mainnet.polykey.io'
+    url: 'https://mainnet.polykey.com'
   variables:
     REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
     # Override CI_REGISTRY_IMAGE to point to ECR
@@ -579,7 +570,7 @@ release:deployment:tag:
   environment:
     name: 'mainnet'
     deployment_tier: 'production'
-    url: 'https://mainnet.polykey.io'
+    url: 'https://mainnet.polykey.com'
   variables:
     REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
     # Override CI_REGISTRY_IMAGE to point to ECR
