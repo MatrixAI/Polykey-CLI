@@ -318,7 +318,7 @@ integration:nix:
         nix-store --import | \
         tail -1 \
       )"
-    - $build_application/polykey
+    - $build_application/bin/polykey
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
