@@ -65,11 +65,16 @@
     "assets": [
       "node_modules/tslib/**/*.js",
       "node_modules/tsyringe/**/*.js",
-      "node_modules/@matrixai/quic-darwin-arm64/node.napi.node",
-      "node_modules/@matrixai/quic-darwin-x64/node.napi.node",
       "node_modules/@matrixai/quic-linux-x64/node.napi.node",
+      "node_modules/@matrixai/quic-linux-x64/package.json",
+      "node_modules/@matrixai/quic-darwin-x64/node.napi.node",
+      "node_modules/@matrixai/quic-darwin-x64/package.json",
+      "node_modules/@matrixai/quic-darwin-arm64/node.napi.node",
+      "node_modules/@matrixai/quic-darwin-arm64/package.json",
       "node_modules/@matrixai/quic-win32-x64/node.napi.node",
-      "node_modules/@matrixai/mdns-linux-x64/node.napi.node"
+      "node_modules/@matrixai/quic-win32-x64/package.json",
+      "node_modules/@matrixai/mdns-linux-x64/node.napi.node",
+      "node_modules/@matrixai/mdns-linux-x64/package.json"
     ],
     "scripts": [
       "dist/polykeyWorker.js"
