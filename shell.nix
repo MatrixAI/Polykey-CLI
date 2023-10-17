@@ -10,6 +10,7 @@ in
       prefetch-npm-deps
       shellcheck
       gitAndTools.gh
+      awscli2
       skopeo
       jq
     ];
