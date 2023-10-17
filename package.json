@@ -64,15 +64,20 @@
   "pkg": {
     "assets": [
       "node_modules/tslib/**/*.js",
-      "node_modules/tsyringe/**/*.js"
+      "node_modules/tsyringe/**/*.js",
+      "node_modules/@matrixai/quic-darwin-arm64/node.napi.node",
+      "node_modules/@matrixai/quic-darwin-x64/node.napi.node",
+      "node_modules/@matrixai/quic-linux-x64/node.napi.node",
+      "node_modules/@matrixai/quic-win32-x64/node.napi.node",
+      "node_modules/@matrixai/mdns-linux-x64/node.napi.node"
     ],
     "scripts": [
       "dist/polykeyWorker.js"
     ]
   },
   "scripts": {
-    "prepare": "tsc -p ./tsconfig.build.json",
-    "build": "shx rm -rf ./dist && tsc -p ./tsconfig.build.json",
+    "prepare": "node ./scripts/build.js",
+    "build": "node ./scripts/build.js",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
     "ts-node": "ts-node",
     "test": "jest",
@@ -81,21 +86,28 @@
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
     "bench": "shx rm -rf ./benches/results && ts-node ./benches",
-    "bundle": "node ./scripts/esbuild.js",
     "pkg": "node ./scripts/pkg.js",
     "polykey": "ts-node src/polykey.ts",
     "start": "ts-node src/polykey.ts -- agent start --verbose",
     "dev": "nodemon src/polykey.ts -- agent start --verbose"
   },
-  "dependencies": {
-    "@matrixai/errors": "^1.2.0",
-    "@matrixai/logger": "^3.1.0",
-    "@matrixai/ws": "^1.1.6",
-    "commander": "^8.3.0",
-    "polykey": "^1.2.1-alpha.5",
-    "threads": "^1.6.5"
+  "optionalDependencies": {
+    "@matrixai/quic-linux-x64": "*",
+    "@matrixai/quic-win32-x64": "*",
+    "@matrixai/quic-darwin-arm64": "*",
+    "@matrixai/quic-darwin-x64": "*",
+    "@matrixai/mdns-linux-x64": "*",
+    "@matrixai/db": "*",
+    "sodium-native": "*",
+    "fd-lock": "*"
   },
   "devDependencies": {
+    "@matrixai/errors": "^1.2.0",
+    "@matrixai/logger": "^3.1.0",
+    "@matrixai/ws": "1.1.7",
+    "commander": "^8.3.0",
+    "polykey": "^1.2.1-alpha.11",
+    "threads": "^1.6.5",
     "@swc/core": "1.3.82",
     "@swc/jest": "^0.2.29",
     "@types/jest": "^29.5.2",
@@ -103,6 +115,7 @@
     "@types/node": "^20.5.7",
     "@typescript-eslint/eslint-plugin": "^5.61.0",
     "@typescript-eslint/parser": "^5.61.0",
+    "@yao-pkg/pkg": "^5.9.1",
     "esbuild": "0.19.4",
     "eslint": "^8.44.0",
     "eslint-config-prettier": "^8.8.0",
@@ -118,7 +131,6 @@
     "nexpect": "^0.6.0",
     "node-gyp-build": "^4.4.0",
     "nodemon": "^3.0.1",
-    "pkg": "^5.8.1",
     "prettier": "^3.0.0",
     "shelljs": "^0.8.5",
     "shx": "^0.3.4",

@@ -17,9 +17,9 @@ CI_PARALLEL=2
 # Quote the heredoc to prevent shell expansion
 cat << "EOF"
 variables:
-  GIT_SUBMODULE_STRATEGY: "recursive"
   GH_PROJECT_PATH: "MatrixAI/${CI_PROJECT_NAME}"
   GH_PROJECT_URL: "https://${GITHUB_TOKEN}@github.com/${GH_PROJECT_PATH}.git"
+  GIT_SUBMODULE_STRATEGY: "recursive"
   # Cache .npm
   npm_config_cache: "${CI_PROJECT_DIR}/tmp/npm"
   # Prefer offline node module installation
@@ -28,6 +28,7 @@ variables:
   HOMEBREW_CACHE: "${CI_PROJECT_DIR}/tmp/Homebrew"
 
 default:
+  image: registry.gitlab.com/matrixai/engineering/maintenance/gitlab-runner
   interruptible: true
   before_script:
     # Replace this in windows runners that use powershell
@@ -50,21 +51,56 @@ cache:
 
 stages:
   - build       # Cross-platform library compilation, unit tests
+EOF
 
-image: registry.gitlab.com/matrixai/engineering/maintenance/gitlab-runner
+printf "\n"
 
-build:linux:
+# Each test directory has its own job
+for test_dir in tests/**/*/; do
+  # Ignore discovery domain for now
+  if [[ "$test_dir" =~ discovery ]]; then
+    continue
+  fi
+  test_files=("$test_dir"*.test.ts)
+  if [ ${#test_files[@]} -eq 0 ]; then
+    continue
+  fi
+  # Remove trailing slash
+  test_dir="${test_dir%\/}"
+  # Remove `tests/` prefix
+  test_dir="${test_dir#*/}"
+  cat << EOF
+build:linux $test_dir:
   stage: build
   needs: []
-EOF
-cat << EOF
-  parallel: $CI_PARALLEL
-EOF
-cat << "EOF"
   script:
     - >
       nix-shell --arg ci true --run $'
-      npm test -- --ci --coverage --shard="$CI_NODE_INDEX/$CI_NODE_TOTAL";
+      npm test -- --ci --coverage ${test_files[@]};
+      '
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - ./tmp/junit/junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ./tmp/coverage/cobertura-coverage.xml
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+EOF
+  printf "\n"
+done
+
+# All top-level test files are accumulated into 1 job
+test_files=(tests/*.test.ts)
+cat << EOF
+build:linux index:
+  stage: build
+  needs: []
+  script:
+    - >
+      nix-shell --arg ci true --run $'
+      npm test -- --ci --coverage ${test_files[@]};
       '
   artifacts:
     when: always
@@ -76,8 +112,10 @@ cat << "EOF"
         path: ./tmp/coverage/cobertura-coverage.xml
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
-# Disabled pending fixes
 .build:windows:
+  inherit:
+    default:
+      - interruptible
   stage: build
   needs: []
 EOF
@@ -89,12 +127,13 @@ cat << "EOF"
     - windows
   before_script:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
+    - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
     - .\scripts\choco-install.ps1
     - refreshenv
     - npm install --ignore-scripts
     - $env:Path = "$(npm root)\.bin;" + $env:Path
-    - npm test -- --ci --coverage --shard="$CI_NODE_INDEX/$CI_NODE_TOTAL"
+    - npm test -- --ci --coverage --shard="$CI_NODE_INDEX/$CI_NODE_TOTAL" --maxWorkers=50%
   artifacts:
     when: always
     reports:
@@ -105,7 +144,6 @@ cat << "EOF"
         path: ./tmp/coverage/cobertura-coverage.xml
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
 
-# Disabled pending fixes
 .build:macos:
   stage: build
   needs: []
@@ -123,7 +161,7 @@ cat << "EOF"
     - hash -r
     - npm install --ignore-scripts
     - export PATH="$(npm root)/.bin:$PATH"
-    - npm test -- --ci --coverage --shard="$CI_NODE_INDEX/$CI_NODE_TOTAL"
+    - npm test -- --ci --coverage --shard="$CI_NODE_INDEX/$CI_NODE_TOTAL" --maxWorkers=50%
   artifacts:
     when: always
     reports:

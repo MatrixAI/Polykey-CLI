@@ -4,11 +4,12 @@
 !.env.example
 # nix
 /result*
-/builds
-# node-gyp
 /build
-# prebuildify
-/prebuilds
+/builds
+/prebuild
+/prepublishOnly
+/target
+/bundle
 
 # Logs
 logs
