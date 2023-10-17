@@ -10,5 +10,5 @@ export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_ANALYTICS=1
 
-brew reinstall node@20
-brew link --overwrite node@20
+brew reinstall node@18
+brew link --overwrite node@18
