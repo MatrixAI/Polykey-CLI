@@ -87,7 +87,8 @@ describe('ping', () => {
     });
   });
   // FIXME: skipped because problem with RPC processing messages after timeout
-  testUtils.testIf(testUtils.isTestPlatformEmpty).skip(
+  // testUtils.testIf(testUtils.isTestPlatformEmpty)
+  testUtils.testIf(false)(
     'fails when pinging an offline node',
     async () => {
       const { exitCode, stdout, stderr } = await testUtils.pkStdio(

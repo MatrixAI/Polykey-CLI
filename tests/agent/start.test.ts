@@ -312,101 +312,101 @@ describe('start', () => {
   );
   // FIXME: disabled for now, both are succeeding when 1 should fail
   testUtils
-    .testIf(testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker)
-    .skip(
-      'concurrent with bootstrap results in 1 success',
-      async () => {
-        const password = 'abc123';
-        // One of these processes is blocked
-        const [agentProcess, bootstrapProcess] = await Promise.all([
-          testUtils.pkSpawn(
-            [
-              'agent',
-              'start',
-              '--client-host',
-              '127.0.0.1',
-              '--agent-host',
-              '127.0.0.1',
-              '--workers',
-              'none',
-              '--verbose',
-              '--format',
-              'json',
-            ],
-            {
-              env: {
-                PK_NODE_PATH: path.join(dataDir, 'polykey'),
-                PK_PASSWORD: password,
-                PK_PASSWORD_OPS_LIMIT: 'min',
-                PK_PASSWORD_MEM_LIMIT: 'min',
-              },
-              cwd: dataDir,
-              command: globalThis.testCmd,
+    // .testIf(testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker)
+    .testIf(false)(
+    'concurrent with bootstrap results in 1 success',
+    async () => {
+      const password = 'abc123';
+      // One of these processes is blocked
+      const [agentProcess, bootstrapProcess] = await Promise.all([
+        testUtils.pkSpawn(
+          [
+            'agent',
+            'start',
+            '--client-host',
+            '127.0.0.1',
+            '--agent-host',
+            '127.0.0.1',
+            '--workers',
+            'none',
+            '--verbose',
+            '--format',
+            'json',
+          ],
+          {
+            env: {
+              PK_NODE_PATH: path.join(dataDir, 'polykey'),
+              PK_PASSWORD: password,
+              PK_PASSWORD_OPS_LIMIT: 'min',
+              PK_PASSWORD_MEM_LIMIT: 'min',
             },
-            logger.getChild('agentProcess'),
-          ),
-          testUtils.pkSpawn(
-            ['bootstrap', '--fresh', '--verbose', '--format', 'json'],
-            {
-              env: {
-                PK_NODE_PATH: path.join(dataDir, 'polykey'),
-                PK_PASSWORD: password,
-                PK_PASSWORD_OPS_LIMIT: 'min',
-                PK_PASSWORD_MEM_LIMIT: 'min',
-              },
-              cwd: dataDir,
-              command: globalThis.testCmd,
+            cwd: dataDir,
+            command: globalThis.testCmd,
+          },
+          logger.getChild('agentProcess'),
+        ),
+        testUtils.pkSpawn(
+          ['bootstrap', '--fresh', '--verbose', '--format', 'json'],
+          {
+            env: {
+              PK_NODE_PATH: path.join(dataDir, 'polykey'),
+              PK_PASSWORD: password,
+              PK_PASSWORD_OPS_LIMIT: 'min',
+              PK_PASSWORD_MEM_LIMIT: 'min',
             },
-            logger.getChild('bootstrapProcess'),
-          ),
-        ]);
-        // These will be the last line of STDERR
-        // The readline library will automatically trim off newlines
-        let stdErrLine1;
-        let stdErrLine2;
-        const rlErr1 = readline.createInterface(agentProcess.stderr!);
-        const rlErr2 = readline.createInterface(bootstrapProcess.stderr!);
-        const agentStartedProm1 = promise<[number, string]>();
-        const agentStartedProm2 = promise<[number, string]>();
-        rlErr1.on('line', (l) => {
-          stdErrLine1 = l;
-          if (l.includes('Created PolykeyAgent')) {
-            agentStartedProm1.resolveP([0, l]);
-            agentProcess.kill('SIGINT');
-          }
-        });
-        rlErr2.on('line', (l) => {
-          stdErrLine2 = l;
-          if (l.includes('Created PolykeyAgent')) {
-            agentStartedProm2.resolveP([0, l]);
-            bootstrapProcess.kill('SIGINT');
-          }
-        });
-
-        agentProcess.once('exit', (code) => {
-          agentStartedProm1.resolveP([code ?? 255, stdErrLine1]);
-        });
-        bootstrapProcess.once('exit', (code) => {
-          agentStartedProm2.resolveP([code ?? 255, stdErrLine2]);
-        });
-
-        const results = await Promise.all([
-          agentStartedProm1.p,
-          agentStartedProm2.p,
-        ]);
-        // Only 1 should fail with locked
-        const errorStatusLocked = new statusErrors.ErrorStatusLocked();
-        let failed = 0;
-        for (const [code, line] of results) {
-          if (code !== 0) {
-            failed += 1;
-            testUtils.expectProcessError(code, line, [errorStatusLocked]);
-          }
+            cwd: dataDir,
+            command: globalThis.testCmd,
+          },
+          logger.getChild('bootstrapProcess'),
+        ),
+      ]);
+      // These will be the last line of STDERR
+      // The readline library will automatically trim off newlines
+      let stdErrLine1;
+      let stdErrLine2;
+      const rlErr1 = readline.createInterface(agentProcess.stderr!);
+      const rlErr2 = readline.createInterface(bootstrapProcess.stderr!);
+      const agentStartedProm1 = promise<[number, string]>();
+      const agentStartedProm2 = promise<[number, string]>();
+      rlErr1.on('line', (l) => {
+        stdErrLine1 = l;
+        if (l.includes('Created PolykeyAgent')) {
+          agentStartedProm1.resolveP([0, l]);
+          agentProcess.kill('SIGINT');
         }
-        expect(failed).toEqual(1);
-      },
-      globalThis.defaultTimeout * 2,
-    );
+      });
+      rlErr2.on('line', (l) => {
+        stdErrLine2 = l;
+        if (l.includes('Created PolykeyAgent')) {
+          agentStartedProm2.resolveP([0, l]);
+          bootstrapProcess.kill('SIGINT');
+        }
+      });
+
+      agentProcess.once('exit', (code) => {
+        agentStartedProm1.resolveP([code ?? 255, stdErrLine1]);
+      });
+      bootstrapProcess.once('exit', (code) => {
+        agentStartedProm2.resolveP([code ?? 255, stdErrLine2]);
+      });
+
+      const results = await Promise.all([
+        agentStartedProm1.p,
+        agentStartedProm2.p,
+      ]);
+      // Only 1 should fail with locked
+      const errorStatusLocked = new statusErrors.ErrorStatusLocked();
+      let failed = 0;
+      for (const [code, line] of results) {
+        if (code !== 0) {
+          failed += 1;
+          testUtils.expectProcessError(code, line, [errorStatusLocked]);
+        }
+      }
+      expect(failed).toEqual(1);
+    },
+    globalThis.defaultTimeout * 2,
+  );
   testUtils.testIf(
     testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
   )(
@@ -869,84 +869,98 @@ describe('start', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  // TestUtils.describeIf(testUtils.isTestPlatformEmpty)
-  describe('start with global agent', () => {
-    let agentDataDir;
-    let agent1Status: StatusLive;
-    let agent1Close: () => Promise<void>;
-    let agent2Status: StatusLive;
-    let agent2Close: () => Promise<void>;
-    let seedNodeId1: NodeId;
-    let seedNodeHost1: string;
-    let seedNodePort1: number;
-    let seedNodeId2: NodeId;
-    let seedNodeHost2: string;
-    let seedNodePort2: number;
-    beforeEach(async () => {
-      // Additional seed node
-      agentDataDir = await fs.promises.mkdtemp(
-        path.join(globalThis.tmpDir, 'polykey-test-'),
-      );
-      ({ agentStatus: agent1Status, agentClose: agent1Close } =
-        await testUtils.setupTestAgent(logger));
-      ({ agentStatus: agent2Status, agentClose: agent2Close } =
-        await testUtils.setupTestAgent(logger));
-      seedNodeId1 = agent1Status.data.nodeId;
-      seedNodeHost1 = agent1Status.data.agentHost;
-      seedNodePort1 = agent1Status.data.agentPort;
-      seedNodeId2 = agent2Status.data.nodeId;
-      seedNodeHost2 = agent2Status.data.agentHost;
-      seedNodePort2 = agent2Status.data.agentPort;
-    });
-    afterEach(async () => {
-      await agent1Close();
-      await agent2Close();
-      await fs.promises.rm(agentDataDir, {
-        force: true,
-        recursive: true,
+  testUtils.describeIf(testUtils.isTestPlatformEmpty)(
+    'start with global agent',
+    () => {
+      let agentDataDir;
+      let agent1Status: StatusLive;
+      let agent1Close: () => Promise<void>;
+      let agent2Status: StatusLive;
+      let agent2Close: () => Promise<void>;
+      let seedNodeId1: NodeId;
+      let seedNodeHost1: string;
+      let seedNodePort1: number;
+      let seedNodeId2: NodeId;
+      let seedNodeHost2: string;
+      let seedNodePort2: number;
+      beforeEach(async () => {
+        // Additional seed node
+        agentDataDir = await fs.promises.mkdtemp(
+          path.join(globalThis.tmpDir, 'polykey-test-'),
+        );
+        ({ agentStatus: agent1Status, agentClose: agent1Close } =
+          await testUtils.setupTestAgent(logger));
+        ({ agentStatus: agent2Status, agentClose: agent2Close } =
+          await testUtils.setupTestAgent(logger));
+        seedNodeId1 = agent1Status.data.nodeId;
+        seedNodeHost1 = agent1Status.data.agentHost;
+        seedNodePort1 = agent1Status.data.agentPort;
+        seedNodeId2 = agent2Status.data.nodeId;
+        seedNodeHost2 = agent2Status.data.agentHost;
+        seedNodePort2 = agent2Status.data.agentPort;
       });
-    });
-    test(
-      'start with seed nodes option',
-      async () => {
-        const password = 'abc123';
-        const nodePath = path.join(dataDir, 'polykey');
-        const statusPath = path.join(nodePath, config.paths.statusBase);
-        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
-        const status = new Status({
-          statusPath,
-          statusLockPath,
-          fs,
-          logger,
+      afterEach(async () => {
+        await agent1Close();
+        await agent2Close();
+        await fs.promises.rm(agentDataDir, {
+          force: true,
+          recursive: true,
         });
-        const mockedConfigDefaultsNetwork = jestMockProps
-          .spyOnProp(config, 'network')
-          .mockValue({
-            mainnet: {
-              [seedNodeId2]: {
-                host: seedNodeHost2 as Host,
-                port: seedNodePort2 as Port,
-              },
-            },
-            testnet: {},
+      });
+      test(
+        'start with seed nodes option',
+        async () => {
+          const password = 'abc123';
+          const nodePath = path.join(dataDir, 'polykey');
+          const statusPath = path.join(nodePath, config.paths.statusBase);
+          const statusLockPath = path.join(
+            nodePath,
+            config.paths.statusLockBase,
+          );
+          const status = new Status({
+            statusPath,
+            statusLockPath,
+            fs,
+            logger,
           });
-        await testUtils.pkStdio(
-          [
-            'agent',
-            'start',
-            '--client-host',
-            '127.0.0.1',
-            '--agent-host',
-            '127.0.0.1',
-            '--workers',
-            'none',
-            '--seed-nodes',
-            `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1};<defaults>`,
-            '--network',
-            'mainnet',
-            '--verbose',
-          ],
-          {
+          const mockedConfigDefaultsNetwork = jestMockProps
+            .spyOnProp(config, 'network')
+            .mockValue({
+              mainnet: {
+                [seedNodeId2]: {
+                  host: seedNodeHost2 as Host,
+                  port: seedNodePort2 as Port,
+                },
+              },
+              testnet: {},
+            });
+          await testUtils.pkStdio(
+            [
+              'agent',
+              'start',
+              '--client-host',
+              '127.0.0.1',
+              '--agent-host',
+              '127.0.0.1',
+              '--workers',
+              'none',
+              '--seed-nodes',
+              `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1};<defaults>`,
+              '--network',
+              'mainnet',
+              '--verbose',
+            ],
+            {
+              env: {
+                PK_NODE_PATH: nodePath,
+                PK_PASSWORD: password,
+                PK_PASSWORD_OPS_LIMIT: 'min',
+                PK_PASSWORD_MEM_LIMIT: 'min',
+              },
+              cwd: dataDir,
+            },
+          );
+          await testUtils.pkStdio(['agent', 'stop'], {
             env: {
               PK_NODE_PATH: nodePath,
               PK_PASSWORD: password,
@@ -954,83 +968,77 @@ describe('start', () => {
               PK_PASSWORD_MEM_LIMIT: 'min',
             },
             cwd: dataDir,
-          },
-        );
-        await testUtils.pkStdio(['agent', 'stop'], {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-            PK_PASSWORD_OPS_LIMIT: 'min',
-            PK_PASSWORD_MEM_LIMIT: 'min',
-          },
-          cwd: dataDir,
-        });
-        mockedConfigDefaultsNetwork.mockRestore();
-        await status.waitFor('DEAD');
-      },
-      globalThis.defaultTimeout * 2,
-    );
-    test(
-      'start with seed nodes environment variable',
-      async () => {
-        const password = 'abc123';
-        const nodePath = path.join(dataDir, 'polykey');
-        const statusPath = path.join(nodePath, config.paths.statusBase);
-        const statusLockPath = path.join(nodePath, config.paths.statusLockBase);
-        const status = new Status({
-          statusPath,
-          statusLockPath,
-          fs,
-          logger,
-        });
-        const mockedConfigDefaultsNetwork = jestMockProps
-          .spyOnProp(config, 'network')
-          .mockValue({
-            mainnet: {},
-            testnet: {
-              [seedNodeId2]: {
-                host: seedNodeHost2 as Host,
-                port: seedNodePort2 as Port,
-              },
-            },
           });
-        await testUtils.pkStdio(
-          [
-            'agent',
-            'start',
-            '--client-host',
-            '127.0.0.1',
-            '--agent-host',
-            '127.0.0.1',
-            '--workers',
-            'none',
-            '--verbose',
-          ],
-          {
+          mockedConfigDefaultsNetwork.mockRestore();
+          await status.waitFor('DEAD');
+        },
+        globalThis.defaultTimeout * 2,
+      );
+      test(
+        'start with seed nodes environment variable',
+        async () => {
+          const password = 'abc123';
+          const nodePath = path.join(dataDir, 'polykey');
+          const statusPath = path.join(nodePath, config.paths.statusBase);
+          const statusLockPath = path.join(
+            nodePath,
+            config.paths.statusLockBase,
+          );
+          const status = new Status({
+            statusPath,
+            statusLockPath,
+            fs,
+            logger,
+          });
+          const mockedConfigDefaultsNetwork = jestMockProps
+            .spyOnProp(config, 'network')
+            .mockValue({
+              mainnet: {},
+              testnet: {
+                [seedNodeId2]: {
+                  host: seedNodeHost2 as Host,
+                  port: seedNodePort2 as Port,
+                },
+              },
+            });
+          await testUtils.pkStdio(
+            [
+              'agent',
+              'start',
+              '--client-host',
+              '127.0.0.1',
+              '--agent-host',
+              '127.0.0.1',
+              '--workers',
+              'none',
+              '--verbose',
+            ],
+            {
+              env: {
+                PK_NODE_PATH: nodePath,
+                PK_PASSWORD: password,
+                PK_PASSWORD_OPS_LIMIT: 'min',
+                PK_PASSWORD_MEM_LIMIT: 'min',
+                PK_SEED_NODES: `<defaults>;${seedNodeId1}@${seedNodeHost1}:${seedNodePort1}`,
+                PK_NETWORK: 'testnet',
+              },
+              cwd: dataDir,
+            },
+          );
+          await testUtils.pkStdio(['agent', 'stop'], {
             env: {
               PK_NODE_PATH: nodePath,
               PK_PASSWORD: password,
               PK_PASSWORD_OPS_LIMIT: 'min',
               PK_PASSWORD_MEM_LIMIT: 'min',
-              PK_SEED_NODES: `<defaults>;${seedNodeId1}@${seedNodeHost1}:${seedNodePort1}`,
-              PK_NETWORK: 'testnet',
             },
             cwd: dataDir,
-          },
-        );
-        await testUtils.pkStdio(['agent', 'stop'], {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-            PK_PASSWORD_OPS_LIMIT: 'min',
-            PK_PASSWORD_MEM_LIMIT: 'min',
-          },
-          cwd: dataDir,
-        });
-        mockedConfigDefaultsNetwork.mockRestore();
-        await status.waitFor('DEAD');
-      },
-      globalThis.defaultTimeout * 2,
-    );
-  });
+          });
+          mockedConfigDefaultsNetwork.mockRestore();
+          await status.waitFor('DEAD');
+        },
+        globalThis.defaultTimeout * 2,
+      );
+    },
+  );
 });

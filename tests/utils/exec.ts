@@ -55,6 +55,12 @@ const generateDockerArgs = (mountPath: string) => [
   'PK_CLIENT_HOST',
   '--env',
   'PK_CLIENT_PORT',
+  '--env',
+  'PK_PASSWORD_NEW',
+  '--env',
+  'PK_PASSWORD_OPS_LIMIT',
+  '--env',
+  'PK_PASSWORD_MEM_LIMIT',
 ];
 
 /**
