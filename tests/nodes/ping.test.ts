@@ -117,7 +117,8 @@ describe('ping', () => {
     globalThis.failedConnectionTimeout,
   );
   // FIXME: skipped because problem with RPC processing messages after timeout
-  testUtils.testIf(testUtils.isTestPlatformEmpty).skip(
+  // testUtils.testIf(testUtils.isTestPlatformEmpty)
+  testUtils.testIf(false)(
     'fails if node cannot be found',
     async () => {
       const fakeNodeId = nodesUtils.decodeNodeId(
