@@ -75,10 +75,13 @@ class CommandAuthenticate extends CommandPolykey {
         >;
         await binUtils.retryAuthentication(async (auth) => {
           genReadable =
-            await pkClient.rpcClientClient.methods.identitiesAuthenticate({
-              metadata: auth,
-              providerId: providerId,
-            });
+            await pkClient.rpcClientClient.methods.identitiesAuthenticate(
+              {
+                metadata: auth,
+                providerId: providerId,
+              },
+              { timer: 120000 },
+            );
           for await (const message of genReadable) {
             if (message.request != null) {
               this.logger.info(`Navigate to the URL in order to authenticate`);
