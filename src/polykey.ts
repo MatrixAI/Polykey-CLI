@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import type { AgentChildProcessInput, AgentChildProcessOutput } from './types';
+import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import fs from 'fs';
 import process from 'process';
 /**
@@ -13,24 +15,143 @@ import process from 'process';
 import 'threads';
 process.removeAllListeners('SIGINT');
 process.removeAllListeners('SIGTERM');
-import commander from 'commander';
-import ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import config from 'polykey/dist/config';
-import CommandBootstrap from './bootstrap';
-import CommandAgent from './agent';
-import CommandVaults from './vaults';
-import CommandSecrets from './secrets';
-import CommandKeys from './keys';
-import CommandNodes from './nodes';
-import CommandIdentities from './identities';
-import CommandNotifications from './notifications';
-import CommandPolykey from './CommandPolykey';
-import * as binUtils from './utils';
-import * as binErrors from './errors';
 
-process.title = 'polykey';
+/**
+ * Set the main entrypoint filepath.
+ * This can be referred to globally.
+ * For ESM, change to using `import.meta.url`.
+ */
+globalThis.PK_MAIN_EXECUTABLE = __filename;
 
-async function main(argv = process.argv): Promise<number> {
+async function polykeyAgentMain(): Promise<number> {
+  const {
+    default: Logger,
+    StreamHandler,
+    formatting,
+  } = await import('@matrixai/logger');
+  const { default: PolykeyAgent } = await import('polykey/dist/PolykeyAgent');
+  const { default: ErrorPolykey } = await import('polykey/dist/ErrorPolykey');
+  const nodesUtils = await import('polykey/dist/nodes/utils');
+  const polykeyUtils = await import('polykey/dist/utils');
+  const binUtils = await import('./utils');
+  const binErrors = await import('./errors');
+  const logger = new Logger('polykey-agent', undefined, [new StreamHandler()]);
+  const exitHandlers = new binUtils.ExitHandlers();
+  const processSend = polykeyUtils.promisify(process.send!.bind(process));
+  const { p: messageInP, resolveP: resolveMessageInP } =
+    polykeyUtils.promise<AgentChildProcessInput>();
+  process.once('message', (data: AgentChildProcessInput) => {
+    resolveMessageInP(data);
+  });
+  const messageIn = await messageInP;
+  const errFormat = messageIn.format === 'json' ? 'json' : 'error';
+  exitHandlers.errFormat = errFormat;
+  // Set the logger according to the verbosity
+  logger.setLevel(messageIn.logLevel);
+  // Set the logger formatter according to the format
+  if (messageIn.format === 'json') {
+    logger.handlers.forEach((handler) =>
+      handler.setFormatter(formatting.jsonFormatter),
+    );
+  }
+  let pkAgent: PolykeyAgent;
+  exitHandlers.handlers.push(async () => {
+    await pkAgent?.stop();
+  });
+  try {
+    pkAgent = await PolykeyAgent.createPolykeyAgent({
+      fs,
+      logger: logger.getChild(PolykeyAgent.name),
+      ...messageIn.agentConfig,
+    });
+  } catch (e) {
+    if (e instanceof ErrorPolykey || e instanceof binErrors.ErrorPolykeyCLI) {
+      process.stderr.write(
+        binUtils.outputFormatter({
+          type: errFormat,
+          data: e,
+        }),
+      );
+      process.exitCode = e.exitCode;
+    } else {
+      // Unknown error, this should not happen
+      process.stderr.write(
+        binUtils.outputFormatter({
+          type: errFormat,
+          data: e,
+        }),
+      );
+      process.exitCode = 255;
+    }
+    const messageOut: AgentChildProcessOutput = {
+      status: 'FAILURE',
+      error: {
+        name: e.name,
+        description: e.description,
+        message: e.message,
+        exitCode: e.exitCode,
+        data: e.data,
+        stack: e.stack,
+      },
+    };
+    try {
+      await processSend(messageOut);
+    } catch (e) {
+      // If processSend itself failed here
+      // There's no point attempting to propagate the error to the parent
+      process.stderr.write(
+        binUtils.outputFormatter({
+          type: errFormat,
+          data: e,
+        }),
+      );
+      process.exitCode = 255;
+    }
+    return process.exitCode;
+  }
+  const messageOut: AgentChildProcessOutput = {
+    status: 'SUCCESS',
+    recoveryCode: pkAgent.keyRing.recoveryCode,
+    pid: process.pid,
+    nodeId: nodesUtils.encodeNodeId(pkAgent.keyRing.getNodeId()),
+    clientHost: pkAgent.clientServiceHost,
+    clientPort: pkAgent.clientServicePort,
+    agentHost: pkAgent.agentServiceHost,
+    agentPort: pkAgent.agentServicePort,
+  };
+  try {
+    await processSend(messageOut);
+  } catch (e) {
+    // If processSend itself failed here
+    // There's no point attempting to propagate the error to the parent
+    process.stderr.write(
+      binUtils.outputFormatter({
+        type: errFormat,
+        data: e,
+      }),
+    );
+    process.exitCode = 255;
+    return process.exitCode;
+  }
+  process.exitCode = 0;
+  return process.exitCode;
+}
+
+async function polykeyMain(argv: Array<string>): Promise<number> {
+  const { default: commander } = await import('commander');
+  const { default: ErrorPolykey } = await import('polykey/dist/ErrorPolykey');
+  const { default: config } = await import('polykey/dist/config');
+  const { default: CommandBootstrap } = await import('./bootstrap');
+  const { default: CommandAgent } = await import('./agent');
+  const { default: CommandVaults } = await import('./vaults');
+  const { default: CommandSecrets } = await import('./secrets');
+  const { default: CommandKeys } = await import('./keys');
+  const { default: CommandNodes } = await import('./nodes');
+  const { default: CommandIdentities } = await import('./identities');
+  const { default: CommandNotifications } = await import('./notifications');
+  const { default: CommandPolykey } = await import('./CommandPolykey');
+  const binUtils = await import('./utils');
+  const binErrors = await import('./errors');
   // Registers signal and process error handler
   // Any resource cleanup must be resolved within their try-catch block
   // Leaf commands may register exit handlers in case of signal exits
@@ -100,6 +221,18 @@ async function main(argv = process.argv): Promise<number> {
     }
   }
   return process.exitCode ?? 255;
+}
+
+async function main(argv = process.argv): Promise<number> {
+  if (argv[argv.length - 1] === '--agent-mode') {
+    // This is an internal mode for running `PolykeyAgent` as a child process
+    // This is not supposed to be used directly by the user
+    process.title = 'polykey-agent';
+    return polykeyAgentMain();
+  } else {
+    process.title = 'polykey';
+    return polykeyMain(argv);
+  }
 }
 
 if (require.main === module) {

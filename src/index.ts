@@ -1,6 +1,5 @@
 export { default as CommandPolykey } from './CommandPolykey';
 export { default as polykey } from './polykey';
-export { default as polykeyAgent } from './polykey-agent';
 export * as agent from './agent';
 export * as bootstrap from './bootstrap';
 export * as identities from './identities';

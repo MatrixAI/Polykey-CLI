@@ -10,12 +10,11 @@ import type {
 } from 'polykey/dist/PolykeyAgent';
 import type { DeepPartial } from 'polykey/dist/types';
 import type { RecoveryCode } from 'polykey/dist/keys/types';
-import path from 'path';
 import childProcess from 'child_process';
 import process from 'process';
-import * as keysErrors from 'polykey/dist/keys/errors';
-import { promise, dirEmpty } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
+import * as keysErrors from 'polykey/dist/keys/errors';
+import * as polykeyUtils from 'polykey/dist/utils';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -66,7 +65,7 @@ class CommandStart extends CommandPolykey {
           options.passwordFile,
           this.fs,
         );
-      } else if (await dirEmpty(this.fs, options.nodePath)) {
+      } else if (await polykeyUtils.dirEmpty(this.fs, options.nodePath)) {
         // If the node path is empty, get a new password
         password = await binProcessors.processNewPassword(
           options.passwordFile,
@@ -130,8 +129,8 @@ class CommandStart extends CommandPolykey {
           stdio[2] = agentErrFile.fd;
         }
         const agentProcess = childProcess.fork(
-          path.join(__dirname, '../polykey-agent'),
-          [],
+          globalThis.PK_MAIN_EXECUTABLE,
+          ['--agent-mode'],
           {
             cwd: process.cwd(),
             env: process.env,
@@ -144,7 +143,7 @@ class CommandStart extends CommandPolykey {
           p: agentProcessP,
           resolveP: resolveAgentProcessP,
           rejectP: rejectAgentProcessP,
-        } = promise<void>();
+        } = polykeyUtils.promise<void>();
         // Once the agent responds with message, it considered ok to go-ahead
         agentProcess.once('message', (messageOut: AgentChildProcessOutput) => {
           if (messageOut.status === 'SUCCESS') {
