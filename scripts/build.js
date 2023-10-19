@@ -45,8 +45,9 @@ async function main(argv = process.argv) {
     treeShaking: true,
     // External source map for debugging
     sourcemap: true,
-    // Minification has problems
-    minify: false,
+    // Minify and keep the original names
+    minify: true,
+    keepNames: true,
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);
