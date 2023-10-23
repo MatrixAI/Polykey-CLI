@@ -48,6 +48,20 @@ type OutputObject =
       data: Error;
     };
 
+function standardErrorReplacer(key: string, value: any) {
+  if (value instanceof Error && !(value instanceof ErrorPolykey)) {
+    return {
+      type: value.name,
+      data: {
+        message: value.message,
+        stack: value.stack,
+        cause: value.cause,
+      },
+    };
+  }
+  return value;
+}
+
 function outputFormatter(msg: OutputObject): string | Uint8Array {
   let output = '';
   if (msg.type === 'raw') {
@@ -97,13 +111,7 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
       output += `${key}\t${value}\n`;
     }
   } else if (msg.type === 'json') {
-    if (msg.data instanceof Error && !(msg.data instanceof ErrorPolykey)) {
-      msg.data = {
-        type: msg.data.name,
-        data: { message: msg.data.message, stack: msg.data.stack },
-      };
-    }
-    output = JSON.stringify(msg.data);
+    output = JSON.stringify(msg.data, standardErrorReplacer);
     output += '\n';
   } else if (msg.type === 'error') {
     let currError = msg.data;
@@ -229,6 +237,7 @@ function remoteErrorCause(e: any): [any, number] {
 
 export {
   verboseToLogLevel,
+  standardErrorReplacer,
   outputFormatter,
   retryAuthentication,
   remoteErrorCause,

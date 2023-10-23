@@ -191,7 +191,12 @@ describe('bin/utils', () => {
       ).toBe(JSON.stringify(remoteError.toJSON()) + '\n');
       expect(
         binUtils.outputFormatter({ type: 'json', data: twoRemoteErrors }),
-      ).toBe(JSON.stringify(twoRemoteErrors.toJSON()) + '\n');
+      ).toBe(
+        JSON.stringify(
+          twoRemoteErrors.toJSON(),
+          binUtils.standardErrorReplacer,
+        ) + '\n',
+      );
     },
   );
 });
