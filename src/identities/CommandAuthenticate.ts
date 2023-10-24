@@ -1,5 +1,4 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { WebSocketClient } from '@matrixai/ws';
 import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
 import type { AuthProcessMessage } from 'polykey/dist/client/types';
 import type { ReadableStream } from 'stream/web';
@@ -27,8 +26,6 @@ class CommandAuthenticate extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils');
       const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
@@ -42,43 +39,30 @@ class CommandAuthenticate extends CommandPolykey {
         options.passwordFile,
         this.fs,
       );
-      let webSocketClient: WebSocketClient;
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
-        if (webSocketClient != null) {
-          await webSocketClient.destroy({ force: true });
-        }
       });
       try {
-        webSocketClient = await WebSocketClient.createWebSocketClient({
-          config: {
-            verifyPeer: true,
-            verifyCallback: async (certs) => {
-              await clientUtils.verifyServerCertificateChain(
-                [clientOptions.nodeId],
-                certs,
-              );
-            },
-          },
+        pkClient = await PolykeyClient.createPolykeyClient({
+          nodeId: clientOptions.nodeId,
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
-          logger: this.logger.getChild(WebSocketClient.name),
-        });
-        pkClient = await PolykeyClient.createPolykeyClient({
-          streamFactory: () => webSocketClient.connection.newStream(),
-          nodePath: options.nodePath,
+          options: {
+            nodePath: options.nodePath,
+          },
           logger: this.logger.getChild(PolykeyClient.name),
         });
         let genReadable: ReadableStream<
           ClientRPCResponseResult<AuthProcessMessage>
         >;
         await binUtils.retryAuthentication(async (auth) => {
-          genReadable =
-            await pkClient.rpcClientClient.methods.identitiesAuthenticate({
+          genReadable = await pkClient.rpcClient.methods.identitiesAuthenticate(
+            {
               metadata: auth,
               providerId: providerId,
-            });
+            },
+          );
           for await (const message of genReadable) {
             if (message.request != null) {
               this.logger.info(`Navigate to the URL in order to authenticate`);
@@ -112,7 +96,6 @@ class CommandAuthenticate extends CommandPolykey {
         }, auth);
       } finally {
         if (pkClient! != null) await pkClient.stop();
-        if (webSocketClient! != null) await webSocketClient.destroy();
       }
     });
   }

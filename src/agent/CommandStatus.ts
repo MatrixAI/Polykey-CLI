@@ -1,5 +1,4 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { WebSocketClient } from '@matrixai/ws';
 import type { StatusResultMessage } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -18,8 +17,6 @@ class CommandStatus extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils');
       const clientStatus = await binProcessors.processClientStatus(
         options.nodePath,
         options.nodeId,
@@ -46,45 +43,30 @@ class CommandStatus extends CommandPolykey {
           options.passwordFile,
           this.fs,
         );
-        let webSocketClient: WebSocketClient;
         let pkClient: PolykeyClient;
         this.exitHandlers.handlers.push(async () => {
           if (pkClient != null) await pkClient.stop();
-          if (webSocketClient != null) {
-            await webSocketClient.destroy({ force: true });
-          }
         });
         let response: StatusResultMessage;
         try {
-          webSocketClient = await WebSocketClient.createWebSocketClient({
-            config: {
-              verifyPeer: true,
-              verifyCallback: async (certs) => {
-                await clientUtils.verifyServerCertificateChain(
-                  [clientStatus.nodeId!],
-                  certs,
-                );
-              },
-            },
+          pkClient = await PolykeyClient.createPolykeyClient({
+            nodeId: clientStatus.nodeId!,
             host: clientStatus.clientHost!,
             port: clientStatus.clientPort!,
-            logger: this.logger.getChild(WebSocketClient.name),
-          });
-          pkClient = await PolykeyClient.createPolykeyClient({
-            streamFactory: () => webSocketClient.connection.newStream(),
-            nodePath: options.nodePath,
+            options: {
+              nodePath: options.nodePath,
+            },
             logger: this.logger.getChild(PolykeyClient.name),
           });
           response = await binUtils.retryAuthentication(
             (auth) =>
-              pkClient.rpcClientClient.methods.agentStatus({
+              pkClient.rpcClient.methods.agentStatus({
                 metadata: auth,
               }),
             auth,
           );
         } finally {
           if (pkClient! != null) await pkClient.stop();
-          if (webSocketClient! != null) await webSocketClient.destroy();
         }
         process.stdout.write(
           binUtils.outputFormatter({
