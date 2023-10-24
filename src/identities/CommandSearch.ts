@@ -1,5 +1,4 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { WebSocketClient } from '@matrixai/ws';
 import type { IdentityInfoMessage } from 'polykey/dist/client/types';
 import type { ReadableStream } from 'stream/web';
 import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
@@ -48,8 +47,6 @@ class CommandSearch extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const { WebSocketClient } = await import('@matrixai/ws');
-      const clientUtils = await import('polykey/dist/client/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -62,32 +59,18 @@ class CommandSearch extends CommandPolykey {
         options.passwordFile,
         this.fs,
       );
-      let webSocketClient: WebSocketClient;
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
-        if (webSocketClient != null) {
-          await webSocketClient.destroy({ force: true });
-        }
       });
       try {
-        webSocketClient = await WebSocketClient.createWebSocketClient({
-          config: {
-            verifyPeer: true,
-            verifyCallback: async (certs) => {
-              await clientUtils.verifyServerCertificateChain(
-                [clientOptions.nodeId],
-                certs,
-              );
-            },
-          },
+        pkClient = await PolykeyClient.createPolykeyClient({
+          nodeId: clientOptions.nodeId,
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
-          logger: this.logger.getChild(WebSocketClient.name),
-        });
-        pkClient = await PolykeyClient.createPolykeyClient({
-          streamFactory: () => webSocketClient.connection.newStream(),
-          nodePath: options.nodePath,
+          options: {
+            nodePath: options.nodePath,
+          },
           logger: this.logger.getChild(PolykeyClient.name),
         });
         await binUtils.retryAuthentication(async (auth) => {
@@ -95,8 +78,20 @@ class CommandSearch extends CommandPolykey {
             ClientRPCResponseResult<IdentityInfoMessage>
           >;
           if (options.identityId) {
+            readableStream = await pkClient.rpcClient.methods.identitiesInfoGet(
+              {
+                metadata: auth,
+                identityId: options.identityId,
+                authIdentityId: options.authIdentityId,
+                disconnected: options.disconnected,
+                providerIdList: options.providerId ?? [],
+                searchTermList: searchTerms,
+                limit: options.limit,
+              },
+            );
+          } else {
             readableStream =
-              await pkClient.rpcClientClient.methods.identitiesInfoGet({
+              await pkClient.rpcClient.methods.identitiesInfoConnectedGet({
                 metadata: auth,
                 identityId: options.identityId,
                 authIdentityId: options.authIdentityId,
@@ -105,19 +100,6 @@ class CommandSearch extends CommandPolykey {
                 searchTermList: searchTerms,
                 limit: options.limit,
               });
-          } else {
-            readableStream =
-              await pkClient.rpcClientClient.methods.identitiesInfoConnectedGet(
-                {
-                  metadata: auth,
-                  identityId: options.identityId,
-                  authIdentityId: options.authIdentityId,
-                  disconnected: options.disconnected,
-                  providerIdList: options.providerId ?? [],
-                  searchTermList: searchTerms,
-                  limit: options.limit,
-                },
-              );
           }
           for await (const identityInfoMessage of readableStream) {
             const output = {
@@ -137,7 +119,6 @@ class CommandSearch extends CommandPolykey {
         }, auth);
       } finally {
         if (pkClient! != null) await pkClient.stop();
-        if (webSocketClient! != null) await webSocketClient.destroy();
       }
     });
   }
