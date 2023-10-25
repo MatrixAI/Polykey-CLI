@@ -78,36 +78,52 @@ function parseSecretPath(secretPath: string): [string, string, string?] {
 const parseInteger: (data: string) => number = validateParserToArgParser(
   validationUtils.parseInteger,
 );
+
 const parseNumber: (data: string) => number = validateParserToArgParser(
   validationUtils.parseNumber,
 );
+
 const parseNodeId: (data: string) => ids.NodeId = validateParserToArgParser(
   ids.parseNodeId,
 );
+
 const parseGestaltId: (data: string) => ids.GestaltId =
   validateParserToArgParser(ids.parseGestaltId);
+
+const parseGestaltIdentityId: (data: string) => ids.GestaltId =
+  validateParserToArgParser(ids.parseGestaltIdentityId);
+
 const parseProviderId: (data: string) => ids.ProviderId =
   validateParserToArgParser(ids.parseProviderId);
+
 const parseIdentityId: (data: string) => ids.IdentityId =
   validateParserToArgParser(ids.parseIdentityId);
+
 const parseProviderIdList: (data: string) => ids.ProviderId[] =
   validateParserToArgListParser(ids.parseProviderId);
+
 const parseGestaltAction: (data: string) => 'notify' | 'scan' | 'claim' =
   validateParserToArgParser(gestaltsUtils.parseGestaltAction);
+
 const parseHost: (data: string) => Host = validateParserToArgParser(
   networkUtils.parseHost,
 );
+
 const parseHostname: (data: string) => Hostname = validateParserToArgParser(
   networkUtils.parseHostname,
 );
+
 const parseHostOrHostname: (data: string) => Host | Hostname =
   validateParserToArgParser(networkUtils.parseHostOrHostname);
+
 const parsePort: (data: string) => Port = validateParserToArgParser(
   networkUtils.parsePort,
 );
+
 const parseNetwork: (data: string) => SeedNodes = validateParserToArgParser(
   nodesUtils.parseNetwork,
 );
+
 const parseSeedNodes: (data: string) => [SeedNodes, boolean] =
   validateParserToArgParser(nodesUtils.parseSeedNodes);
 
@@ -120,6 +136,7 @@ export {
   parseNumber,
   parseNodeId,
   parseGestaltId,
+  parseGestaltIdentityId,
   parseGestaltAction,
   parseHost,
   parseHostname,
