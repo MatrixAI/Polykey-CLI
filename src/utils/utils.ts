@@ -95,20 +95,30 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
       output = output.substring(0, output.length - 1) + `\n`;
     }
   } else if (msg.type === 'dict') {
+    // Step 1: Find the length of the longest key
+    let maxKeyLength = 0;
+    for (const key in msg.data) {
+      if (key.length > maxKeyLength) {
+        maxKeyLength = key.length;
+      }
+    }
+
+    // Step 2: Use the maxKeyLength to align the keys and values
     for (const key in msg.data) {
       let value = msg.data[key];
       // Empty string for null or undefined values
       if (value == null) {
         value = '';
       }
-      value = JSON.stringify(value);
+      value = JSON.stringify(value).replace(/"/g, '');
       // Remove the last line terminator if it exists
-      // This may exist if the value is multi-line string
       value = value.replace(/(?:\r\n|\n)$/, '');
-      // If the string has line terminators internally
-      // Then we must append `\t` separator after each line terminator
-      value = value.replace(/(\r\n|\n)/g, '$1\t');
-      output += `${key}\t${value}\n`;
+
+      // Add spaces to make the keys equidistant
+      const padding = ' '.repeat(maxKeyLength - key.length);
+
+      // Append the padded key and value to the output
+      output += `${key}${padding}\t${value}\n`;
     }
   } else if (msg.type === 'json') {
     output = JSON.stringify(msg.data, standardErrorReplacer);

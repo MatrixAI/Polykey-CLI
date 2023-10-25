@@ -63,19 +63,19 @@ describe('bin/utils', () => {
           type: 'dict',
           data: { key1: 'value1', key2: 'value2' },
         }),
-      ).toBe('key1\t"value1"\nkey2\t"value2"\n');
+      ).toBe('key1\tvalue1\nkey2\tvalue2\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: 'first\nsecond', key2: 'first\nsecond\n' },
         }),
-      ).toBe('key1\t"first\\nsecond"\nkey2\t"first\\nsecond\\n"\n');
+      ).toBe('key1\tfirst\\nsecond\nkey2\tfirst\\nsecond\\n\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: null, key2: undefined },
         }),
-      ).toBe('key1\t""\nkey2\t""\n');
+      ).toBe('key1\t\nkey2\t\n');
       // JSON
       expect(
         binUtils.outputFormatter({

@@ -48,20 +48,69 @@ class CommandAdd extends CommandPolykey {
             });
           const connectionEntries: Array<NodeConnectionMessage> = [];
           for await (const connection of connections) {
-            connectionEntries.push(connection);
+            connectionEntries.push({
+              host: connection.host,
+              hostname: connection.hostname,
+              nodeIdEncoded: connection.nodeIdEncoded,
+              port: connection.port,
+              timeout: connection.timeout,
+              usageCount: connection.usageCount,
+            });
           }
           return connectionEntries;
         }, auth);
         if (options.format === 'human') {
           const output: Array<string> = [];
+
+          // Initialize variables to hold the maximum length for each column
+          let maxHostStringLength = 'NodeHost'.length;
+          let maxUsageCountLength = 'UsageCount'.length;
+          let maxTimeoutLength = 'Timeout'.length;
+
+          // Loop through the connections to find the maximum length for each column
           for (const connection of connections) {
             const hostnameString =
               connection.hostname === '' ? '' : `(${connection.hostname})`;
             const hostString = `${connection.nodeIdEncoded}@${connection.host}${hostnameString}:${connection.port}`;
-            const usageCount = connection.usageCount;
+            const usageCount = connection.usageCount.toString();
             const timeout =
               connection.timeout === -1 ? 'NA' : `${connection.timeout}`;
-            const outputLine = `${hostString}\t${usageCount}\t${timeout}`;
+
+            if (hostString.length > maxHostStringLength) {
+              maxHostStringLength = hostString.length;
+            }
+            if (usageCount.length > maxUsageCountLength) {
+              maxUsageCountLength = usageCount.length;
+            }
+            if (timeout.length > maxTimeoutLength) {
+              maxTimeoutLength = timeout.length;
+            }
+          }
+
+          // Create the header line with proper padding
+          const headerLine =
+            'NodeHost'.padEnd(maxHostStringLength) +
+            '\t' +
+            'UsageCount'.padEnd(maxUsageCountLength) +
+            '\t' +
+            'Timeout'.padEnd(maxTimeoutLength);
+          output.push(headerLine);
+
+          // Create the data lines with proper padding
+          for (const connection of connections) {
+            const hostnameString =
+              connection.hostname === '' ? '' : `(${connection.hostname})`;
+            const hostString = `${connection.nodeIdEncoded}@${connection.host}${hostnameString}:${connection.port}`;
+            const usageCount = connection.usageCount.toString();
+            const timeout =
+              connection.timeout === -1 ? 'NA' : `${connection.timeout}`;
+
+            const outputLine =
+              hostString.padEnd(maxHostStringLength) +
+              '\t' +
+              usageCount.padEnd(maxUsageCountLength) +
+              '\t' +
+              timeout.padEnd(maxTimeoutLength);
             output.push(outputLine);
           }
           process.stdout.write(

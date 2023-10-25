@@ -79,8 +79,6 @@ class CommandStatus extends CommandPolykey {
               clientPort: response.clientPort,
               agentHost: response.agentHost,
               agentPort: response.agentPort,
-              publicKeyJWK: response.publicKeyJwk,
-              certChainPEM: response.certChainPEM,
             },
           }),
         );
