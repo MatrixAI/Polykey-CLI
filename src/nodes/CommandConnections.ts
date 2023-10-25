@@ -39,8 +39,6 @@ class CommandAdd extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        // DO things here...
-        // Like create the message.
         const connections = await binUtils.retryAuthentication(async (auth) => {
           const connections =
             await pkClient.rpcClient.methods.nodesListConnections({
