@@ -81,8 +81,7 @@ describe('claim', () => {
         [
           'identities',
           'claim',
-          testToken.providerId,
-          testToken.identityId,
+          `${testToken.providerId}:${testToken.identityId}`,
           '--format',
           'json',
         ],
@@ -110,7 +109,11 @@ describe('claim', () => {
     'cannot claim unauthenticated identities',
     async () => {
       const { exitCode } = await testUtils.pkStdio(
-        ['identities', 'claim', testToken.providerId, testToken.identityId],
+        [
+          'identities',
+          'claim',
+          `${testToken.providerId}:${testToken.identityId}`,
+        ],
         {
           env: {
             PK_NODE_PATH: nodePath,
@@ -128,7 +131,7 @@ describe('claim', () => {
       let exitCode;
       // Invalid provider
       ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'claim', '', testToken.identityId],
+        ['identities', 'claim', `:${testToken.identityId}`],
         {
           env: {
             PK_NODE_PATH: nodePath,
@@ -140,7 +143,7 @@ describe('claim', () => {
       expect(exitCode).toBe(sysexits.USAGE);
       // Invalid identity
       ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'claim', testToken.providerId, ''],
+        ['identities', 'claim', `${testToken.providerId}:`],
         {
           env: {
             PK_NODE_PATH: nodePath,
