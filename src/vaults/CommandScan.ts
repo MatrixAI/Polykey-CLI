@@ -58,12 +58,11 @@ class CommandScan extends CommandPolykey {
           }
           return data;
         }, meta);
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: data,
-          }),
-        );
+        const formattedOutput = await binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'list',
+          data: data,
+        });
+        process.stdout.write(formattedOutput);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

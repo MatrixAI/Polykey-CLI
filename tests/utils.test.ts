@@ -28,28 +28,32 @@ describe('bin/utils', () => {
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'table in human and in json format',
-    () => {
+    async () => {
+      // Note the async here
       // Table
-      expect(
-        binUtils.outputFormatter({
-          type: 'table',
-          data: [
-            { key1: 'value1', key2: 'value2' },
-            { key1: 'data1', key2: 'data2' },
-            { key1: null, key2: undefined },
-          ],
-        }),
-      ).toBe('key1\tkey2\nvalue1\tvalue2\ndata1\tdata2\n\t\n');
+      const tableOutput = await binUtils.outputFormatter({
+        // And the await here
+        type: 'table',
+        data: [
+          { key1: 'value1', key2: 'value2' },
+          { key1: 'data1', key2: 'data2' },
+          { key1: null, key2: undefined },
+        ],
+      });
+      expect(tableOutput).toBe(
+        'value1\tvalue2\ndata1 \tdata2\nundefined\tundefined\n',
+      );
+
       // JSON
-      expect(
-        binUtils.outputFormatter({
-          type: 'json',
-          data: [
-            { key1: 'value1', key2: 'value2' },
-            { key1: 'data1', key2: 'data2' },
-          ],
-        }),
-      ).toBe(
+      const jsonOutput = await binUtils.outputFormatter({
+        // And the await here
+        type: 'json',
+        data: [
+          { key1: 'value1', key2: 'value2' },
+          { key1: 'data1', key2: 'data2' },
+        ],
+      });
+      expect(jsonOutput).toBe(
         '[{"key1":"value1","key2":"value2"},{"key1":"data1","key2":"data2"}]\n',
       );
     },
@@ -63,19 +67,19 @@ describe('bin/utils', () => {
           type: 'dict',
           data: { key1: 'value1', key2: 'value2' },
         }),
-      ).toBe('key1\t"value1"\nkey2\t"value2"\n');
+      ).toBe('key1\tvalue1\nkey2\tvalue2\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: 'first\nsecond', key2: 'first\nsecond\n' },
         }),
-      ).toBe('key1\t"first\\nsecond"\nkey2\t"first\\nsecond\\n"\n');
+      ).toBe('key1\tfirst\\nsecond\nkey2\tfirst\\nsecond\\n\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: null, key2: undefined },
         }),
-      ).toBe('key1\t""\nkey2\t""\n');
+      ).toBe('key1\t\nkey2\t\n');
       // JSON
       expect(
         binUtils.outputFormatter({

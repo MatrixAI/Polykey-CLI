@@ -40,8 +40,17 @@ type AgentChildProcessOutput =
       error: POJO;
     };
 
+type TableRow = Record<string, any>;
+
+interface TableOptions {
+  headers?: string[];
+  includeRowCount?: boolean;
+}
+
 export type {
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
+  TableRow,
+  TableOptions,
 };

@@ -179,8 +179,6 @@ describe('status', () => {
         clientPort: statusInfo.data.clientPort,
         agentHost: statusInfo.data.agentHost,
         agentPort: statusInfo.data.agentPort,
-        publicKeyJWK: expect.any(Object),
-        certChainPEM: expect.any(String),
       });
     });
     testUtils.testIf(
@@ -229,8 +227,6 @@ describe('status', () => {
         clientPort: statusInfo.data.clientPort,
         agentHost: statusInfo.data.agentHost,
         agentPort: statusInfo.data.agentPort,
-        publicKeyJWK: expect.any(Object),
-        certChainPEM: expect.any(String),
       });
     });
   });

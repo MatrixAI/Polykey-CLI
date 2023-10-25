@@ -48,35 +48,41 @@ class CommandAdd extends CommandPolykey {
             });
           const connectionEntries: Array<NodeConnectionMessage> = [];
           for await (const connection of connections) {
-            connectionEntries.push(connection);
+            connectionEntries.push({
+              host: connection.host,
+              hostname: connection.hostname,
+              nodeIdEncoded: connection.nodeIdEncoded,
+              port: connection.port,
+              timeout: connection.timeout,
+              usageCount: connection.usageCount,
+            });
           }
           return connectionEntries;
         }, auth);
         if (options.format === 'human') {
-          const output: Array<string> = [];
-          for (const connection of connections) {
-            const hostnameString =
-              connection.hostname === '' ? '' : `(${connection.hostname})`;
-            const hostString = `${connection.nodeIdEncoded}@${connection.host}${hostnameString}:${connection.port}`;
-            const usageCount = connection.usageCount;
-            const timeout =
-              connection.timeout === -1 ? 'NA' : `${connection.timeout}`;
-            const outputLine = `${hostString}\t${usageCount}\t${timeout}`;
-            output.push(outputLine);
-          }
-          process.stdout.write(
-            binUtils.outputFormatter({
-              type: 'list',
-              data: output,
-            }),
-          );
+          // Wait for outputFormatter to complete and then write to stdout
+          const formattedOutput = await binUtils.outputFormatter({
+            type: 'table',
+            data: connections,
+            options: {
+              headers: [
+                'host',
+                'hostname',
+                'nodeIdEncoded',
+                'port',
+                'timeout',
+                'usageCount',
+              ],
+            },
+          });
+          process.stdout.write(formattedOutput);
         } else {
-          process.stdout.write(
-            binUtils.outputFormatter({
-              type: 'json',
-              data: connections,
-            }),
-          );
+          // Wait for outputFormatter to complete and then write to stdout
+          const formattedOutput = await binUtils.outputFormatter({
+            type: 'json',
+            data: connections,
+          });
+          process.stdout.write(formattedOutput);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

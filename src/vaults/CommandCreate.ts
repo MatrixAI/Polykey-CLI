@@ -1,4 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import process from 'process';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -53,12 +54,11 @@ class CommandCreate extends CommandPolykey {
             }),
           meta,
         );
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: [`Vault ${response.vaultIdEncoded} created successfully`],
-          }),
-        );
+        const formattedOutput = await binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'list',
+          data: [`Vault ${response.vaultIdEncoded} created successfully`],
+        });
+        process.stdout.write(formattedOutput);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
