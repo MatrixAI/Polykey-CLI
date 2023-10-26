@@ -48,6 +48,11 @@ class CommandStatus extends CommandPolykey {
           if (pkClient != null) await pkClient.stop();
         });
         let response: StatusResultMessage;
+        let output: Array<any> = [];
+        let data: Array<any> = [];
+        let lenActive: number;
+        let lenVaults: number;
+
         try {
           pkClient = await PolykeyClient.createPolykeyClient({
             nodeId: clientStatus.nodeId!,
@@ -65,6 +70,24 @@ class CommandStatus extends CommandPolykey {
               }),
             auth,
           );
+          const result = await binUtils.retryAuthentication(
+            (auth) =>
+              pkClient.rpcClient.methods.nodesGetAll({
+                metadata: auth,
+              }),
+            auth,
+          );
+          for await (const nodesGetMessage of result) {
+            output.push(1);
+          }
+          lenActive = output.length;
+          const stream = await pkClient.rpcClient.methods.vaultsList({
+            metadata: auth,
+          });
+          for await (const vaultListMessage of stream) {
+            data.push(1);
+          }
+          lenVaults = data.length;
         } finally {
           if (pkClient! != null) await pkClient.stop();
         }
@@ -79,6 +102,8 @@ class CommandStatus extends CommandPolykey {
               clientPort: response.clientPort,
               agentHost: response.agentHost,
               agentPort: response.agentPort,
+              numberActiveConnections: lenActive,
+              vaultsMade: lenVaults,
             },
           }),
         );
