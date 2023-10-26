@@ -17,6 +17,7 @@ class CommandStatus extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
+      const { getUnixtime } = await import('polykey/dist/utils/utils');
       const clientStatus = await binProcessors.processClientStatus(
         options.nodePath,
         options.nodeId,
@@ -79,6 +80,9 @@ class CommandStatus extends CommandPolykey {
               clientPort: response.clientPort,
               agentHost: response.agentHost,
               agentPort: response.agentPort,
+              upTime: getUnixtime() - response.startTime,
+              connectionsActive: response.connectionsActive,
+              nodesTotal: response.nodesTotal,
             },
           }),
         );
