@@ -59,12 +59,11 @@ class CommandGet extends CommandPolykey {
           meta,
         );
         const secretContent = Buffer.from(response.secretContent, 'binary');
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: 'raw',
-            data: secretContent,
-          }),
-        );
+        const formattedOutput = await binUtils.outputFormatter({
+          type: 'raw',
+          data: secretContent,
+        });
+        process.stdout.write(formattedOutput);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

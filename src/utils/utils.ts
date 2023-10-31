@@ -1,4 +1,5 @@
 import type { POJO } from 'polykey/dist/types';
+import type { TableRow, TableOptions } from '../types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
@@ -34,6 +35,7 @@ type OutputObject =
   | {
       type: 'table';
       data: Array<POJO>;
+      options?: TableOptions;
     }
   | {
       type: 'dict';
@@ -62,7 +64,93 @@ function standardErrorReplacer(key: string, value: any) {
   return value;
 }
 
-function outputFormatter(msg: OutputObject): string | Uint8Array {
+async function* arrayToAsyncIterable<T>(array: T[]): AsyncIterable<T> {
+  for (const item of array) {
+    yield item;
+  }
+}
+
+// Function to handle 'table' type output
+const outputTableFormatter = async (
+  rowStream: TableRow[] | AsyncIterable<TableRow>,
+  options?: TableOptions,
+): Promise<string> => {
+  let output = '';
+  const maxColumnLengths: Record<string, number> = {};
+  let rowCount = 0;
+
+  // Initialize maxColumnLengths with header lengths if headers are provided
+  if (options?.headers) {
+    for (const header of options.headers) {
+      maxColumnLengths[header] = header.length;
+    }
+  }
+
+  let iterableStream = Array.isArray(rowStream)
+    ? arrayToAsyncIterable(rowStream)
+    : rowStream;
+
+  const updateMaxColumnLengths = (row: TableRow) => {
+    for (const [key, value] of Object.entries(row)) {
+      const cellValue =
+        value === null || value === '' || value === undefined ? 'N/A' : value;
+      maxColumnLengths[key] = Math.max(
+        maxColumnLengths[key] || 0,
+        cellValue.toString().length,
+      );
+    }
+  };
+
+  // Precompute max column lengths by iterating over the rows first
+  for await (const row of iterableStream) {
+    updateMaxColumnLengths(row);
+  }
+
+  // Reset the iterableStream if it's an array so we can iterate over it again
+  if (Array.isArray(rowStream)) {
+    iterableStream = arrayToAsyncIterable(rowStream);
+  }
+
+  // If headers are provided, add them to your output first
+  if (options?.headers) {
+    const headerRow = options.headers
+      .map((header) => header.padEnd(maxColumnLengths[header]))
+      .join('\t');
+    output += headerRow + '\n';
+  }
+
+  // Function to format a single row
+  const formatRow = (row: TableRow) => {
+    let formattedRow = '';
+
+    if (options?.includeRowCount) {
+      formattedRow += `${++rowCount}\t`;
+    }
+
+    const keysToUse = options?.headers ?? Object.keys(maxColumnLengths);
+
+    for (const key of keysToUse) {
+      const cellValue = Object.prototype.hasOwnProperty.call(row, key)
+        ? row[key]
+        : 'N/A';
+      formattedRow += `${cellValue
+        ?.toString()
+        .padEnd(maxColumnLengths[key] || 0)}\t`;
+    }
+
+    return formattedRow.trimEnd();
+  };
+
+  for await (const row of iterableStream) {
+    output += formatRow(row) + '\n';
+  }
+
+  return output;
+};
+
+function outputFormatter(
+  msg: OutputObject,
+): string | Uint8Array | Promise<string> {
   let output = '';
   if (msg.type === 'raw') {
     return msg.data;
@@ -75,40 +163,34 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
       output += `${msg.data[elem]}\n`;
     }
   } else if (msg.type === 'table') {
-    for (const key in msg.data[0]) {
-      output += `${key}\t`;
-    }
-    output = output.substring(0, output.length - 1) + `\n`;
-    for (const row of msg.data) {
-      for (const key in row) {
-        let value = row[key];
-        // Empty string for null or undefined values
-        if (value == null) {
-          value = '';
-        }
-        value = value.toString();
-        // Remove the last line terminator if it exists
-        // This may exist if the value is multi-line string
-        value = value.replace(/(?:\r\n|\n)$/, '');
-        output += `${value}\t`;
-      }
-      output = output.substring(0, output.length - 1) + `\n`;
-    }
+    return outputTableFormatter(msg.data, msg.options);
   } else if (msg.type === 'dict') {
+    let maxKeyLength = 0;
+    for (const key in msg.data) {
+      if (key.length > maxKeyLength) {
+        maxKeyLength = key.length;
+      }
+    }
+
     for (const key in msg.data) {
       let value = msg.data[key];
-      // Empty string for null or undefined values
       if (value == null) {
         value = '';
       }
-      value = JSON.stringify(value);
-      // Remove the last line terminator if it exists
-      // This may exist if the value is multi-line string
+
+      // Only trim starting and ending quotes if value is a string
+      if (typeof value === 'string') {
+        value = JSON.stringify(value).replace(/^"|"$/g, '');
+      } else {
+        value = JSON.stringify(value);
+      }
+
+      // Re-introduce value.replace logic from old code
       value = value.replace(/(?:\r\n|\n)$/, '');
-      // If the string has line terminators internally
-      // Then we must append `\t` separator after each line terminator
       value = value.replace(/(\r\n|\n)/g, '$1\t');
-      output += `${key}\t${value}\n`;
+
+      const padding = ' '.repeat(maxKeyLength - key.length);
+      output += `${key}${padding}\t${value}\n`;
     }
   } else if (msg.type === 'json') {
     output = JSON.stringify(msg.data, standardErrorReplacer);

@@ -68,12 +68,12 @@ class CommandPing extends CommandPolykey {
         else status.message = error.message;
         const output: any =
           options.format === 'json' ? status : [status.message];
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: output,
-          }),
-        );
+        const formattedOutput = await binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'list',
+          data: output,
+        });
+        process.stdout.write(formattedOutput);
+
         if (error != null) throw error;
       } finally {
         if (pkClient! != null) await pkClient.stop();

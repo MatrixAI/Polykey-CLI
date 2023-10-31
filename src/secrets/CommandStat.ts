@@ -65,13 +65,13 @@ class CommandStat extends CommandPolykey {
           data.push(`${key}: ${value}`);
         }
 
-        // Print out the result.
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data,
-          }),
-        );
+        // Assuming the surrounding function is async
+        const formattedOutput = await binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'list',
+          data,
+        });
+
+        process.stdout.write(formattedOutput);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

@@ -61,12 +61,11 @@ class CommandPermissions extends CommandPolykey {
         }, meta);
 
         if (data.length === 0) data.push('No permissions were found');
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: data,
-          }),
-        );
+        const formattedOutput = await binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'list',
+          data: data,
+        });
+        process.stdout.write(formattedOutput);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

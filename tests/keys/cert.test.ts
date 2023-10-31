@@ -33,7 +33,7 @@ describe('cert', () => {
     });
     const certCommand = JSON.parse(stdout).cert;
     ({ exitCode, stdout } = await testUtils.pkExec(
-      ['agent', 'status', '--format', 'json'],
+      ['keys', 'cert', '--format', 'json'],
       {
         env: {
           PK_NODE_PATH: agentDir,
@@ -44,7 +44,7 @@ describe('cert', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    const certStatus = JSON.parse(stdout).certChainPEM;
+    const certStatus = JSON.parse(stdout).cert;
     expect(certCommand).toBe(certStatus);
   });
 });
