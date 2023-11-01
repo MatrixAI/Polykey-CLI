@@ -57,7 +57,7 @@ class CommandList extends CommandPolykey {
           return data;
         }, auth);
 
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });

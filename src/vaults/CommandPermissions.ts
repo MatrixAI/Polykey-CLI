@@ -61,7 +61,7 @@ class CommandPermissions extends CommandPolykey {
         }, meta);
 
         if (data.length === 0) data.push('No permissions were found');
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });

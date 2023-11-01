@@ -59,7 +59,7 @@ class CommandGet extends CommandPolykey {
           meta,
         );
         const secretContent = Buffer.from(response.secretContent, 'binary');
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: 'raw',
           data: secretContent,
         });

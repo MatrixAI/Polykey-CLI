@@ -90,7 +90,7 @@ class CommandFind extends CommandPolykey {
         }
         let output: any = result;
         if (options.format === 'human') output = [result.message];
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: output,
         });

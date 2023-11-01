@@ -64,20 +64,45 @@ function standardErrorReplacer(key: string, value: any) {
   return value;
 }
 
-async function* arrayToAsyncIterable<T>(array: T[]): AsyncIterable<T> {
-  for (const item of array) {
-    yield item;
-  }
+/**
+ * This function:
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \n \r \t to escaped versions, \\n \\r and \\t.
+ * 3. Converts other control characters to their Unicode escape sequences.
+ */
+function encodeNonPrintable(str: string) {
+  // We want to actually match control codes here!
+  // eslint-disable-next-line no-control-regex
+  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, (char) => {
+    switch (char) {
+      case ' ':
+        return char; // Preserve regular space
+      case '\n':
+        return '\\n'; // Encode newline
+      case '\r':
+        return '\\r'; // Encode carriage return
+      case '\t':
+        return '\\t'; // Encode tab
+      case '\v':
+        return '\\v'; // Encode tab
+      case '\f':
+        return '\\f'; // Encode tab
+      // Add cases for other whitespace characters if needed
+      default:
+        // Return the Unicode escape sequence for control characters
+        return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
+    }
+  });
 }
 
 // Function to handle 'table' type output
-const outputTableFormatter = async (
-  rowStream: TableRow[] | AsyncIterable<TableRow>,
+function outputTableFormatter(
+  rowStream: TableRow[],
   options?: TableOptions,
-): Promise<string> => {
+): string {
   let output = '';
-  const maxColumnLengths: Record<string, number> = {};
   let rowCount = 0;
+  const maxColumnLengths: Record<string, number> = {};
 
   // Initialize maxColumnLengths with header lengths if headers are provided
   if (options?.headers) {
@@ -86,31 +111,27 @@ const outputTableFormatter = async (
     }
   }
 
-  let iterableStream = Array.isArray(rowStream)
-    ? arrayToAsyncIterable(rowStream)
-    : rowStream;
-
-  const updateMaxColumnLengths = (row: TableRow) => {
-    for (const [key, value] of Object.entries(row)) {
-      const cellValue =
-        value === null || value === '' || value === undefined ? 'N/A' : value;
+  // Precompute max column lengths by iterating over the rows first
+  for (const row of rowStream) {
+    for (const key in options?.headers ?? row) {
+      if (row[key] != null) {
+        row[key] = encodeNonPrintable(row[key].toString());
+      }
+      // Row[key] is definitely a string or null after this point due to encodeNonPrintable
+      const cellValue: string | null = row[key];
+      // Null or '' will both cause cellLength to be 3
+      const cellLength =
+        cellValue == null || cellValue.length === 0 ? 3 : cellValue.length; // 3 is length of 'N/A'
       maxColumnLengths[key] = Math.max(
         maxColumnLengths[key] || 0,
-        cellValue.toString().length,
+        cellLength, // Use the length of the encoded value
       );
     }
-  };
-
-  // Precompute max column lengths by iterating over the rows first
-  for await (const row of iterableStream) {
-    updateMaxColumnLengths(row);
   }
 
-  // Reset the iterableStream if it's an array so we can iterate over it again
-  if (Array.isArray(rowStream)) {
-    iterableStream = arrayToAsyncIterable(rowStream);
-  }
-
+  // After this point, maxColumnLengths will have been filled with all the necessary keys.
+  // Thus, the column keys can be derived from it.
+  const columnKeys = Object.keys(maxColumnLengths);
   // If headers are provided, add them to your output first
   if (options?.headers) {
     const headerRow = options.headers
@@ -119,48 +140,31 @@ const outputTableFormatter = async (
     output += headerRow + '\n';
   }
 
-  // Function to format a single row
-  const formatRow = (row: TableRow) => {
+  for (const row of rowStream) {
     let formattedRow = '';
-
     if (options?.includeRowCount) {
       formattedRow += `${++rowCount}\t`;
     }
-
-    const keysToUse = options?.headers ?? Object.keys(maxColumnLengths);
-
-    for (const key of keysToUse) {
-      const cellValue = Object.prototype.hasOwnProperty.call(row, key)
-        ? row[key]
-        : 'N/A';
-      formattedRow += `${cellValue
-        ?.toString()
-        .padEnd(maxColumnLengths[key] || 0)}\t`;
+    for (const key of columnKeys) {
+      // Assume row[key] has been already encoded as a string or null
+      const cellValue =
+        row[key] == null || row[key].length === 0 ? 'N/A' : row[key];
+      formattedRow += `${cellValue.padEnd(maxColumnLengths[key] || 0)}\t`;
     }
-
-    return formattedRow.trimEnd();
-  };
-
-  for await (const row of iterableStream) {
-    output += formatRow(row) + '\n';
+    output += formattedRow.trimEnd() + '\n';
   }
 
   return output;
-};
+}
 
-function outputFormatter(
-  msg: OutputObject,
-): string | Uint8Array | Promise<string> {
+function outputFormatter(msg: OutputObject): string | Uint8Array {
   let output = '';
   if (msg.type === 'raw') {
     return msg.data;
   } else if (msg.type === 'list') {
-    for (let elem in msg.data) {
-      // Empty string for null or undefined values
-      if (elem == null) {
-        elem = '';
-      }
-      output += `${msg.data[elem]}\n`;
+    for (const elem of msg.data) {
+      // Convert null or undefined to empty string
+      output += `${elem != null ? encodeNonPrintable(elem) : ''}\n`;
     }
   } else if (msg.type === 'table') {
     return outputTableFormatter(msg.data, msg.options);
@@ -178,12 +182,8 @@ function outputFormatter(
         value = '';
       }
 
-      // Only trim starting and ending quotes if value is a string
-      if (typeof value === 'string') {
-        value = JSON.stringify(value).replace(/^"|"$/g, '');
-      } else {
-        value = JSON.stringify(value);
-      }
+      value = JSON.stringify(value);
+      value = encodeNonPrintable(value);
 
       // Re-introduce value.replace logic from old code
       value = value.replace(/(?:\r\n|\n)$/, '');
@@ -323,6 +323,7 @@ export {
   outputFormatter,
   retryAuthentication,
   remoteErrorCause,
+  encodeNonPrintable,
 };
 
 export type { OutputObject };

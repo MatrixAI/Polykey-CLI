@@ -59,7 +59,7 @@ class CommandAdd extends CommandPolykey {
         }, auth);
         if (options.format === 'human') {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = await binUtils.outputFormatter({
+          const formattedOutput = binUtils.outputFormatter({
             type: 'table',
             data: connections,
             options: {
@@ -76,7 +76,7 @@ class CommandAdd extends CommandPolykey {
           process.stdout.write(formattedOutput);
         } else {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = await binUtils.outputFormatter({
+          const formattedOutput = binUtils.outputFormatter({
             type: 'json',
             data: connections,
           });

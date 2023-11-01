@@ -58,7 +58,7 @@ class CommandScan extends CommandPolykey {
           }
           return data;
         }, meta);
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });

@@ -3,8 +3,20 @@ import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as polykeyErrors from 'polykey/dist/errors';
+import * as fc from 'fast-check';
 import * as binUtils from '@/utils/utils';
 import * as testUtils from './utils';
+
+const nonPrintableCharArb = fc
+  .oneof(
+    fc.integer({ min: 0, max: 0x1f }),
+    fc.integer({ min: 0x7f, max: 0x9f }),
+  )
+  .map((code) => String.fromCharCode(code));
+
+const stringWithNonPrintableCharsArb = fc.stringOf(
+  fc.oneof(fc.char(), nonPrintableCharArb),
+);
 
 describe('bin/utils', () => {
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -29,10 +41,7 @@ describe('bin/utils', () => {
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'table in human and in json format',
     async () => {
-      // Note the async here
-      // Table
-      const tableOutput = await binUtils.outputFormatter({
-        // And the await here
+      const tableOutput = binUtils.outputFormatter({
         type: 'table',
         data: [
           { key1: 'value1', key2: 'value2' },
@@ -40,13 +49,10 @@ describe('bin/utils', () => {
           { key1: null, key2: undefined },
         ],
       });
-      expect(tableOutput).toBe(
-        'value1\tvalue2\ndata1 \tdata2\nundefined\tundefined\n',
-      );
+      expect(tableOutput).toBe('value1\tvalue2\ndata1 \tdata2\nN/A   \tN/A\n');
 
       // JSON
-      const jsonOutput = await binUtils.outputFormatter({
-        // And the await here
+      const jsonOutput = binUtils.outputFormatter({
         type: 'json',
         data: [
           { key1: 'value1', key2: 'value2' },
@@ -67,19 +73,19 @@ describe('bin/utils', () => {
           type: 'dict',
           data: { key1: 'value1', key2: 'value2' },
         }),
-      ).toBe('key1\tvalue1\nkey2\tvalue2\n');
+      ).toBe('key1\t"value1"\nkey2\t"value2"\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: 'first\nsecond', key2: 'first\nsecond\n' },
         }),
-      ).toBe('key1\tfirst\\nsecond\nkey2\tfirst\\nsecond\\n\n');
+      ).toBe('key1\t"first\\nsecond"\nkey2\t"first\\nsecond\\n"\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
           data: { key1: null, key2: undefined },
         }),
-      ).toBe('key1\t\nkey2\t\n');
+      ).toBe('key1\t""\nkey2\t""\n');
       // JSON
       expect(
         binUtils.outputFormatter({
@@ -87,6 +93,39 @@ describe('bin/utils', () => {
           data: { key1: 'value1', key2: 'value2' },
         }),
       ).toBe('{"key1":"value1","key2":"value2"}\n');
+    },
+  );
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'outputFormatter should encode non-printable characters within a dict',
+    () => {
+      fc.assert(
+        fc.property(
+          stringWithNonPrintableCharsArb,
+          stringWithNonPrintableCharsArb,
+          (key, value) => {
+            const formattedOutput = binUtils.outputFormatter({
+              type: 'dict',
+              data: { [key]: value },
+            });
+
+            // Construct the expected output
+            let expectedValue = JSON.stringify(value);
+            expectedValue = binUtils.encodeNonPrintable(expectedValue);
+            expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
+            expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
+
+            const maxKeyLength = Math.max(
+              ...Object.keys({ [key]: value }).map((k) => k.length),
+            );
+            const padding = ' '.repeat(maxKeyLength - key.length);
+            const expectedOutput = `${key}${padding}\t${expectedValue}\n`;
+
+            // Assert that the formatted output matches the expected output
+            expect(formattedOutput).toBe(expectedOutput);
+          },
+        ),
+        { numRuns: 100 }, // Number of times to run the test
+      );
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(

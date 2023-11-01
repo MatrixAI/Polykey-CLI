@@ -54,7 +54,7 @@ class CommandCreate extends CommandPolykey {
             }),
           meta,
         );
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: [`Vault ${response.vaultIdEncoded} created successfully`],
         });

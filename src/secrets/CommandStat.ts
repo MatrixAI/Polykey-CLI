@@ -66,7 +66,7 @@ class CommandStat extends CommandPolykey {
         }
 
         // Assuming the surrounding function is async
-        const formattedOutput = await binUtils.outputFormatter({
+        const formattedOutput = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data,
         });

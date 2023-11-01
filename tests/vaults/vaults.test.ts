@@ -907,11 +907,13 @@ describe('CLI vaults', () => {
             cwd: dataDir,
           });
           expect(result3.exitCode).toBe(0);
+          expect(result3.stdout).toMatch(/Vault1\\t\\t.*\\t\\tclone/);
           expect(result3.stdout).toContain(
-            `Vault1\t\t${vaultsUtils.encodeVaultId(vault1Id)}\t\tclone`,
-          );
-          expect(result3.stdout).toContain(
-            `Vault2\t\t${vaultsUtils.encodeVaultId(vault2Id)}\t\tpull,clone`,
+            `Vault1\\t\\t${vaultsUtils.encodeVaultId(
+              vault1Id,
+            )}\\t\\tclone\nVault2\\t\\t${vaultsUtils.encodeVaultId(
+              vault2Id,
+            )}\\t\\tpull,clone\n`,
           );
           expect(result3.stdout).not.toContain(
             `Vault3\t\t${vaultsUtils.encodeVaultId(vault3Id)}`,

@@ -79,7 +79,7 @@ class CommandRead extends CommandPolykey {
           notifications.push(notification);
         }
         for (const notification of notifications) {
-          const formattedOutput = await binUtils.outputFormatter({
+          const formattedOutput = binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
             data: notification,
           });
