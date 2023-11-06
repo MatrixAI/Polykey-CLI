@@ -97,17 +97,18 @@ function encodeNonPrintable(str: string) {
 
 /**
  * Function to handle the `table` output format.
+ *
  * @param rows
  * @param options
  * @param options.columns - Can either be an `Array<string>` or `Record<string, number>`.
  * If it is `Record<string, number>`, the `number` values will be used as the initial padding lengths.
  * The object is also mutated if any cells exceed the inital padding lengths.
- * This paramater can also be supplied to filter the columns that will be displayed.
+ * This parameter can also be supplied to filter the columns that will be displayed.
  * @param options.includeHeaders - Defaults to `True`
  * @param options.includeRowCount - Defaults to `False`.
  * @returns
  */
-function outputTableFormatter(
+function outputFormatterTable(
   rows: Array<TableRow>,
   options: TableOptions = {
     includeHeaders: true,
@@ -197,8 +198,9 @@ function outputTableFormatter(
 
 /**
  * Formats a message suitable for output.
+ *
  * @param msg - The msg that needs to be formatted.
- * @see {@link outputTableFormatter} for information regarding usage where `msg.type === 'table'`.
+ * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
  * @returns
  */
 function outputFormatter(msg: OutputObject): string | Uint8Array {
@@ -211,7 +213,7 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
       output += `${elem != null ? encodeNonPrintable(elem) : ''}\n`;
     }
   } else if (msg.type === 'table') {
-    return outputTableFormatter(msg.data, msg.options);
+    return outputFormatterTable(msg.data, msg.options);
   } else if (msg.type === 'dict') {
     let maxKeyLength = 0;
     for (const key in msg.data) {
