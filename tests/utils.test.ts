@@ -48,6 +48,9 @@ describe('bin/utils', () => {
           { key1: 'data1', key2: 'data2' },
           { key1: null, key2: undefined },
         ],
+        options: {
+          includeHeaders: true,
+        },
       });
       expect(tableOutput).toBe('value1\tvalue2\ndata1 \tdata2\nN/A   \tN/A\n');
 
@@ -61,6 +64,40 @@ describe('bin/utils', () => {
       });
       expect(jsonOutput).toBe(
         '[{"key1":"value1","key2":"value2"},{"key1":"data1","key2":"data2"}]\n',
+      );
+    },
+  );
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'table in human format for streaming usage',
+    async () => {
+      let tableOutput = '';
+      const keys = {
+        key1: 7,
+        key2: 4,
+      };
+      const generator = function* () {
+        yield [{ key1: 'value1', key2: 'value2' }];
+        yield [{ key1: 'data1', key2: 'data2' }];
+        yield [{ key1: null, key2: undefined }];
+      };
+      let i = 0;
+      for (const data of generator()) {
+        tableOutput += binUtils.outputFormatter({
+          type: 'table',
+          data: data,
+          options: {
+            columns: keys,
+            includeHeaders: i === 0,
+          },
+        });
+        i++;
+      }
+      expect(keys).toStrictEqual({
+        key1: 7,
+        key2: 6,
+      });
+      expect(tableOutput).toBe(
+        'key1   \tkey2  \nvalue1 \tvalue2\ndata1  \tdata2\nN/A    \tN/A\n',
       );
     },
   );

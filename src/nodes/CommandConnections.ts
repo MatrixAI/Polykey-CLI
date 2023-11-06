@@ -63,7 +63,7 @@ class CommandAdd extends CommandPolykey {
             type: 'table',
             data: connections,
             options: {
-              headers: [
+              columns: [
                 'host',
                 'hostname',
                 'nodeIdEncoded',
@@ -71,6 +71,7 @@ class CommandAdd extends CommandPolykey {
                 'timeout',
                 'usageCount',
               ],
+              includeHeaders: true,
             },
           });
           process.stdout.write(formattedOutput);

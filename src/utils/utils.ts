@@ -95,35 +95,61 @@ function encodeNonPrintable(str: string) {
   });
 }
 
-// Function to handle 'table' type output
+/**
+ * Function to handle the `table` output format.
+ * @param rows
+ * @param options
+ * @param options.columns - Can either be an `Array<string>` or `Record<string, number>`.
+ * If it is `Record<string, number>`, the `number` values will be used as the initial padding lengths.
+ * The object is also mutated if any cells exceed the inital padding lengths.
+ * This paramater can also be supplied to filter the columns that will be displayed.
+ * @param options.includeHeaders - Defaults to `True`
+ * @param options.includeRowCount - Defaults to `False`.
+ * @returns
+ */
 function outputTableFormatter(
-  rowStream: Array<TableRow>,
-  options?: TableOptions,
+  rows: Array<TableRow>,
+  options: TableOptions = {
+    includeHeaders: true,
+    includeRowCount: false,
+  },
 ): string {
   let output = '';
   let rowCount = 0;
+  // Default includeHeaders to true
+  const includeHeaders = options.includeHeaders ?? true;
   const maxColumnLengths: Record<string, number> = {};
 
+  const optionColumns =
+    options?.columns != null
+      ? Array.isArray(options.columns)
+        ? options.columns
+        : Object.keys(options.columns)
+      : undefined;
+
   // Initialize maxColumnLengths with header lengths if headers are provided
-  if (options?.headers) {
-    for (const header of options.headers) {
-      maxColumnLengths[header] = header.length;
+  if (optionColumns != null) {
+    for (const column of optionColumns) {
+      maxColumnLengths[column] = Math.max(
+        options?.columns?.[column] ?? 0,
+        column.length,
+      );
     }
   }
 
   // Precompute max column lengths by iterating over the rows first
-  for (const row of rowStream) {
-    for (const key in options?.headers ?? row) {
-      if (row[key] != null) {
-        row[key] = encodeNonPrintable(row[key].toString());
+  for (const row of rows) {
+    for (const column in options?.columns ?? row) {
+      if (row[column] != null) {
+        row[column] = encodeNonPrintable(row[column].toString());
       }
       // Row[key] is definitely a string or null after this point due to encodeNonPrintable
-      const cellValue: string | null = row[key];
+      const cellValue: string | null = row[column];
       // Null or '' will both cause cellLength to be 3
       const cellLength =
         cellValue == null || cellValue.length === 0 ? 3 : cellValue.length; // 3 is length of 'N/A'
-      maxColumnLengths[key] = Math.max(
-        maxColumnLengths[key] || 0,
+      maxColumnLengths[column] = Math.max(
+        maxColumnLengths[column] || 0,
         cellLength, // Use the length of the encoded value
       );
     }
@@ -131,25 +157,37 @@ function outputTableFormatter(
 
   // After this point, maxColumnLengths will have been filled with all the necessary keys.
   // Thus, the column keys can be derived from it.
-  const columnKeys = Object.keys(maxColumnLengths);
+  const columns = Object.keys(maxColumnLengths);
   // If headers are provided, add them to your output first
-  if (options?.headers) {
-    const headerRow = options.headers
-      .map((header) => header.padEnd(maxColumnLengths[header]))
-      .join('\t');
-    output += headerRow + '\n';
+  if (optionColumns != null) {
+    for (let i = 0; i < optionColumns.length; i++) {
+      const column = optionColumns[i];
+      const maxColumnLength = maxColumnLengths[column];
+      // Options.headers is definitely defined as optionHeaders != null
+      if (!Array.isArray(options!.columns)) {
+        options!.columns![column] = maxColumnLength;
+      }
+      if (includeHeaders) {
+        output += column.padEnd(maxColumnLength);
+        if (i !== optionColumns.length - 1) {
+          output += '\t';
+        } else {
+          output += '\n';
+        }
+      }
+    }
   }
 
-  for (const row of rowStream) {
+  for (const row of rows) {
     let formattedRow = '';
-    if (options?.includeRowCount) {
+    if (options.includeRowCount) {
       formattedRow += `${++rowCount}\t`;
     }
-    for (const key of columnKeys) {
+    for (const column of columns) {
       // Assume row[key] has been already encoded as a string or null
       const cellValue =
-        row[key] == null || row[key].length === 0 ? 'N/A' : row[key];
-      formattedRow += `${cellValue.padEnd(maxColumnLengths[key] || 0)}\t`;
+        row[column] == null || row[column].length === 0 ? 'N/A' : row[column];
+      formattedRow += `${cellValue.padEnd(maxColumnLengths[column] || 0)}\t`;
     }
     output += formattedRow.trimEnd() + '\n';
   }
@@ -157,6 +195,12 @@ function outputTableFormatter(
   return output;
 }
 
+/**
+ * Formats a message suitable for output.
+ * @param msg - The msg that needs to be formatted.
+ * @see {@link outputTableFormatter} for information regarding usage where `msg.type === 'table'`.
+ * @returns
+ */
 function outputFormatter(msg: OutputObject): string | Uint8Array {
   let output = '';
   if (msg.type === 'raw') {
