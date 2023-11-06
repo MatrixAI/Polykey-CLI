@@ -98,8 +98,7 @@ const parseProviderId: (data: string) => ids.ProviderId =
 
 const parseIdentityId: (data: string) => ids.IdentityId =
   validateParserToArgParser(ids.parseIdentityId);
-
-const parseProviderIdList: (data: string) => ids.ProviderId[] =
+const parseProviderIdList: (data: string) => Array<ids.ProviderId> =
   validateParserToArgListParser(ids.parseProviderId);
 
 const parseGestaltAction: (data: string) => 'notify' | 'scan' | 'claim' =

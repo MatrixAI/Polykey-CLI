@@ -43,7 +43,7 @@ type AgentChildProcessOutput =
 type TableRow = Record<string, any>;
 
 interface TableOptions {
-  headers?: string[];
+  headers?: Array<string>;
   includeRowCount?: boolean;
 }
 

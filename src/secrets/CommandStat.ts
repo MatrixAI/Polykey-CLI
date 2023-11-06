@@ -60,7 +60,7 @@ class CommandStat extends CommandPolykey {
           meta,
         );
 
-        const data: string[] = [`Stats for "${secretPath[1]}"`];
+        const data: Array<string> = [`Stats for "${secretPath[1]}"`];
         for (const [key, value] of Object.entries(response.stat)) {
           data.push(`${key}: ${value}`);
         }

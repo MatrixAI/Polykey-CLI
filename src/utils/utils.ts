@@ -97,7 +97,7 @@ function encodeNonPrintable(str: string) {
 
 // Function to handle 'table' type output
 function outputTableFormatter(
-  rowStream: TableRow[],
+  rowStream: Array<TableRow>,
   options?: TableOptions,
 ): string {
   let output = '';
