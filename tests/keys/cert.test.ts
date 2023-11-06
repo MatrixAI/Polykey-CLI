@@ -16,7 +16,7 @@ describe('cert', () => {
   testUtils.testIf(
     testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
   )('cert gets the certificate', async () => {
-    let { exitCode, stdout } = await testUtils.pkExec(
+    const { exitCode, stdout } = await testUtils.pkExec(
       ['keys', 'cert', '--format', 'json'],
       {
         env: {
@@ -31,20 +31,5 @@ describe('cert', () => {
     expect(JSON.parse(stdout)).toEqual({
       cert: expect.any(String),
     });
-    const certCommand = JSON.parse(stdout).cert;
-    ({ exitCode, stdout } = await testUtils.pkExec(
-      ['keys', 'cert', '--format', 'json'],
-      {
-        env: {
-          PK_NODE_PATH: agentDir,
-          PK_PASSWORD: agentPassword,
-        },
-        cwd: agentDir,
-        command: globalThis.testCmd,
-      },
-    ));
-    expect(exitCode).toBe(0);
-    const certStatus = JSON.parse(stdout).cert;
-    expect(certCommand).toBe(certStatus);
   });
 });

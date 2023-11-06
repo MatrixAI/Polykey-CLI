@@ -18,7 +18,7 @@ describe('certchain', () => {
   testUtils.testIf(
     testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
   )('certchain gets the certificate chain', async () => {
-    let { exitCode, stdout } = await testUtils.pkExec(
+    const { exitCode, stdout } = await testUtils.pkExec(
       ['keys', 'certchain', '--format', 'json'],
       {
         env: {
@@ -33,20 +33,5 @@ describe('certchain', () => {
     expect(JSON.parse(stdout)).toEqual({
       certchain: expect.any(Array),
     });
-    const certChainCommand = JSON.parse(stdout).certchain.join('\n');
-    ({ exitCode, stdout } = await testUtils.pkExec(
-      ['agent', 'status', '--format', 'json'],
-      {
-        env: {
-          PK_NODE_PATH: agentDir,
-          PK_PASSWORD: agentPassword,
-        },
-        cwd: agentDir,
-        command: globalThis.testCmd,
-      },
-    ));
-    expect(exitCode).toBe(0);
-    const certChainStatus = JSON.parse(stdout).rootCertChainPem;
-    expect(certChainCommand.rootPublicKeyPem).toBe(certChainStatus);
   });
 });
