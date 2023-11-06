@@ -96,6 +96,39 @@ function encodeNonPrintable(str: string) {
 }
 
 /**
+ * Formats a message suitable for output.
+ *
+ * @param msg - The msg that needs to be formatted.
+ * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
+ * @returns
+ */
+function outputFormatter(msg: OutputObject): string | Uint8Array {
+  switch (msg.type) {
+    case 'raw':
+      return msg.data;
+    case 'list':
+      return outputFormatterList(msg.data);
+    case 'table':
+      return outputFormatterTable(msg.data, msg.options);
+    case 'dict':
+      return outputFormatterDict(msg.data);
+    case 'json':
+      return outputFormatterJson(msg.data);
+    case 'error':
+      return outputFormatterError(msg.data);
+  }
+}
+
+function outputFormatterList(items: Array<string>): string {
+  let output = '';
+  for (const elem of items) {
+    // Convert null or undefined to empty string
+    output += `${elem != null ? encodeNonPrintable(elem) : ''}\n`;
+  }
+  return output;
+}
+
+/**
  * Function to handle the `table` output format.
  *
  * @param rows
@@ -196,109 +229,94 @@ function outputFormatterTable(
   return output;
 }
 
-/**
- * Formats a message suitable for output.
- *
- * @param msg - The msg that needs to be formatted.
- * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
- * @returns
- */
-function outputFormatter(msg: OutputObject): string | Uint8Array {
+function outputFormatterDict(data: POJO): string {
   let output = '';
-  if (msg.type === 'raw') {
-    return msg.data;
-  } else if (msg.type === 'list') {
-    for (const elem of msg.data) {
-      // Convert null or undefined to empty string
-      output += `${elem != null ? encodeNonPrintable(elem) : ''}\n`;
+  let maxKeyLength = 0;
+  for (const key in data) {
+    if (key.length > maxKeyLength) {
+      maxKeyLength = key.length;
     }
-  } else if (msg.type === 'table') {
-    return outputFormatterTable(msg.data, msg.options);
-  } else if (msg.type === 'dict') {
-    let maxKeyLength = 0;
-    for (const key in msg.data) {
-      if (key.length > maxKeyLength) {
-        maxKeyLength = key.length;
+  }
+  for (const key in data) {
+    let value = data[key];
+    if (value == null) {
+      value = '';
+    }
+
+    value = JSON.stringify(value);
+    value = encodeNonPrintable(value);
+
+    // Re-introduce value.replace logic from old code
+    value = value.replace(/(?:\r\n|\n)$/, '');
+    value = value.replace(/(\r\n|\n)/g, '$1\t');
+
+    const padding = ' '.repeat(maxKeyLength - key.length);
+    output += `${key}${padding}\t${value}\n`;
+  }
+  return output;
+}
+
+function outputFormatterJson(json: string): string {
+  return `${JSON.stringify(json, standardErrorReplacer)}\n`;
+}
+
+function outputFormatterError(err: Error): string {
+  let output = '';
+  let indent = '  ';
+  while (err != null) {
+    if (err instanceof networkErrors.ErrorPolykeyRemote) {
+      output += `${err.name}: ${err.description}`;
+      if (err.message && err.message !== '') {
+        output += ` - ${err.message}`;
       }
-    }
-
-    for (const key in msg.data) {
-      let value = msg.data[key];
-      if (value == null) {
-        value = '';
-      }
-
-      value = JSON.stringify(value);
-      value = encodeNonPrintable(value);
-
-      // Re-introduce value.replace logic from old code
-      value = value.replace(/(?:\r\n|\n)$/, '');
-      value = value.replace(/(\r\n|\n)/g, '$1\t');
-
-      const padding = ' '.repeat(maxKeyLength - key.length);
-      output += `${key}${padding}\t${value}\n`;
-    }
-  } else if (msg.type === 'json') {
-    output = JSON.stringify(msg.data, standardErrorReplacer);
-    output += '\n';
-  } else if (msg.type === 'error') {
-    let currError = msg.data;
-    let indent = '  ';
-    while (currError != null) {
-      if (currError instanceof networkErrors.ErrorPolykeyRemote) {
-        output += `${currError.name}: ${currError.description}`;
-        if (currError.message && currError.message !== '') {
-          output += ` - ${currError.message}`;
-        }
-        if (currError.metadata != null) {
-          output += '\n';
-          for (const [key, value] of Object.entries(currError.metadata)) {
-            output += `${indent}${key}\t${value}\n`;
-          }
-        }
-        output += `${indent}timestamp\t${currError.timestamp}\n`;
-        output += `${indent}cause: `;
-        currError = currError.cause;
-      } else if (currError instanceof ErrorPolykey) {
-        output += `${currError.name}: ${currError.description}`;
-        if (currError.message && currError.message !== '') {
-          output += ` - ${currError.message}`;
-        }
+      if (err.metadata != null) {
         output += '\n';
-        // Disabled to streamline output
-        // output += `${indent}exitCode\t${currError.exitCode}\n`;
-        // output += `${indent}timestamp\t${currError.timestamp}\n`;
-        if (currError.data && !utils.isEmptyObject(currError.data)) {
-          output += `${indent}data\t${JSON.stringify(currError.data)}\n`;
+        for (const [key, value] of Object.entries(err.metadata)) {
+          output += `${indent}${key}\t${value}\n`;
         }
-        if (currError.cause) {
-          output += `${indent}cause: `;
-          if (currError.cause instanceof ErrorPolykey) {
-            currError = currError.cause;
-          } else if (currError.cause instanceof Error) {
-            output += `${currError.cause.name}`;
-            if (currError.cause.message && currError.cause.message !== '') {
-              output += `: ${currError.cause.message}`;
-            }
-            output += '\n';
-            break;
-          } else {
-            output += `${JSON.stringify(currError.cause)}\n`;
-            break;
+      }
+      output += `${indent}timestamp\t${err.timestamp}\n`;
+      output += `${indent}cause: `;
+      err = err.cause;
+    } else if (err instanceof ErrorPolykey) {
+      output += `${err.name}: ${err.description}`;
+      if (err.message && err.message !== '') {
+        output += ` - ${err.message}`;
+      }
+      output += '\n';
+      // Disabled to streamline output
+      // output += `${indent}exitCode\t${currError.exitCode}\n`;
+      // output += `${indent}timestamp\t${currError.timestamp}\n`;
+      if (err.data && !utils.isEmptyObject(err.data)) {
+        output += `${indent}data\t${JSON.stringify(err.data)}\n`;
+      }
+      if (err.cause) {
+        output += `${indent}cause: `;
+        if (err.cause instanceof ErrorPolykey) {
+          err = err.cause;
+        } else if (err.cause instanceof Error) {
+          output += `${err.cause.name}`;
+          if (err.cause.message && err.cause.message !== '') {
+            output += `: ${err.cause.message}`;
           }
+          output += '\n';
+          break;
         } else {
+          output += `${JSON.stringify(err.cause)}\n`;
           break;
         }
       } else {
-        output += `${currError.name}`;
-        if (currError.message && currError.message !== '') {
-          output += `: ${currError.message}`;
-        }
-        output += '\n';
         break;
       }
-      indent = indent + '  ';
+    } else {
+      output += `${err.name}`;
+      if (err.message && err.message !== '') {
+        output += `: ${err.message}`;
+      }
+      output += '\n';
+      break;
     }
+    indent = indent + '  ';
   }
   return output;
 }
@@ -367,6 +385,11 @@ export {
   verboseToLogLevel,
   standardErrorReplacer,
   outputFormatter,
+  outputFormatterList,
+  outputFormatterTable,
+  outputFormatterDict,
+  outputFormatterJson,
+  outputFormatterError,
   retryAuthentication,
   remoteErrorCause,
   encodeNonPrintable,

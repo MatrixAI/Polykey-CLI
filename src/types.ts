@@ -5,7 +5,6 @@ import type { RecoveryCode } from 'polykey/dist/keys/types';
 import type { StatusLive } from 'polykey/dist/status/types';
 import type { NodeIdEncoded } from 'polykey/dist/ids/types';
 
-
 type TableRow = Record<string, any>;
 
 interface TableOptions {

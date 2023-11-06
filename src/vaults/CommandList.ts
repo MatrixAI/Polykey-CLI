@@ -56,11 +56,11 @@ class CommandList extends CommandPolykey {
           }
           return data;
         }, meta);
-        const formattedOutput = binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

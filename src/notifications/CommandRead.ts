@@ -79,11 +79,11 @@ class CommandRead extends CommandPolykey {
           notifications.push(notification);
         }
         for (const notification of notifications) {
-          const formattedOutput = binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
             data: notification,
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

@@ -59,7 +59,7 @@ class CommandAdd extends CommandPolykey {
         }, auth);
         if (options.format === 'human') {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: 'table',
             data: connections,
             options: {
@@ -74,14 +74,14 @@ class CommandAdd extends CommandPolykey {
               includeHeaders: true,
             },
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         } else {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: 'json',
             data: connections,
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();
