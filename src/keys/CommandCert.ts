@@ -54,7 +54,7 @@ class CommandCert extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Root certificate:\t\t${result.cert}`];
+          output = ['Root certificate:', result.cert];
         }
         process.stdout.write(
           binUtils.outputFormatter({

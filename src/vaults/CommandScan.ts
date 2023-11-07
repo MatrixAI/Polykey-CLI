@@ -54,7 +54,11 @@ class CommandScan extends CommandPolykey {
             const vaultName = vault.vaultName;
             const vaultIdEncoded = vault.vaultIdEncoded;
             const permissions = vault.permissions.join(',');
-            data.push(`${vaultName}\t\t${vaultIdEncoded}\t\t${permissions}`);
+            data.push(
+              `${vaultName}${' '.repeat(4)}${vaultIdEncoded}${' '.repeat(
+                5,
+              )}${permissions}`,
+            );
           }
           return data;
         }, meta);

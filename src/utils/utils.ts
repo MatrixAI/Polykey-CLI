@@ -70,7 +70,7 @@ function standardErrorReplacer(key: string, value: any) {
  * 2. Converts \n \r \t to escaped versions, \\n \\r and \\t.
  * 3. Converts other control characters to their Unicode escape sequences.
  */
-function encodeNonPrintable(str: string) {
+function encodeNonPrintable(str: string): string {
   // We want to actually match control codes here!
   // eslint-disable-next-line no-control-regex
   return str.replace(/[\x00-\x1F\x7F-\x9F]/g, (char) => {
@@ -102,20 +102,25 @@ function encodeNonPrintable(str: string) {
  * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
  * @returns
  */
-function outputFormatter(msg: OutputObject): string | Uint8Array {
+function outputFormatter(msg: OutputObject): string {
+  let data = msg.data;
   switch (msg.type) {
     case 'raw':
-      return msg.data;
+      if (ArrayBuffer.isView(data)) {
+        const td = new TextDecoder('utf-8');
+        data = encodeNonPrintable(td.decode(data));
+      }
+      return data;
     case 'list':
-      return outputFormatterList(msg.data);
+      return outputFormatterList(data);
     case 'table':
-      return outputFormatterTable(msg.data, msg.options);
+      return outputFormatterTable(data, msg.options);
     case 'dict':
-      return outputFormatterDict(msg.data);
+      return outputFormatterDict(data);
     case 'json':
-      return outputFormatterJson(msg.data);
+      return outputFormatterJson(data);
     case 'error':
-      return outputFormatterError(msg.data);
+      return outputFormatterError(data);
   }
 }
 

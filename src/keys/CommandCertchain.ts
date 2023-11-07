@@ -57,7 +57,7 @@ class CommandsCertchain extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Root Certificate Chain:\t\t${result.certchain}`];
+          output = ['Root Certificate Chain:', ...result.certchain];
         }
         process.stdout.write(
           binUtils.outputFormatter({

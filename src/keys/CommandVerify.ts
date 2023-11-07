@@ -112,7 +112,9 @@ class CommandVerify extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Signature verified:\t\t${result.signatureVerified}`];
+          output = [
+            `Signature verified:${' '.repeat(4)}${result.signatureVerified}`,
+          ];
         }
         process.stdout.write(
           binUtils.outputFormatter({

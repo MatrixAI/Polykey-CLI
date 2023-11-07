@@ -51,7 +51,9 @@ class CommandList extends CommandPolykey {
           });
           for await (const vaultListMessage of stream) {
             data.push(
-              `${vaultListMessage.vaultName}:\t\t${vaultListMessage.vaultIdEncoded}`,
+              `${vaultListMessage.vaultName}:${' '.repeat(4)}${
+                vaultListMessage.vaultIdEncoded
+              }`,
             );
           }
           return data;
