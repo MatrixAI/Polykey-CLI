@@ -65,6 +65,22 @@ function standardErrorReplacer(key: string, value: any) {
 }
 
 /**
+ * This function calls encodeNonPrintable on substrings within the input enclosed with `""`.
+ * Any usage of `\\"` within `""` will escape it.
+ *
+ * @param str
+ * @see {@link encodeNonPrintable}
+ * @returns
+ */
+function encodeWrappedStrings(str: string) {
+  return str.replace(/"(\\.|[^"])*"/g, encodeNonPrintable);
+}
+
+function encodeQuotes(str: string): string {
+  return str.replace(/[`"']/g, (char) => `\\` + char);
+}
+
+/**
  * This function:
  * 1. Keeps regular spaces, only ' ', as they are.
  * 2. Converts \n \r \t to escaped versions, \\n \\r and \\t.
@@ -100,6 +116,7 @@ function encodeNonPrintable(str: string): string {
  *
  * @param msg - The msg that needs to be formatted.
  * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
+ * @see {@link encodeWrappedStrings} for information regarding wrapping strings with `""` for encoding escaped characters
  * @returns
  */
 function outputFormatter(msg: OutputObject): string {
@@ -108,8 +125,9 @@ function outputFormatter(msg: OutputObject): string {
     case 'raw':
       if (ArrayBuffer.isView(data)) {
         const td = new TextDecoder('utf-8');
-        data = encodeNonPrintable(td.decode(data));
+        data = td.decode(data);
       }
+      data = encodeWrappedStrings(data);
       return data;
     case 'list':
       return outputFormatterList(data);
@@ -128,7 +146,7 @@ function outputFormatterList(items: Array<string>): string {
   let output = '';
   for (const elem of items) {
     // Convert null or undefined to empty string
-    output += `${elem != null ? encodeNonPrintable(elem) : ''}\n`;
+    output += `${elem != null ? encodeWrappedStrings(elem) : ''}\n`;
   }
   return output;
 }
@@ -180,13 +198,17 @@ function outputFormatterTable(
   for (const row of rows) {
     for (const column in options?.columns ?? row) {
       if (row[column] != null) {
-        row[column] = encodeNonPrintable(row[column].toString());
+        if (typeof row[column] === 'string') {
+          row[column] = encodeQuotes(row[column]);
+          row[column] = `"${row[column]}"`;
+        } else {
+          row[column] = JSON.stringify(row[column]);
+        }
+        row[column] = encodeWrappedStrings(row[column]);
       }
-      // Row[key] is definitely a string or null after this point due to encodeNonPrintable
-      const cellValue: string | null = row[column];
       // Null or '' will both cause cellLength to be 3
       const cellLength =
-        cellValue == null || cellValue.length === 0 ? 3 : cellValue.length; // 3 is length of 'N/A'
+        row[column] == null || row[column] === '""' ? 3 : row[column].length; // 3 is length of 'N/A'
       maxColumnLengths[column] = Math.max(
         maxColumnLengths[column] || 0,
         cellLength, // Use the length of the encoded value
@@ -248,10 +270,14 @@ function outputFormatterDict(data: POJO): string {
       value = '';
     }
 
-    value = JSON.stringify(value);
-    value = encodeNonPrintable(value);
+    if (typeof value === 'string') {
+      value = encodeQuotes(value);
+      value = `"${value}"`;
+    } else {
+      value = JSON.stringify(value);
+    }
+    value = encodeWrappedStrings(value);
 
-    // Re-introduce value.replace logic from old code
     value = value.replace(/(?:\r\n|\n)$/, '');
     value = value.replace(/(\r\n|\n)/g, '$1\t');
 
@@ -397,6 +423,8 @@ export {
   outputFormatterError,
   retryAuthentication,
   remoteErrorCause,
+  encodeWrappedStrings,
+  encodeQuotes,
   encodeNonPrintable,
 };
 

@@ -61,7 +61,7 @@ class CommandGet extends CommandPolykey {
         const secretContent = Buffer.from(response.secretContent, 'binary');
         const outputFormatted = binUtils.outputFormatter({
           type: 'raw',
-          data: secretContent,
+          data: `"${binUtils.encodeQuotes(secretContent.toString('utf-8'))}"`, // Encodes any secret content with escape characters
         });
         process.stdout.write(outputFormatted);
       } finally {

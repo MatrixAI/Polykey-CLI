@@ -52,7 +52,9 @@ describe('bin/utils', () => {
           includeHeaders: true,
         },
       });
-      expect(tableOutput).toBe('value1\tvalue2\ndata1 \tdata2\nN/A   \tN/A\n');
+      expect(tableOutput).toBe(
+        '"value1"\t"value2"\n"data1" \t"data2"\nN/A     \tN/A\n',
+      );
 
       // JSON
       const jsonOutput = binUtils.outputFormatter({
@@ -72,7 +74,7 @@ describe('bin/utils', () => {
     async () => {
       let tableOutput = '';
       const keys = {
-        key1: 7,
+        key1: 10,
         key2: 4,
       };
       const generator = function* () {
@@ -93,11 +95,11 @@ describe('bin/utils', () => {
         i++;
       }
       expect(keys).toStrictEqual({
-        key1: 7,
-        key2: 6,
+        key1: 10,
+        key2: 8,
       });
       expect(tableOutput).toBe(
-        'key1   \tkey2  \nvalue1 \tvalue2\ndata1  \tdata2\nN/A    \tN/A\n',
+        'key1      \tkey2    \n"value1"  \t"value2"\n"data1"   \t"data2"\nN/A       \tN/A\n',
       );
     },
   );
@@ -146,17 +148,17 @@ describe('bin/utils', () => {
             });
 
             // Construct the expected output
-            let expectedValue = JSON.stringify(value);
+            let expectedValue = binUtils.encodeQuotes(value);
             expectedValue = binUtils.encodeNonPrintable(expectedValue);
             expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
             expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
+            expectedValue = `"${expectedValue}"`;
 
             const maxKeyLength = Math.max(
               ...Object.keys({ [key]: value }).map((k) => k.length),
             );
             const padding = ' '.repeat(maxKeyLength - key.length);
             const expectedOutput = `${key}${padding}\t${expectedValue}\n`;
-
             // Assert that the formatted output matches the expected output
             expect(formattedOutput).toBe(expectedOutput);
           },
@@ -277,6 +279,14 @@ describe('bin/utils', () => {
           binUtils.standardErrorReplacer,
         ) + '\n',
       );
+    },
+  );
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'encoding non-printable strings works',
+    () => {
+      expect(binUtils.encodeWrappedStrings('\n"\n"')).toBe('\n"\\n"');
+      expect(binUtils.encodeWrappedStrings('"\\""')).toBe('"\\""');
+      expect(binUtils.encodeWrappedStrings('"\\"\n\\""')).toBe('"\\"\\n\\""');
     },
   );
 });
