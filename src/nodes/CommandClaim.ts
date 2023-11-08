@@ -65,7 +65,7 @@ class CommandClaim extends CommandPolykey {
         );
         const claimed = response.success;
         if (claimed) {
-          const formattedOutput = await binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'list',
             data: [
               `Successfully generated a cryptolink claim on Keynode with ID ${nodesUtils.encodeNodeId(
@@ -73,9 +73,9 @@ class CommandClaim extends CommandPolykey {
               )}`,
             ],
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         } else {
-          const formattedOutput = await binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'list',
             data: [
               `Successfully sent Gestalt Invite notification to Keynode with ID ${nodesUtils.encodeNodeId(
@@ -83,7 +83,7 @@ class CommandClaim extends CommandPolykey {
               )}`,
             ],
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

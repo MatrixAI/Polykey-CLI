@@ -103,7 +103,7 @@ class CommandEncypt extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Encrypted data:\t\t${result.encryptedData}`];
+          output = [`Encrypted data:${' '.repeat(4)}${result.encryptedData}`];
         }
         process.stdout.write(
           binUtils.outputFormatter({

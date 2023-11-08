@@ -60,11 +60,11 @@ class CommandGetAll extends CommandPolykey {
               `NodeId ${value.nodeIdEncoded}, Address ${value.host}:${value.port}, bucketIndex ${value.bucketIndex}`,
           );
         }
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: output,
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

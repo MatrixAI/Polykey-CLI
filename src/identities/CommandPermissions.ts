@@ -52,7 +52,7 @@ class CommandPermissions extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const [type, id] = gestaltId;
-        let actions: string[] = [];
+        let actions: Array<string> = [];
         switch (type) {
           case 'node':
             {

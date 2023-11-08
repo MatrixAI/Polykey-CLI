@@ -59,11 +59,11 @@ class CommandAdd extends CommandPolykey {
         }, auth);
         if (options.format === 'human') {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = await binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: 'table',
             data: connections,
             options: {
-              headers: [
+              columns: [
                 'host',
                 'hostname',
                 'nodeIdEncoded',
@@ -71,16 +71,17 @@ class CommandAdd extends CommandPolykey {
                 'timeout',
                 'usageCount',
               ],
+              includeHeaders: true,
             },
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         } else {
           // Wait for outputFormatter to complete and then write to stdout
-          const formattedOutput = await binUtils.outputFormatter({
+          const outputFormatted = binUtils.outputFormatter({
             type: 'json',
             data: connections,
           });
-          process.stdout.write(formattedOutput);
+          process.stdout.write(outputFormatted);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

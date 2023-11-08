@@ -51,16 +51,18 @@ class CommandList extends CommandPolykey {
           });
           for await (const vaultListMessage of stream) {
             data.push(
-              `${vaultListMessage.vaultName}:\t\t${vaultListMessage.vaultIdEncoded}`,
+              `${vaultListMessage.vaultName}:${' '.repeat(4)}${
+                vaultListMessage.vaultIdEncoded
+              }`,
             );
           }
           return data;
         }, meta);
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

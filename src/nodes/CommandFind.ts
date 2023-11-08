@@ -90,11 +90,11 @@ class CommandFind extends CommandPolykey {
         }
         let output: any = result;
         if (options.format === 'human') output = [result.message];
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: output,
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
         // Like ping it should error when failing to find node for automation reasons.
         if (!result.success) {
           throw new errors.ErrorPolykeyCLINodeFindFailed(result.message);

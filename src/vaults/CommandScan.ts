@@ -54,15 +54,19 @@ class CommandScan extends CommandPolykey {
             const vaultName = vault.vaultName;
             const vaultIdEncoded = vault.vaultIdEncoded;
             const permissions = vault.permissions.join(',');
-            data.push(`${vaultName}\t\t${vaultIdEncoded}\t\t${permissions}`);
+            data.push(
+              `${vaultName}${' '.repeat(4)}${vaultIdEncoded}${' '.repeat(
+                4,
+              )}${permissions}`,
+            );
           }
           return data;
         }, meta);
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: data,
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

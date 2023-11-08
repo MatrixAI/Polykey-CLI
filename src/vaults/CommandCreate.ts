@@ -54,11 +54,11 @@ class CommandCreate extends CommandPolykey {
             }),
           meta,
         );
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data: [`Vault ${response.vaultIdEncoded} created successfully`],
         });
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

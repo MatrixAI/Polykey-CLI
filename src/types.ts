@@ -5,6 +5,14 @@ import type { RecoveryCode } from 'polykey/dist/keys/types';
 import type { StatusLive } from 'polykey/dist/status/types';
 import type { NodeIdEncoded } from 'polykey/dist/ids/types';
 
+type TableRow = Record<string, any>;
+
+interface TableOptions {
+  columns?: Array<string> | Record<string, number>;
+  includeHeaders?: boolean;
+  includeRowCount?: boolean;
+}
+
 type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
   nodeId: NodeIdEncoded;
 };
@@ -40,17 +48,10 @@ type AgentChildProcessOutput =
       error: POJO;
     };
 
-type TableRow = Record<string, any>;
-
-interface TableOptions {
-  headers?: string[];
-  includeRowCount?: boolean;
-}
-
 export type {
+  TableRow,
+  TableOptions,
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
-  TableRow,
-  TableOptions,
 };

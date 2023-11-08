@@ -76,7 +76,7 @@ class CommandSign extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Signature:\t\t${result.signature}`];
+          output = [`Signature:${' '.repeat(4)}${result.signature}`];
         }
         process.stdout.write(
           binUtils.outputFormatter({

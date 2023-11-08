@@ -60,18 +60,18 @@ class CommandStat extends CommandPolykey {
           meta,
         );
 
-        const data: string[] = [`Stats for "${secretPath[1]}"`];
+        const data: Array<string> = [`Stats for "${secretPath[1]}"`];
         for (const [key, value] of Object.entries(response.stat)) {
           data.push(`${key}: ${value}`);
         }
 
         // Assuming the surrounding function is async
-        const formattedOutput = await binUtils.outputFormatter({
+        const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
           data,
         });
 
-        process.stdout.write(formattedOutput);
+        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

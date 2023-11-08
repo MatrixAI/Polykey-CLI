@@ -50,7 +50,7 @@ type OutputObject =
       data: Error;
     };
 
-function standardErrorReplacer(key: string, value: any) {
+function standardErrorReplacer(_key: string, value: any) {
   if (value instanceof Error && !(value instanceof ErrorPolykey)) {
     return {
       type: value.name,
@@ -64,195 +64,356 @@ function standardErrorReplacer(key: string, value: any) {
   return value;
 }
 
-async function* arrayToAsyncIterable<T>(array: T[]): AsyncIterable<T> {
-  for (const item of array) {
-    yield item;
+function encodeEscapedReplacer(_key: string, value: any) {
+  if (typeof value === 'string') {
+    return encodeEscaped(value);
+  }
+  return value;
+}
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\n \\r \\t to escaped versions, \\\\n \\\\r and \\\\t.
+ * 3. Converts other control characters to their Unicode escape sequences.
+ * 4. Converts ' \` " to escaped versions, \\\\' \\\\\` and \\\\"
+ * 5. Wraps the whole thing in `""` if any characters have been encoded.
+ */
+function encodeEscapedWrapped(str: string): string {
+  if (!encodeEscapedRegex.test(str)) {
+    return str;
+  }
+  return `"${encodeEscaped(str)}"`;
+}
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\\\n \\\\r and \\\\t to unescaped versions, \\n \\r \\t.
+ * 3. Converts Unicode escape sequences to their control characters.
+ * 4. Converts \\\\' \\\\\` and \\\\"  to their unescaped versions, ' \` ".
+ * 5. If it is wrapped in "" double quotes, the double quotes will be trimmed.
+ */
+function decodeEscapedWrapped(str: string): string {
+  if (!decodeEscapedRegex.test(str)) {
+    return str;
+  }
+  return decodeEscaped(str.substring(1, str.length - 1));
+}
+
+// We want to actually match control codes here!
+// eslint-disable-next-line no-control-regex
+const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`]/g;
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\n \\r \\t to escaped versions, \\\\n \\\\r and \\\\t.
+ * 3. Converts other control characters to their Unicode escape sequences.\
+ * 4. Converts ' \` " to escaped versions, \\\\' \\\\\` and \\\\"
+ *
+ * Unless you're using this in a `JSON.stringify` replacer, you probably want to use {@link encodeEscapedWrapped} instead.
+ */
+function encodeEscaped(str: string): string {
+  return str.replace(encodeEscapedRegex, (char) => {
+    switch (char) {
+      case ' ':
+        return char;
+      case '\n':
+        return '\\n'; // Encode newline
+      case '\r':
+        return '\\r'; // Encode carriage return
+      case '\t':
+        return '\\t'; // Encode tab
+      case '\v':
+        return '\\v'; // Encode tab
+      case '\f':
+        return '\\f'; // Encode tab
+      case '"':
+      case "'":
+      case '`':
+        return '\\' + char;
+      // Add cases for other whitespace characters if needed
+      default:
+        // Return the Unicode escape sequence for control characters
+        return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
+    }
+  });
+}
+
+const decodeEscapedRegex = /\\([nrtvf"'`]|u[0-9a-fA-F]{4})/g;
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\\\n \\\\r and \\\\t to unescaped versions, \\n \\r \\t.
+ * 3. Converts Unicode escape sequences to their control characters.
+ * 4. Converts \\\\' \\\\\` and \\\\"  to their unescaped versions, ' \` ".
+ *
+ * Unless you're using this in a `JSON.parse` reviver, you probably want to use {@link decodeEscapedWrapped} instead.
+ */
+function decodeEscaped(str: string): string {
+  return str.replace(decodeEscapedRegex, (substr) => {
+    // Unicode escape sequence must be characters (e.g. `\u0000`)
+    if (substr.length === 6 && substr.at(1) === 'u') {
+      return String.fromCharCode(parseInt(substr.substring(2), 16));
+    }
+    // Length of substr will always be at least 1
+    const lastChar = substr.at(-1);
+    if (lastChar == null) {
+      utils.never();
+    }
+    switch (lastChar) {
+      case 'n':
+        return '\n';
+      case 'r':
+        return '\r';
+      case 't':
+        return '\t';
+      case 'v':
+        return '\v';
+      case 'f':
+        return '\f';
+      case '"':
+      case "'":
+      case '`':
+        return lastChar;
+    }
+    utils.never();
+  });
+}
+
+/**
+ * Formats a message suitable for output.
+ *
+ * @param msg - The msg that needs to be formatted.
+ * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
+ * @see {@link encodeWrappedStrings} for information regarding wrapping strings with `""` for encoding escaped characters
+ * @returns
+ */
+function outputFormatter(msg: OutputObject): string | Uint8Array {
+  switch (msg.type) {
+    case 'raw':
+      return msg.data;
+    case 'list':
+      return outputFormatterList(msg.data);
+    case 'table':
+      return outputFormatterTable(msg.data, msg.options);
+    case 'dict':
+      return outputFormatterDict(msg.data);
+    case 'json':
+      return outputFormatterJson(msg.data);
+    case 'error':
+      return outputFormatterError(msg.data);
   }
 }
 
-// Function to handle 'table' type output
-const outputTableFormatter = async (
-  rowStream: TableRow[] | AsyncIterable<TableRow>,
-  options?: TableOptions,
-): Promise<string> => {
+function outputFormatterList(items: Array<string>): string {
   let output = '';
-  const maxColumnLengths: Record<string, number> = {};
+  for (const elem of items) {
+    // Convert null or undefined to empty string
+    output += `${elem ?? ''}\n`;
+  }
+  return output;
+}
+
+/**
+ * Function to handle the `table` output format.
+ *
+ * @param rows
+ * @param options
+ * @param options.columns - Can either be an `Array<string>` or `Record<string, number>`.
+ * If it is `Record<string, number>`, the `number` values will be used as the initial padding lengths.
+ * The object is also mutated if any cells exceed the inital padding lengths.
+ * This parameter can also be supplied to filter the columns that will be displayed.
+ * @param options.includeHeaders - Defaults to `True`
+ * @param options.includeRowCount - Defaults to `False`.
+ * @returns
+ */
+function outputFormatterTable(
+  rows: Array<TableRow>,
+  options: TableOptions = {
+    includeHeaders: true,
+    includeRowCount: false,
+  },
+): string {
+  let output = '';
   let rowCount = 0;
+  // Default includeHeaders to true
+  const includeHeaders = options.includeHeaders ?? true;
+  const maxColumnLengths: Record<string, number> = {};
+
+  const optionColumns =
+    options?.columns != null
+      ? Array.isArray(options.columns)
+        ? options.columns
+        : Object.keys(options.columns)
+      : undefined;
 
   // Initialize maxColumnLengths with header lengths if headers are provided
-  if (options?.headers) {
-    for (const header of options.headers) {
-      maxColumnLengths[header] = header.length;
-    }
-  }
-
-  let iterableStream = Array.isArray(rowStream)
-    ? arrayToAsyncIterable(rowStream)
-    : rowStream;
-
-  const updateMaxColumnLengths = (row: TableRow) => {
-    for (const [key, value] of Object.entries(row)) {
-      const cellValue =
-        value === null || value === '' || value === undefined ? 'N/A' : value;
-      maxColumnLengths[key] = Math.max(
-        maxColumnLengths[key] || 0,
-        cellValue.toString().length,
+  if (optionColumns != null) {
+    for (const column of optionColumns) {
+      maxColumnLengths[column] = Math.max(
+        options?.columns?.[column] ?? 0,
+        column.length,
       );
     }
-  };
+  }
 
   // Precompute max column lengths by iterating over the rows first
-  for await (const row of iterableStream) {
-    updateMaxColumnLengths(row);
+  for (const row of rows) {
+    for (const column in options?.columns ?? row) {
+      if (row[column] != null) {
+        if (typeof row[column] === 'string') {
+          row[column] = encodeEscapedWrapped(row[column]);
+        } else {
+          row[column] = JSON.stringify(row[column], encodeEscapedReplacer);
+        }
+      }
+      // Null or '' will both cause cellLength to be 3
+      const cellLength =
+        row[column] == null || row[column] === '""' ? 3 : row[column].length; // 3 is length of 'N/A'
+      maxColumnLengths[column] = Math.max(
+        maxColumnLengths[column] || 0,
+        cellLength, // Use the length of the encoded value
+      );
+    }
   }
 
-  // Reset the iterableStream if it's an array so we can iterate over it again
-  if (Array.isArray(rowStream)) {
-    iterableStream = arrayToAsyncIterable(rowStream);
-  }
-
+  // After this point, maxColumnLengths will have been filled with all the necessary keys.
+  // Thus, the column keys can be derived from it.
+  const columns = Object.keys(maxColumnLengths);
   // If headers are provided, add them to your output first
-  if (options?.headers) {
-    const headerRow = options.headers
-      .map((header) => header.padEnd(maxColumnLengths[header]))
-      .join('\t');
-    output += headerRow + '\n';
+  if (optionColumns != null) {
+    for (let i = 0; i < optionColumns.length; i++) {
+      const column = optionColumns[i];
+      const maxColumnLength = maxColumnLengths[column];
+      // Options.headers is definitely defined as optionHeaders != null
+      if (!Array.isArray(options!.columns)) {
+        options!.columns![column] = maxColumnLength;
+      }
+      if (includeHeaders) {
+        output += column.padEnd(maxColumnLength);
+        if (i !== optionColumns.length - 1) {
+          output += '\t';
+        } else {
+          output += '\n';
+        }
+      }
+    }
   }
 
-  // Function to format a single row
-  const formatRow = (row: TableRow) => {
+  for (const row of rows) {
     let formattedRow = '';
-
-    if (options?.includeRowCount) {
+    if (options.includeRowCount) {
       formattedRow += `${++rowCount}\t`;
     }
-
-    const keysToUse = options?.headers ?? Object.keys(maxColumnLengths);
-
-    for (const key of keysToUse) {
-      const cellValue = Object.prototype.hasOwnProperty.call(row, key)
-        ? row[key]
-        : 'N/A';
-      formattedRow += `${cellValue
-        ?.toString()
-        .padEnd(maxColumnLengths[key] || 0)}\t`;
+    for (const column of columns) {
+      // Assume row[key] has been already encoded as a string or null
+      const cellValue =
+        row[column] == null || row[column].length === 0 ? 'N/A' : row[column];
+      formattedRow += `${cellValue.padEnd(maxColumnLengths[column] || 0)}\t`;
     }
-
-    return formattedRow.trimEnd();
-  };
-
-  for await (const row of iterableStream) {
-    output += formatRow(row) + '\n';
+    output += formattedRow.trimEnd() + '\n';
   }
 
   return output;
-};
+}
 
-function outputFormatter(
-  msg: OutputObject,
-): string | Uint8Array | Promise<string> {
+function outputFormatterDict(data: POJO): string {
   let output = '';
-  if (msg.type === 'raw') {
-    return msg.data;
-  } else if (msg.type === 'list') {
-    for (let elem in msg.data) {
-      // Empty string for null or undefined values
-      if (elem == null) {
-        elem = '';
-      }
-      output += `${msg.data[elem]}\n`;
+  let maxKeyLength = 0;
+  for (const key in data) {
+    if (key.length > maxKeyLength) {
+      maxKeyLength = key.length;
     }
-  } else if (msg.type === 'table') {
-    return outputTableFormatter(msg.data, msg.options);
-  } else if (msg.type === 'dict') {
-    let maxKeyLength = 0;
-    for (const key in msg.data) {
-      if (key.length > maxKeyLength) {
-        maxKeyLength = key.length;
-      }
+  }
+  for (const key in data) {
+    let value = data[key];
+    if (value == null) {
+      value = '';
     }
 
-    for (const key in msg.data) {
-      let value = msg.data[key];
-      if (value == null) {
-        value = '';
-      }
-
-      // Only trim starting and ending quotes if value is a string
-      if (typeof value === 'string') {
-        value = JSON.stringify(value).replace(/^"|"$/g, '');
-      } else {
-        value = JSON.stringify(value);
-      }
-
-      // Re-introduce value.replace logic from old code
-      value = value.replace(/(?:\r\n|\n)$/, '');
-      value = value.replace(/(\r\n|\n)/g, '$1\t');
-
-      const padding = ' '.repeat(maxKeyLength - key.length);
-      output += `${key}${padding}\t${value}\n`;
+    if (typeof value === 'string') {
+      value = encodeEscapedWrapped(value);
+    } else {
+      value = JSON.stringify(value, encodeEscapedReplacer);
     }
-  } else if (msg.type === 'json') {
-    output = JSON.stringify(msg.data, standardErrorReplacer);
-    output += '\n';
-  } else if (msg.type === 'error') {
-    let currError = msg.data;
-    let indent = '  ';
-    while (currError != null) {
-      if (currError instanceof networkErrors.ErrorPolykeyRemote) {
-        output += `${currError.name}: ${currError.description}`;
-        if (currError.message && currError.message !== '') {
-          output += ` - ${currError.message}`;
-        }
-        if (currError.metadata != null) {
-          output += '\n';
-          for (const [key, value] of Object.entries(currError.metadata)) {
-            output += `${indent}${key}\t${value}\n`;
-          }
-        }
-        output += `${indent}timestamp\t${currError.timestamp}\n`;
-        output += `${indent}cause: `;
-        currError = currError.cause;
-      } else if (currError instanceof ErrorPolykey) {
-        output += `${currError.name}: ${currError.description}`;
-        if (currError.message && currError.message !== '') {
-          output += ` - ${currError.message}`;
-        }
+
+    value = value.replace(/(?:\r\n|\n)$/, '');
+    value = value.replace(/(\r\n|\n)/g, '$1\t');
+
+    const padding = ' '.repeat(maxKeyLength - key.length);
+    output += `${key}${padding}\t${value}\n`;
+  }
+  return output;
+}
+
+function outputFormatterJson(json: string): string {
+  return `${JSON.stringify(json, standardErrorReplacer)}\n`;
+}
+
+function outputFormatterError(err: Error): string {
+  let output = '';
+  let indent = '  ';
+  while (err != null) {
+    if (err instanceof networkErrors.ErrorPolykeyRemote) {
+      output += `${err.name}: ${err.description}`;
+      if (err.message && err.message !== '') {
+        output += ` - ${err.message}`;
+      }
+      if (err.metadata != null) {
         output += '\n';
-        // Disabled to streamline output
-        // output += `${indent}exitCode\t${currError.exitCode}\n`;
-        // output += `${indent}timestamp\t${currError.timestamp}\n`;
-        if (currError.data && !utils.isEmptyObject(currError.data)) {
-          output += `${indent}data\t${JSON.stringify(currError.data)}\n`;
+        for (const [key, value] of Object.entries(err.metadata)) {
+          output += `${indent}${key}\t${value}\n`;
         }
-        if (currError.cause) {
-          output += `${indent}cause: `;
-          if (currError.cause instanceof ErrorPolykey) {
-            currError = currError.cause;
-          } else if (currError.cause instanceof Error) {
-            output += `${currError.cause.name}`;
-            if (currError.cause.message && currError.cause.message !== '') {
-              output += `: ${currError.cause.message}`;
-            }
-            output += '\n';
-            break;
-          } else {
-            output += `${JSON.stringify(currError.cause)}\n`;
-            break;
+      }
+      output += `${indent}timestamp\t${err.timestamp}\n`;
+      output += `${indent}cause: `;
+      err = err.cause;
+    } else if (err instanceof ErrorPolykey) {
+      output += `${err.name}: ${err.description}`;
+      if (err.message && err.message !== '') {
+        output += ` - ${err.message}`;
+      }
+      output += '\n';
+      // Disabled to streamline output
+      // output += `${indent}exitCode\t${currError.exitCode}\n`;
+      // output += `${indent}timestamp\t${currError.timestamp}\n`;
+      if (err.data && !utils.isEmptyObject(err.data)) {
+        output += `${indent}data\t${JSON.stringify(err.data)}\n`;
+      }
+      if (err.cause) {
+        output += `${indent}cause: `;
+        if (err.cause instanceof ErrorPolykey) {
+          err = err.cause;
+        } else if (err.cause instanceof Error) {
+          output += `${err.cause.name}`;
+          if (err.cause.message && err.cause.message !== '') {
+            output += `: ${err.cause.message}`;
           }
+          output += '\n';
+          break;
         } else {
+          output += `${JSON.stringify(err.cause)}\n`;
           break;
         }
       } else {
-        output += `${currError.name}`;
-        if (currError.message && currError.message !== '') {
-          output += `: ${currError.message}`;
-        }
-        output += '\n';
         break;
       }
-      indent = indent + '  ';
+    } else {
+      output += `${err.name}`;
+      if (err.message && err.message !== '') {
+        output += `: ${err.message}`;
+      }
+      output += '\n';
+      break;
     }
+    indent = indent + '  ';
   }
   return output;
 }
@@ -320,9 +481,21 @@ function remoteErrorCause(e: any): [any, number] {
 export {
   verboseToLogLevel,
   standardErrorReplacer,
+  encodeEscapedReplacer,
   outputFormatter,
+  outputFormatterList,
+  outputFormatterTable,
+  outputFormatterDict,
+  outputFormatterJson,
+  outputFormatterError,
   retryAuthentication,
   remoteErrorCause,
+  encodeEscapedWrapped,
+  encodeEscaped,
+  encodeEscapedRegex,
+  decodeEscapedWrapped,
+  decodeEscaped,
+  decodeEscapedRegex,
 };
 
 export type { OutputObject };

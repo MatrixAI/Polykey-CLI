@@ -31,8 +31,8 @@ describe('connections', () => {
         nodePath,
         agentServiceHost: '127.0.0.1',
         clientServiceHost: '127.0.0.1',
-        agentServicePort: 55555,
-        clientServicePort: 55554,
+        agentServicePort: 0,
+        clientServicePort: 0,
         keys: {
           passwordOpsLimit: keysUtils.passwordOpsLimits.min,
           passwordMemLimit: keysUtils.passwordMemLimits.min,
@@ -50,8 +50,8 @@ describe('connections', () => {
         nodePath: path.join(dataDir, 'remoteNode'),
         agentServiceHost: '127.0.0.1',
         clientServiceHost: '127.0.0.1',
-        agentServicePort: 55553,
-        clientServicePort: 55552,
+        agentServicePort: 0,
+        clientServicePort: 0,
         keys: {
           passwordOpsLimit: keysUtils.passwordOpsLimits.min,
           passwordMemLimit: keysUtils.passwordMemLimits.min,

@@ -76,7 +76,7 @@ class CommandDecrypt extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Decrypted data:\t\t${result.decryptedData}`];
+          output = [`Decrypted data:${' '.repeat(4)}${result.decryptedData}`];
         }
         process.stdout.write(
           binUtils.outputFormatter({
