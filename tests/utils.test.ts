@@ -52,9 +52,7 @@ describe('bin/utils', () => {
           includeHeaders: true,
         },
       });
-      expect(tableOutput).toBe(
-        '"value1"\t"value2"\n"data1" \t"data2"\nN/A     \tN/A\n',
-      );
+      expect(tableOutput).toBe('value1\tvalue2\ndata1 \tdata2\nN/A   \tN/A\n');
 
       // JSON
       const jsonOutput = binUtils.outputFormatter({
@@ -96,10 +94,10 @@ describe('bin/utils', () => {
       }
       expect(keys).toStrictEqual({
         key1: 10,
-        key2: 8,
+        key2: 6,
       });
       expect(tableOutput).toBe(
-        'key1      \tkey2    \n"value1"  \t"value2"\n"data1"   \t"data2"\nN/A       \tN/A\n',
+        'key1      \tkey2  \nvalue1    \tvalue2\ndata1     \tdata2\nN/A       \tN/A\n',
       );
     },
   );
@@ -112,7 +110,7 @@ describe('bin/utils', () => {
           type: 'dict',
           data: { key1: 'value1', key2: 'value2' },
         }),
-      ).toBe('key1\t"value1"\nkey2\t"value2"\n');
+      ).toBe('key1\tvalue1\nkey2\tvalue2\n');
       expect(
         binUtils.outputFormatter({
           type: 'dict',
@@ -124,7 +122,7 @@ describe('bin/utils', () => {
           type: 'dict',
           data: { key1: null, key2: undefined },
         }),
-      ).toBe('key1\t""\nkey2\t""\n');
+      ).toBe('key1\t\nkey2\t\n');
       // JSON
       expect(
         binUtils.outputFormatter({
@@ -148,11 +146,10 @@ describe('bin/utils', () => {
             });
 
             // Construct the expected output
-            let expectedValue = binUtils.encodeQuotes(value);
-            expectedValue = binUtils.encodeNonPrintable(expectedValue);
+            let expectedValue = value;
+            expectedValue = binUtils.encodeEscapedWrapped(expectedValue);
             expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
             expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
-            expectedValue = `"${expectedValue}"`;
 
             const maxKeyLength = Math.max(
               ...Object.keys({ [key]: value }).map((k) => k.length),
@@ -282,11 +279,16 @@ describe('bin/utils', () => {
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'encoding non-printable strings works',
+    'encodeEscaped should encode all escapable characters',
     () => {
-      expect(binUtils.encodeWrappedStrings('\n"\n"')).toBe('\n"\\n"');
-      expect(binUtils.encodeWrappedStrings('"\\""')).toBe('"\\""');
-      expect(binUtils.encodeWrappedStrings('"\\"\n\\""')).toBe('"\\"\\n\\""');
+      fc.assert(
+        fc.property(stringWithNonPrintableCharsArb, (value) => {
+          expect(binUtils.decodeEscaped(binUtils.encodeEscaped(value))).toBe(
+            value,
+          );
+        }),
+        { numRuns: 100 }, // Number of times to run the test
+      );
     },
   );
 });

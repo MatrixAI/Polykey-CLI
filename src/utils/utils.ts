@@ -50,7 +50,7 @@ type OutputObject =
       data: Error;
     };
 
-function standardErrorReplacer(key: string, value: any) {
+function standardErrorReplacer(_key: string, value: any) {
   if (value instanceof Error && !(value instanceof ErrorPolykey)) {
     return {
       type: value.name,
@@ -64,35 +64,64 @@ function standardErrorReplacer(key: string, value: any) {
   return value;
 }
 
-/**
- * This function calls encodeNonPrintable on substrings within the input enclosed with `""`.
- * Any usage of `\\"` within `""` will escape it.
- *
- * @param str
- * @see {@link encodeNonPrintable}
- * @returns
- */
-function encodeWrappedStrings(str: string) {
-  return str.replace(/"(\\.|[^"])*"/g, encodeNonPrintable);
-}
-
-function encodeQuotes(str: string): string {
-  return str.replace(/[`"']/g, (char) => `\\` + char);
+function encodeEscapedReplacer(_key: string, value: any) {
+  if (typeof value === 'string') {
+    return encodeEscaped(value);
+  }
+  return value;
 }
 
 /**
  * This function:
+ *
  * 1. Keeps regular spaces, only ' ', as they are.
- * 2. Converts \n \r \t to escaped versions, \\n \\r and \\t.
+ * 2. Converts \\n \\r \\t to escaped versions, \\\\n \\\\r and \\\\t.
  * 3. Converts other control characters to their Unicode escape sequences.
+ * 4. Converts ' \` " to escaped versions, \\\\' \\\\\` and \\\\"
+ * 5. Wraps the whole thing in `""` if any characters have been encoded.
  */
-function encodeNonPrintable(str: string): string {
-  // We want to actually match control codes here!
-  // eslint-disable-next-line no-control-regex
-  return str.replace(/[\x00-\x1F\x7F-\x9F]/g, (char) => {
+function encodeEscapedWrapped(str: string): string {
+  if (!encodeEscapedRegex.test(str)) {
+    return str;
+  }
+  return `"${encodeEscaped(str)}"`;
+}
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\\\n \\\\r and \\\\t to unescaped versions, \\n \\r \\t.
+ * 3. Converts Unicode escape sequences to their control characters.
+ * 4. Converts \\\\' \\\\\` and \\\\"  to their unescaped versions, ' \` ".
+ * 5. If it is wrapped in "" double quotes, the double quotes will be trimmed.
+ */
+function decodeEscapedWrapped(str: string): string {
+  if (!decodeEscapedRegex.test(str)) {
+    return str;
+  }
+  return decodeEscaped(str.substring(1, str.length - 1));
+}
+
+// We want to actually match control codes here!
+// eslint-disable-next-line no-control-regex
+const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`]/g;
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\n \\r \\t to escaped versions, \\\\n \\\\r and \\\\t.
+ * 3. Converts other control characters to their Unicode escape sequences.\
+ * 4. Converts ' \` " to escaped versions, \\\\' \\\\\` and \\\\"
+ *
+ * Unless you're using this in a `JSON.stringify` replacer, you probably want to use {@link encodeEscapedWrapped} instead.
+ */
+function encodeEscaped(str: string): string {
+  return str.replace(encodeEscapedRegex, (char) => {
     switch (char) {
       case ' ':
-        return char; // Preserve regular space
+        return char;
       case '\n':
         return '\\n'; // Encode newline
       case '\r':
@@ -103,11 +132,58 @@ function encodeNonPrintable(str: string): string {
         return '\\v'; // Encode tab
       case '\f':
         return '\\f'; // Encode tab
+      case '"':
+      case "'":
+      case '`':
+        return '\\' + char;
       // Add cases for other whitespace characters if needed
       default:
         // Return the Unicode escape sequence for control characters
         return `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`;
     }
+  });
+}
+
+const decodeEscapedRegex = /\\([nrtvf"'`]|u[0-9a-fA-F]{4})/g;
+
+/**
+ * This function:
+ *
+ * 1. Keeps regular spaces, only ' ', as they are.
+ * 2. Converts \\\\n \\\\r and \\\\t to unescaped versions, \\n \\r \\t.
+ * 3. Converts Unicode escape sequences to their control characters.
+ * 4. Converts \\\\' \\\\\` and \\\\"  to their unescaped versions, ' \` ".
+ *
+ * Unless you're using this in a `JSON.parse` reviver, you probably want to use {@link decodeEscapedWrapped} instead.
+ */
+function decodeEscaped(str: string): string {
+  return str.replace(decodeEscapedRegex, (substr) => {
+    // Unicode escape sequence must be characters (e.g. `\u0000`)
+    if (substr.length === 6 && substr.at(1) === 'u') {
+      return String.fromCharCode(parseInt(substr.substring(2), 16));
+    }
+    // Length of substr will always be at least 1
+    const lastChar = substr.at(-1);
+    if (lastChar == null) {
+      utils.never();
+    }
+    switch (lastChar) {
+      case 'n':
+        return '\n';
+      case 'r':
+        return '\r';
+      case 't':
+        return '\t';
+      case 'v':
+        return '\v';
+      case 'f':
+        return '\f';
+      case '"':
+      case "'":
+      case '`':
+        return lastChar;
+    }
+    utils.never();
   });
 }
 
@@ -119,26 +195,20 @@ function encodeNonPrintable(str: string): string {
  * @see {@link encodeWrappedStrings} for information regarding wrapping strings with `""` for encoding escaped characters
  * @returns
  */
-function outputFormatter(msg: OutputObject): string {
-  let data = msg.data;
+function outputFormatter(msg: OutputObject): string | Uint8Array {
   switch (msg.type) {
     case 'raw':
-      if (ArrayBuffer.isView(data)) {
-        const td = new TextDecoder('utf-8');
-        data = td.decode(data);
-      }
-      data = encodeWrappedStrings(data);
-      return data;
+      return msg.data;
     case 'list':
-      return outputFormatterList(data);
+      return outputFormatterList(msg.data);
     case 'table':
-      return outputFormatterTable(data, msg.options);
+      return outputFormatterTable(msg.data, msg.options);
     case 'dict':
-      return outputFormatterDict(data);
+      return outputFormatterDict(msg.data);
     case 'json':
-      return outputFormatterJson(data);
+      return outputFormatterJson(msg.data);
     case 'error':
-      return outputFormatterError(data);
+      return outputFormatterError(msg.data);
   }
 }
 
@@ -146,7 +216,7 @@ function outputFormatterList(items: Array<string>): string {
   let output = '';
   for (const elem of items) {
     // Convert null or undefined to empty string
-    output += `${elem != null ? encodeWrappedStrings(elem) : ''}\n`;
+    output += `${elem ?? ''}\n`;
   }
   return output;
 }
@@ -199,12 +269,10 @@ function outputFormatterTable(
     for (const column in options?.columns ?? row) {
       if (row[column] != null) {
         if (typeof row[column] === 'string') {
-          row[column] = encodeQuotes(row[column]);
-          row[column] = `"${row[column]}"`;
+          row[column] = encodeEscapedWrapped(row[column]);
         } else {
-          row[column] = JSON.stringify(row[column]);
+          row[column] = JSON.stringify(row[column], encodeEscapedReplacer);
         }
-        row[column] = encodeWrappedStrings(row[column]);
       }
       // Null or '' will both cause cellLength to be 3
       const cellLength =
@@ -271,12 +339,10 @@ function outputFormatterDict(data: POJO): string {
     }
 
     if (typeof value === 'string') {
-      value = encodeQuotes(value);
-      value = `"${value}"`;
+      value = encodeEscapedWrapped(value);
     } else {
-      value = JSON.stringify(value);
+      value = JSON.stringify(value, encodeEscapedReplacer);
     }
-    value = encodeWrappedStrings(value);
 
     value = value.replace(/(?:\r\n|\n)$/, '');
     value = value.replace(/(\r\n|\n)/g, '$1\t');
@@ -415,6 +481,7 @@ function remoteErrorCause(e: any): [any, number] {
 export {
   verboseToLogLevel,
   standardErrorReplacer,
+  encodeEscapedReplacer,
   outputFormatter,
   outputFormatterList,
   outputFormatterTable,
@@ -423,9 +490,12 @@ export {
   outputFormatterError,
   retryAuthentication,
   remoteErrorCause,
-  encodeWrappedStrings,
-  encodeQuotes,
-  encodeNonPrintable,
+  encodeEscapedWrapped,
+  encodeEscaped,
+  encodeEscapedRegex,
+  decodeEscapedWrapped,
+  decodeEscaped,
+  decodeEscapedRegex,
 };
 
 export type { OutputObject };

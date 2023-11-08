@@ -56,7 +56,7 @@ class CommandScan extends CommandPolykey {
             const permissions = vault.permissions.join(',');
             data.push(
               `${vaultName}${' '.repeat(4)}${vaultIdEncoded}${' '.repeat(
-                5,
+                4,
               )}${permissions}`,
             );
           }
