@@ -58,12 +58,10 @@ class CommandGet extends CommandPolykey {
             }),
           meta,
         );
-        const secretContent = response.secretContent;
+        const secretContent = Buffer.from(response.secretContent, 'binary');
         const outputFormatted = binUtils.outputFormatter({
           type: 'raw',
-          data: binUtils.encodeEscapedWrapped(secretContent)
-            ? binUtils.encodeEscaped(secretContent)
-            : secretContent,
+          data: secretContent,
         });
         process.stdout.write(outputFormatted);
       } finally {
