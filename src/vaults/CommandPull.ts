@@ -47,8 +47,8 @@ class CommandPull extends CommandPolykey {
         try {
           pkClient = await PolykeyClient.createPolykeyClient({
             nodeId: clientOptions.nodeId,
-            host: options.host,
-            port: options.port,
+            host: clientOptions.clientHost,
+            port: clientOptions.clientPort,
             options: {
               nodePath: options.nodePath,
             },
