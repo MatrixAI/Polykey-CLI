@@ -35,9 +35,6 @@ describe('ping', () => {
           passwordMemLimit: keysUtils.passwordMemLimits.min,
           strictMemoryLock: false,
         },
-        nodes: {
-          connectionConnectTimeoutTime: 2000,
-        },
       },
       logger,
     });

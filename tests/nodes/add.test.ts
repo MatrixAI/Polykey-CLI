@@ -147,7 +147,11 @@ describe('add', () => {
       expect(exitCode).toBe(0);
       // Checking if node was added.
       const node = await pkAgent.nodeGraph.getNode(validNodeId);
-      expect(node?.address).toEqual({ host: validHost, port: port });
+      expect(node?.address).toEqual({
+        host: validHost,
+        port: port,
+        scopes: ['global'],
+      });
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -197,7 +201,11 @@ describe('add', () => {
       expect(exitCode).toBe(0);
       // Checking if node was added.
       const node = await pkAgent.nodeGraph.getNode(validNodeId);
-      expect(node?.address).toEqual({ host: validHost, port: port });
+      expect(node?.address).toEqual({
+        host: validHost,
+        port: port,
+        scopes: ['global'],
+      });
     },
   );
 });

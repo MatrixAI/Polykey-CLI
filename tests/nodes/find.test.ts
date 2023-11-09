@@ -116,13 +116,24 @@ describe('find', () => {
         },
       );
       expect(exitCode).toBe(0);
-      expect(JSON.parse(stdout)).toEqual({
+      const output = JSON.parse(stdout);
+      expect(output).toMatchObject({
         success: true,
-        message: `Found node at ${remoteOnlineHost}:${remoteOnlinePort}`,
         id: nodesUtils.encodeNodeId(remoteOnlineNodeId),
-        host: remoteOnlineHost,
-        port: remoteOnlinePort,
       });
+      expect(output.addresses).toEqual(
+        expect.arrayContaining([
+          {
+            host: remoteOnlineHost,
+            port: remoteOnlinePort,
+          },
+        ]),
+      );
+      expect(output.message).toMatch(
+        new RegExp(
+          `Found node at .*?${remoteOnlineHost}:${remoteOnlinePort}.*?`,
+        ),
+      );
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -145,13 +156,24 @@ describe('find', () => {
         },
       );
       expect(exitCode).toBe(0);
-      expect(JSON.parse(stdout)).toEqual({
+      const output = JSON.parse(stdout);
+      expect(output).toMatchObject({
         success: true,
-        message: `Found node at ${remoteOfflineHost}:${remoteOfflinePort}`,
         id: nodesUtils.encodeNodeId(remoteOfflineNodeId),
-        host: remoteOfflineHost,
-        port: remoteOfflinePort,
       });
+      expect(output.addresses).toEqual(
+        expect.arrayContaining([
+          {
+            host: remoteOfflineHost,
+            port: remoteOfflinePort,
+          },
+        ]),
+      );
+      expect(output.message).toMatch(
+        new RegExp(
+          `Found node at .*?${remoteOfflineHost}:${remoteOfflinePort}.*?`,
+        ),
+      );
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -183,8 +205,7 @@ describe('find', () => {
           unknownNodeId!,
         )}`,
         id: nodesUtils.encodeNodeId(unknownNodeId!),
-        host: '',
-        port: 0,
+        addresses: [],
       });
     },
     globalThis.failedConnectionTimeout,
