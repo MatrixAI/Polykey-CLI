@@ -930,6 +930,7 @@ describe('start', () => {
                 [seedNodeId2]: {
                   host: seedNodeHost2 as Host,
                   port: seedNodePort2 as Port,
+                  scopes: ['global'],
                 },
               },
               testnet: {},
@@ -998,6 +999,7 @@ describe('start', () => {
                 [seedNodeId2]: {
                   host: seedNodeHost2 as Host,
                   port: seedNodePort2 as Port,
+                  scopes: ['global'],
                 },
               },
             });

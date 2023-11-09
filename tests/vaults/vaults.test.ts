@@ -1,4 +1,3 @@
-import type { NodeAddress } from 'polykey/dist/nodes/types';
 import type { VaultId, VaultName } from 'polykey/dist/vaults/types';
 import type { GestaltNodeInfo } from 'polykey/dist/gestalts/types';
 import path from 'path';
@@ -258,12 +257,14 @@ describe('CLI vaults', () => {
       await polykeyAgent.nodeManager.setNode(targetNodeId, {
         host: targetPolykeyAgent.agentServiceHost,
         port: targetPolykeyAgent.agentServicePort,
+        scopes: ['global'],
       });
       await targetPolykeyAgent.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
         {
           host: polykeyAgent.agentServiceHost,
           port: polykeyAgent.agentServicePort,
+          scopes: ['global'],
         },
       );
       await polykeyAgent.acl.setNodePerm(targetNodeId, {
@@ -834,7 +835,8 @@ describe('CLI vaults', () => {
           await polykeyAgent.nodeManager.setNode(remoteOnlineNodeId, {
             host: remoteOnline.agentServiceHost,
             port: remoteOnline.agentServicePort,
-          } as NodeAddress);
+            scopes: ['global'],
+          });
 
           await remoteOnline.gestaltGraph.setNode({
             nodeId: polykeyAgent.keyRing.getNodeId(),

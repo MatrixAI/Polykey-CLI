@@ -55,9 +55,9 @@ class CommandFind extends CommandPolykey {
           success: false,
           message: '',
           id: '',
-          host: '',
-          port: 0,
+          addresses: [] as Array<{ host: string; port: number }>,
         };
+        const builtAddresses: Array<string> = [];
         try {
           const response = await binUtils.retryAuthentication(
             (auth) =>
@@ -69,12 +69,13 @@ class CommandFind extends CommandPolykey {
           );
           result.success = true;
           result.id = nodesUtils.encodeNodeId(nodeId);
-          result.host = response.host;
-          result.port = response.port;
-          result.message = `Found node at ${networkUtils.buildAddress(
-            result.host as Host,
-            result.port as Port,
-          )}`;
+          for (const { host, port } of response.addresses) {
+            result.addresses.push({ host, port });
+            builtAddresses.push(
+              networkUtils.buildAddress(host as Host, port as Port),
+            );
+          }
+          result.message = `Found node at ${builtAddresses.join(', ')}`;
         } catch (err) {
           if (
             !(err.cause instanceof nodesErrors.ErrorNodeGraphNodeIdNotFound)
@@ -84,16 +85,20 @@ class CommandFind extends CommandPolykey {
           // Else failed to find the node.
           result.success = false;
           result.id = nodesUtils.encodeNodeId(nodeId);
-          result.host = '';
-          result.port = 0;
           result.message = `Failed to find node ${result.id}`;
         }
-        let output: any = result;
-        if (options.format === 'human') output = [result.message];
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: output,
-        });
+        let outputFormatted: string | Uint8Array;
+        if (options.format === 'json') {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'json',
+            data: result,
+          });
+        } else {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'list',
+            data: ['Found node at', ...builtAddresses],
+          });
+        }
         process.stdout.write(outputFormatted);
         // Like ping it should error when failing to find node for automation reasons.
         if (!result.success) {
