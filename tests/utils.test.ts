@@ -145,6 +145,8 @@ describe('bin/utils', () => {
               data: { [key]: value },
             });
 
+            const expectedKey = binUtils.encodeEscapedWrapped(key);
+
             // Construct the expected output
             let expectedValue = value;
             expectedValue = binUtils.encodeEscapedWrapped(expectedValue);
@@ -155,7 +157,7 @@ describe('bin/utils', () => {
               ...Object.keys({ [key]: value }).map((k) => k.length),
             );
             const padding = ' '.repeat(maxKeyLength - key.length);
-            const expectedOutput = `${key}${padding}\t${expectedValue}\n`;
+            const expectedOutput = `${expectedKey}${padding}\t${expectedValue}\n`;
             // Assert that the formatted output matches the expected output
             expect(formattedOutput).toBe(expectedOutput);
           },
@@ -287,6 +289,41 @@ describe('bin/utils', () => {
             value,
           );
         }),
+        { numRuns: 100 }, // Number of times to run the test
+      );
+    },
+  );
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    'encodeEscapedReplacer should encode all escapable characters',
+    () => {
+      fc.assert(
+        fc.property(
+          stringWithNonPrintableCharsArb,
+          stringWithNonPrintableCharsArb,
+          (key, value) => {
+            const encodedKey = binUtils.encodeEscaped(key);
+            const encodedValue = binUtils.encodeEscaped(value);
+            const object = {
+              [key]: value,
+              [key]: {
+                [key]: value,
+              },
+              [key]: [value],
+            };
+            const encodedObject = {
+              [encodedKey]: encodedValue,
+              [encodedKey]: {
+                [encodedKey]: encodedValue,
+              },
+              [encodedKey]: [encodedValue],
+            };
+            const output = JSON.stringify(
+              object,
+              binUtils.encodeEscapedReplacer,
+            );
+            expect(JSON.parse(output)).toEqual(encodedObject);
+          },
+        ),
         { numRuns: 100 }, // Number of times to run the test
       );
     },

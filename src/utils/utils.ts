@@ -68,6 +68,22 @@ function encodeEscapedReplacer(_key: string, value: any) {
   if (typeof value === 'string') {
     return encodeEscaped(value);
   }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    for (const valueKey of Object.keys(value)) {
+      if (typeof valueKey === 'string') {
+        const newValueKey = encodeEscaped(valueKey);
+        const valueKeyValue = value[valueKey];
+        delete value[valueKey];
+        // This is done in case it is defined as `__proto__`
+        Object.defineProperty(value, newValueKey, {
+          value: valueKeyValue,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      }
+    }
+  }
   return value;
 }
 
@@ -252,15 +268,15 @@ function outputFormatterTable(
         : Object.keys(options.columns)
       : undefined;
 
-  // Initialize maxColumnLengths with header lengths if headers are provided
+  // Initialize maxColumnLengths with header lengths if headers with lengths are provided
   if (optionColumns != null) {
     for (const column of optionColumns) {
-      maxColumnLengths[column] = Math.max(
-        options?.columns?.[column] ?? 0,
-        column.length,
-      );
+      maxColumnLengths[column] = options?.columns?.[column];
     }
   }
+
+  // Map<originalColumn, encodedColumn>
+  const encodedColumns: Map<string, string> = new Map();
 
   // Precompute max column lengths by iterating over the rows first
   for (const row of rows) {
@@ -279,6 +295,16 @@ function outputFormatterTable(
         maxColumnLengths[column] || 0,
         cellLength, // Use the length of the encoded value
       );
+      // If headers are included, we need to check if the column header length is bigger
+      if (includeHeaders && !encodedColumns.has(column)) {
+        // This only has to be done once, so if the column already exists in the map, don't bother
+        const encodedColumn = encodeEscapedWrapped(column);
+        encodedColumns.set(column, encodedColumn);
+        maxColumnLengths[column] = Math.max(
+          maxColumnLengths[column] || 0,
+          encodedColumn.length,
+        );
+      }
     }
   }
 
@@ -295,7 +321,9 @@ function outputFormatterTable(
         options!.columns![column] = maxColumnLength;
       }
       if (includeHeaders) {
-        output += column.padEnd(maxColumnLength);
+        output += (encodedColumns.get(column) ?? column).padEnd(
+          maxColumnLength,
+        );
         if (i !== optionColumns.length - 1) {
           output += '\t';
         } else {
@@ -325,13 +353,17 @@ function outputFormatterTable(
 function outputFormatterDict(data: POJO): string {
   let output = '';
   let maxKeyLength = 0;
+  // Array<[originalKey, encodedKey]>
+  const keypairs: Array<[string, string]> = [];
   for (const key in data) {
-    if (key.length > maxKeyLength) {
-      maxKeyLength = key.length;
+    const encodedKey = encodeEscapedWrapped(key);
+    keypairs.push([key, encodedKey]);
+    if (encodedKey.length > maxKeyLength) {
+      maxKeyLength = encodedKey.length;
     }
   }
-  for (const key in data) {
-    let value = data[key];
+  for (const [originalKey, encodedKey] of keypairs) {
+    let value = data[originalKey];
     if (value == null) {
       value = '';
     }
@@ -345,8 +377,8 @@ function outputFormatterDict(data: POJO): string {
     value = value.replace(/(?:\r\n|\n)$/, '');
     value = value.replace(/(\r\n|\n)/g, '$1\t');
 
-    const padding = ' '.repeat(maxKeyLength - key.length);
-    output += `${key}${padding}\t${value}\n`;
+    const padding = ' '.repeat(maxKeyLength - encodedKey.length);
+    output += `${encodedKey}${padding}\t${value}\n`;
   }
   return output;
 }
