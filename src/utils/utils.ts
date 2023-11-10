@@ -250,28 +250,28 @@ function outputFormatterList(items: Array<string>): string {
  */
 function outputFormatterTable(
   rows: Array<TableRow>,
-  options: TableOptions = {
-    includeHeaders: true,
-    includeRowCount: false,
-  },
+  {
+    includeHeaders = true,
+    includeRowCount = false,
+    columns,
+  }: TableOptions = {},
 ): string {
   let output = '';
   let rowCount = 0;
   // Default includeHeaders to true
-  const includeHeaders = options.includeHeaders ?? true;
   const maxColumnLengths: Record<string, number> = {};
 
   const optionColumns =
-    options?.columns != null
-      ? Array.isArray(options.columns)
-        ? options.columns
-        : Object.keys(options.columns)
+    columns != null
+      ? Array.isArray(columns)
+        ? columns
+        : Object.keys(columns)
       : undefined;
 
   // Initialize maxColumnLengths with header lengths if headers with lengths are provided
   if (optionColumns != null) {
     for (const column of optionColumns) {
-      maxColumnLengths[column] = options?.columns?.[column];
+      maxColumnLengths[column] = columns?.[column];
     }
   }
 
@@ -280,7 +280,7 @@ function outputFormatterTable(
 
   // Precompute max column lengths by iterating over the rows first
   for (const row of rows) {
-    for (const column in options?.columns ?? row) {
+    for (const column in columns ?? row) {
       if (row[column] != null) {
         if (typeof row[column] === 'string') {
           row[column] = encodeEscapedWrapped(row[column]);
@@ -310,15 +310,15 @@ function outputFormatterTable(
 
   // After this point, maxColumnLengths will have been filled with all the necessary keys.
   // Thus, the column keys can be derived from it.
-  const columns = Object.keys(maxColumnLengths);
+  const finalColumns = Object.keys(maxColumnLengths);
   // If headers are provided, add them to your output first
   if (optionColumns != null) {
     for (let i = 0; i < optionColumns.length; i++) {
       const column = optionColumns[i];
       const maxColumnLength = maxColumnLengths[column];
       // Options.headers is definitely defined as optionHeaders != null
-      if (!Array.isArray(options!.columns)) {
-        options!.columns![column] = maxColumnLength;
+      if (!Array.isArray(columns)) {
+        columns![column] = maxColumnLength;
       }
       if (includeHeaders) {
         output += (encodedColumns.get(column) ?? column).padEnd(
@@ -335,10 +335,10 @@ function outputFormatterTable(
 
   for (const row of rows) {
     let formattedRow = '';
-    if (options.includeRowCount) {
+    if (includeRowCount) {
       formattedRow += `${++rowCount}\t`;
     }
-    for (const column of columns) {
+    for (const column of finalColumns) {
       // Assume row[key] has been already encoded as a string or null
       const cellValue =
         row[column] == null || row[column].length === 0 ? 'N/A' : row[column];
