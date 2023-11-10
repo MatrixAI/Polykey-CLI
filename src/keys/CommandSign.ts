@@ -76,11 +76,11 @@ class CommandSign extends CommandPolykey {
         };
         let output: any = result;
         if (options.format === 'human') {
-          output = [`Signature:${' '.repeat(4)}${result.signature}`];
+          output = { 'Signature:': result.signature };
         }
         process.stdout.write(
           binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
+            type: options.format === 'json' ? 'json' : 'dict',
             data: output,
           }),
         );
