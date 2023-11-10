@@ -909,18 +909,16 @@ describe('CLI vaults', () => {
             cwd: dataDir,
           });
           expect(result3.exitCode).toBe(0);
-          expect(result3.stdout).toMatch(/Vault1 {4}.* {4}clone/);
+          expect(result3.stdout).toMatch(/Vault1\t.*\tclone/);
           expect(result3.stdout).toContain(
-            `Vault1${' '.repeat(4)}${vaultsUtils.encodeVaultId(
+            `Vault1\t${vaultsUtils.encodeVaultId(
               vault1Id,
-            )}${' '.repeat(4)}clone\nVault2${' '.repeat(
-              4,
-            )}${vaultsUtils.encodeVaultId(vault2Id)}${' '.repeat(
-              4,
-            )}pull,clone\n`,
+            )}\tclone\nVault2\t${vaultsUtils.encodeVaultId(
+              vault2Id,
+            )}\tpull,clone\n`,
           );
           expect(result3.stdout).not.toContain(
-            `Vault3${' '.repeat(4)}${vaultsUtils.encodeVaultId(vault3Id)}`,
+            `Vault3\t${vaultsUtils.encodeVaultId(vault3Id)}`,
           );
         } finally {
           await remoteOnline?.stop();

@@ -45,23 +45,37 @@ class CommandList extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const data = await binUtils.retryAuthentication(async (auth) => {
-          const data: Array<string> = [];
+          const data: Array<{
+            vaultName: string;
+            vaultIdEncoded: string;
+          }> = [];
           const stream = await pkClient.rpcClient.methods.vaultsList({
             metadata: auth,
           });
           for await (const vaultListMessage of stream) {
-            data.push(
-              `${vaultListMessage.vaultName}:${' '.repeat(4)}${
-                vaultListMessage.vaultIdEncoded
-              }`,
-            );
+            data.push({
+              vaultName: vaultListMessage.vaultName,
+              vaultIdEncoded: vaultListMessage.vaultIdEncoded,
+            });
           }
           return data;
         }, meta);
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: data,
-        });
+        let outputFormatted: string | Uint8Array;
+        if (options.format === 'json') {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'json',
+            data: data,
+          });
+        } else {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'table',
+            data: data,
+            options: {
+              includeHeaders: false,
+              includeRowCount: false,
+            },
+          });
+        }
         process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();

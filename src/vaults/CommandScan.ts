@@ -45,27 +45,43 @@ class CommandScan extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const data = await binUtils.retryAuthentication(async (auth) => {
-          const data: Array<string> = [];
+          const data: Array<{
+            vaultName: string;
+            vaultIdEncoded: string;
+            permissions: Array<string> | string;
+          }> = [];
           const stream = await pkClient.rpcClient.methods.vaultsScan({
             metadata: auth,
             nodeIdEncoded: nodeId,
           });
           for await (const vault of stream) {
-            const vaultName = vault.vaultName;
-            const vaultIdEncoded = vault.vaultIdEncoded;
-            const permissions = vault.permissions.join(',');
-            data.push(
-              `${vaultName}${' '.repeat(4)}${vaultIdEncoded}${' '.repeat(
-                4,
-              )}${permissions}`,
-            );
+            data.push({
+              vaultName: vault.vaultName,
+              vaultIdEncoded: vault.vaultIdEncoded,
+              permissions:
+                options.format === 'json'
+                  ? vault.permissions
+                  : vault.permissions.join(','),
+            });
           }
           return data;
         }, meta);
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: data,
-        });
+        let outputFormatted: string | Uint8Array;
+        if (options.format === 'json') {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'json',
+            data: data,
+          });
+        } else {
+          outputFormatted = binUtils.outputFormatter({
+            type: 'table',
+            data: data,
+            options: {
+              includeHeaders: false,
+              includeRowCount: false,
+            },
+          });
+        }
         process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
