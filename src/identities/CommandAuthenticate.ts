@@ -91,12 +91,16 @@ class CommandAuthenticate extends CommandPolykey {
               this.logger.info(
                 `Authenticated digital identity provider ${providerId}`,
               );
-              process.stdout.write(
-                binUtils.outputFormatter({
-                  type: options.format === 'json' ? 'json' : 'list',
-                  data: [message.response.identityId],
-                }),
-              );
+              let output: string | Uint8Array;
+              if (options.format === 'json') {
+                output = binUtils.outputFormatter({
+                  type: 'json',
+                  data: { identityId: message.response.identityId },
+                });
+              } else {
+                output = `${message.response.identityId}\n`;
+              }
+              process.stdout.write(output);
             } else {
               never();
             }

@@ -92,7 +92,10 @@ describe('claim', () => {
       },
     );
     expect(exitCode).toBe(0);
-    expect(JSON.parse(stdout)).toEqual(['Claim Id: 0', 'Url: test.com']);
+    expect(JSON.parse(stdout)).toEqual({
+      claimId: '0',
+      url: 'test.com',
+    });
     // Check for claim on the provider
     const claim = await testProvider.getClaim(
       testToken.identityId,
