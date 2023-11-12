@@ -44,7 +44,7 @@ in
         mkdir -m 1777 tmp
       '';
       config = {
-        Entrypoint = "polykey";
+        Entrypoint = [ "polykey" ];
       };
     };
     package = {

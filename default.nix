@@ -22,7 +22,7 @@ in
         rm -rf \
           "$packageOut"/build \
           "$packageOut"/src \
-          "$packageOUt"/.env.example \
+          "$packageOut"/.env.example \
           "$packageOut"/images \
           "$packageOut"/scripts \
           "$packageOut"/tsconfig.build.json \
