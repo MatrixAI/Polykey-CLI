@@ -280,7 +280,7 @@ function outputFormatterTable(
 
   // Precompute max column lengths by iterating over the rows first
   for (const row of rows) {
-    for (const column in columns ?? row) {
+    for (const column of optionColumns ?? Object.keys(row)) {
       if (row[column] != null) {
         if (typeof row[column] === 'string') {
           row[column] = encodeEscapedWrapped(row[column]);
