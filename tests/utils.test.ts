@@ -7,8 +7,6 @@ import * as fc from 'fast-check';
 import * as binUtils from '@/utils/utils';
 import * as testUtils from './utils';
 
-// small change to trigger ci
-
 const nonPrintableCharArb = fc
   .oneof(
     fc.integer({ min: 0, max: 0x1f }),
