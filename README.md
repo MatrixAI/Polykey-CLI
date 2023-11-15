@@ -114,48 +114,6 @@ npm run polykey -- p1 p2 p3
 
 The `--` is necessary to make `npm` understand that the parameters are for your own executable, and not parameters to `npm`.
 
-### Using the REPL
-
-```
-$ npm run ts-node
-> import fs from 'fs';
-> fs
-> import { Library } from '@';
-> Library
-> import Library as Library2 from './src/lib/Library';
-```
-
-You can also create test files in `./src`, and run them with `npm run ts-node ./src/test.ts`.
-
-This allows you to test individual pieces of typescript code, and it makes it easier when doing large scale architecting of TypeScript code.
-
-### Path Aliases
-
-Due to https://github.com/microsoft/TypeScript/issues/10866, you cannot use path aliases without a bundler like Webpack to further transform the generated JavaScript code in order to resolve the path aliases. Because this is a simple library demonstration, there's no need to use a bundler. In fact, for such libraries, it is far more efficient to not bundle the code.
-
-However, we have left the path alias configuration in `tsconfig.json`, `jest.config.js` and in the tests we are making use of the `@` alias.
-
-### Local Package Linking
-
-When developing on multiple NPM packages, it can be easier to use `npm link` so that changes are immediately reflected rather than repeatedly publishing packages. To do this, you need to use `npm link`. After linking a local directory, you need to provide `tsconfig.json` paths so TypeScript compiler can find the right files.
-
-For example when linking `@matrixai/db` located in `../js-db`:
-
-```sh
-npm link ../js-db
-```
-
-You would need to add these paths to `tsconfig.json`:
-
-```
-  "paths": {
-    "@": ["index"],
-    "@/*": ["*"],
-    "@matrixai/db": ["../node_modules/@matrixai/db/src"],
-    "@matrixai/db/*": ["../node_modules/@matrixai/db/src/*"]
-  },
-```
-
 ### Docs Generation
 
 ```sh
