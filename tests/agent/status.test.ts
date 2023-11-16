@@ -179,6 +179,9 @@ describe('status', () => {
         clientPort: statusInfo.data.clientPort,
         agentHost: statusInfo.data.agentHost,
         agentPort: statusInfo.data.agentPort,
+        upTime: expect.any(Number),
+        connectionsActive: expect.any(Number),
+        nodesTotal: expect.any(Number),
       });
     });
     testUtils.testIf(
@@ -227,6 +230,9 @@ describe('status', () => {
         clientPort: statusInfo.data.clientPort,
         agentHost: statusInfo.data.agentHost,
         agentPort: statusInfo.data.agentPort,
+        upTime: expect.any(Number),
+        connectionsActive: expect.any(Number),
+        nodesTotal: expect.any(Number),
       });
     });
   });
