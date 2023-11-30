@@ -119,7 +119,7 @@ const parsePort: (data: string) => Port = validateParserToArgParser(
   networkUtils.parsePort,
 );
 
-const parseNetwork: (data: string) => SeedNodes = validateParserToArgParser(
+const parseNetwork: (data: string) => Hostname = validateParserToArgParser(
   nodesUtils.parseNetwork,
 );
 

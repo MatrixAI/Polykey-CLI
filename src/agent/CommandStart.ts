@@ -92,7 +92,16 @@ class CommandStart extends CommandPolykey {
       // Will be '[{...}, false]' if `--seed-nodes='...'`
       const [seedNodes, defaults] = options.seedNodes;
       let seedNodes_ = seedNodes;
-      if (defaults) seedNodes_ = { ...options.network, ...seedNodes };
+      if (defaults) {
+        try {
+          seedNodes_ = {
+            ...(await nodesUtils.resolveSeednodes(options.network)),
+            ...seedNodes,
+          };
+        } catch (e) {
+          this.logger.warn(e.message);
+        }
+      }
       const agentOptions: DeepPartial<PolykeyAgentOptions> = {
         nodePath: options.nodePath,
         clientServiceHost: options.clientHost,
