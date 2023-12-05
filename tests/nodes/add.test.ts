@@ -54,33 +54,31 @@ describe('add', () => {
     });
     mockedPingNode.mockRestore();
   });
-  testUtils
-    .testIf(testUtils.isTestPlatformEmpty)
-    .only('adds a node', async () => {
-      const { exitCode } = await testUtils.pkStdio(
-        [
-          'nodes',
-          'add',
-          nodesUtils.encodeNodeId(validNodeId),
-          validHost,
-          `${port}`,
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  testUtils.testIf(testUtils.isTestPlatformEmpty)('adds a node', async () => {
+    const { exitCode } = await testUtils.pkStdio(
+      [
+        'nodes',
+        'add',
+        nodesUtils.encodeNodeId(validNodeId),
+        validHost,
+        `${port}`,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      expect(exitCode).toBe(0);
-      // Checking if node was added.
-      const nodeContact = await pkAgent.nodeGraph.getNodeContact(validNodeId);
-      expect(nodeContact).toBeDefined();
-      expect(
-        nodeContact![nodesUtils.nodeContactAddress([validHost, port])],
-      ).toBeDefined();
-    });
+        cwd: dataDir,
+      },
+    );
+    expect(exitCode).toBe(0);
+    // Checking if node was added.
+    const nodeContact = await pkAgent.nodeGraph.getNodeContact(validNodeId);
+    expect(nodeContact).toBeDefined();
+    expect(
+      nodeContact![nodesUtils.nodeContactAddress([validHost, port])],
+    ).toBeDefined();
+  });
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'fails to add a node (invalid node ID)',
     async () => {
