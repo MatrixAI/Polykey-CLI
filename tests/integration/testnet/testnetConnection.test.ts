@@ -38,8 +38,8 @@ describe.skip('testnet connection', () => {
       [
         'agent',
         'start',
-        '--seed-nodes',
-        `${seedNodeId1}@${seedNodeAddress1.host}:${seedNodeAddress1.port}`,
+        '--network',
+        'testnet',
         '--format',
         'json',
         '--verbose',
@@ -88,8 +88,8 @@ describe.skip('testnet connection', () => {
       [
         'agent',
         'start',
-        '--seed-nodes',
-        `${seedNodeId1}@${seedNodeAddress1.host}:${seedNodeAddress1.port}`,
+        '--network',
+        'testnet',
         '--format',
         'json',
         '--verbose',
@@ -109,8 +109,8 @@ describe.skip('testnet connection', () => {
       [
         'agent',
         'start',
-        '--seed-nodes',
-        `${seedNodeId1}@${seedNodeAddress1.host}:${seedNodeAddress1.port}`,
+        '--network',
+        'testnet',
         '--format',
         'json',
         '--verbose',

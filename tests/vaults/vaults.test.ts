@@ -217,8 +217,7 @@ describe('CLI vaults', () => {
       },
     );
   });
-  // TODO: disable until agent migration stage 2 is done and vault cloning works again.
-  testUtils.testIf(testUtils.isTestPlatformEmpty && false)(
+  testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'should clone and pull a vault',
     async () => {
       const dataDir2 = await fs.promises.mkdtemp(
@@ -254,16 +253,24 @@ describe('CLI vaults', () => {
       });
       const targetNodeId = targetPolykeyAgent.keyRing.getNodeId();
       const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
-      await polykeyAgent.nodeManager.setNode(targetNodeId, {
-        host: targetPolykeyAgent.agentServiceHost,
-        port: targetPolykeyAgent.agentServicePort,
-        scopes: ['global'],
-      });
+      await polykeyAgent.nodeManager.setNode(
+        targetNodeId,
+        [
+          targetPolykeyAgent.agentServiceHost,
+          targetPolykeyAgent.agentServicePort,
+        ],
+        {
+          mode: 'direct',
+          connectedTime: Date.now(),
+          scopes: ['global'],
+        },
+      );
       await targetPolykeyAgent.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
+        [polykeyAgent.agentServiceHost, polykeyAgent.agentServicePort],
         {
-          host: polykeyAgent.agentServiceHost,
-          port: polykeyAgent.agentServicePort,
+          mode: 'direct',
+          connectedTime: Date.now(),
           scopes: ['global'],
         },
       );
@@ -809,6 +816,7 @@ describe('CLI vaults', () => {
     );
     test.todo('test formatting of the output');
   });
+  // Fixme: tempermental problem with formatting the output. Fails sometimes due to an added space
   describe('commandScanNode', () => {
     testUtils.testIf(testUtils.isTestPlatformEmpty)(
       'should return the vaults names and ids of the remote vault',
@@ -832,11 +840,15 @@ describe('CLI vaults', () => {
           const remoteOnlineNodeId = remoteOnline.keyRing.getNodeId();
           const remoteOnlineNodeIdEncoded =
             nodesUtils.encodeNodeId(remoteOnlineNodeId);
-          await polykeyAgent.nodeManager.setNode(remoteOnlineNodeId, {
-            host: remoteOnline.agentServiceHost,
-            port: remoteOnline.agentServicePort,
-            scopes: ['global'],
-          });
+          await polykeyAgent.nodeManager.setNode(
+            remoteOnlineNodeId,
+            [remoteOnline.agentServiceHost, remoteOnline.agentServicePort],
+            {
+              mode: 'direct',
+              connectedTime: Date.now(),
+              scopes: ['global'],
+            },
+          );
 
           await remoteOnline.gestaltGraph.setNode({
             nodeId: polykeyAgent.keyRing.getNodeId(),
@@ -910,12 +922,14 @@ describe('CLI vaults', () => {
           });
           expect(result3.exitCode).toBe(0);
           expect(result3.stdout).toMatch(/Vault1\t.*\tclone/);
-          expect(result3.stdout).toContain(
-            `Vault1\t${vaultsUtils.encodeVaultId(
-              vault1Id,
-            )}\tclone\nVault2\t${vaultsUtils.encodeVaultId(
-              vault2Id,
-            )}\tpull,clone\n`,
+          expect(JSON.stringify(result3.stdout)).toContain(
+            JSON.stringify(
+              `Vault1\t${vaultsUtils.encodeVaultId(
+                vault1Id,
+              )}\tclone\nVault2\t${vaultsUtils.encodeVaultId(
+                vault2Id,
+              )}\tpull,clone\n`,
+            ),
           );
           expect(result3.stdout).not.toContain(
             `Vault3\t${vaultsUtils.encodeVaultId(vault3Id)}`,

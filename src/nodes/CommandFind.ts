@@ -1,6 +1,6 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { NodeId } from 'polykey/dist/ids/types';
-import type { Host, Port } from 'polykey/dist/network/types';
+import type { Host, Hostname, Port } from 'polykey/dist/network/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -55,9 +55,17 @@ class CommandFind extends CommandPolykey {
           success: false,
           message: '',
           id: '',
-          addresses: [] as Array<{ host: string; port: number }>,
+          address: {
+            host: '',
+            port: 0,
+          },
         };
-        const builtAddresses: Array<string> = [];
+        let foundAddress:
+          | {
+              host: Host | Hostname;
+              port: Port;
+            }
+          | undefined;
         try {
           const response = await binUtils.retryAuthentication(
             (auth) =>
@@ -69,13 +77,16 @@ class CommandFind extends CommandPolykey {
           );
           result.success = true;
           result.id = nodesUtils.encodeNodeId(nodeId);
-          for (const { host, port } of response.addresses) {
-            result.addresses.push({ host, port });
-            builtAddresses.push(
-              networkUtils.buildAddress(host as Host, port as Port),
-            );
-          }
-          result.message = `Found node at ${builtAddresses.join(', ')}`;
+          const [host, port] = response.nodeAddress;
+          foundAddress = {
+            host,
+            port,
+          };
+          result.address = foundAddress;
+          result.message = `Found node at ${networkUtils.buildAddress(
+            host as Host,
+            port as Port,
+          )}`;
         } catch (err) {
           if (
             !(err.cause instanceof nodesErrors.ErrorNodeGraphNodeIdNotFound)
@@ -96,7 +107,7 @@ class CommandFind extends CommandPolykey {
         } else {
           outputFormatted = binUtils.outputFormatter({
             type: 'list',
-            data: ['Found node at', ...builtAddresses],
+            data: [`Found node at ${foundAddress}`],
           });
         }
         process.stdout.write(outputFormatted);

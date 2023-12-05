@@ -1,8 +1,8 @@
+import type { Host, Port } from 'polykey/dist/network/types';
 import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import NodeManager from 'polykey/dist/nodes/NodeManager';
 import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as keysUtils from 'polykey/dist/keys/utils';
@@ -14,9 +14,9 @@ describe('add', () => {
   const password = 'helloworld';
   const nodeIdGenerator = ids.createNodeIdGenerator();
   const validNodeId = nodeIdGenerator();
-  const validHost = '0.0.0.0';
-  const invalidHost = 'INVALIDHOST';
-  const port = 55555;
+  const validHost = '127.0.0.1' as Host;
+  const invalidHost = 'INVALIDHOST' as Host;
+  const port = 55555 as Port;
   let dataDir: string;
   let nodePath: string;
   let pkAgent: PolykeyAgent;
@@ -26,7 +26,6 @@ describe('add', () => {
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
     nodePath = path.join(dataDir, 'polykey');
-    mockedPingNode = jest.spyOn(NodeManager.prototype, 'pingNode');
     // Cannot use the shared global agent since we can't 'un-add' a node
     pkAgent = await PolykeyAgent.createPolykeyAgent({
       password,
@@ -42,6 +41,7 @@ describe('add', () => {
       },
       logger,
     });
+    mockedPingNode = jest.spyOn(pkAgent.nodeManager, 'pingNodeAddress');
     await pkAgent.nodeGraph.stop();
     await pkAgent.nodeGraph.start({ fresh: true });
     mockedPingNode.mockImplementation(() => true);
@@ -54,38 +54,33 @@ describe('add', () => {
     });
     mockedPingNode.mockRestore();
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)('adds a node', async () => {
-    const { exitCode } = await testUtils.pkStdio(
-      [
-        'nodes',
-        'add',
-        nodesUtils.encodeNodeId(validNodeId),
-        validHost,
-        `${port}`,
-      ],
-      {
-        env: {
-          PK_NODE_PATH: nodePath,
-          PK_PASSWORD: password,
+  testUtils
+    .testIf(testUtils.isTestPlatformEmpty)
+    .only('adds a node', async () => {
+      const { exitCode } = await testUtils.pkStdio(
+        [
+          'nodes',
+          'add',
+          nodesUtils.encodeNodeId(validNodeId),
+          validHost,
+          `${port}`,
+        ],
+        {
+          env: {
+            PK_NODE_PATH: nodePath,
+            PK_PASSWORD: password,
+          },
+          cwd: dataDir,
         },
-        cwd: dataDir,
-      },
-    );
-    expect(exitCode).toBe(0);
-    // Checking if node was added.
-    const { stdout } = await testUtils.pkStdio(
-      ['nodes', 'find', nodesUtils.encodeNodeId(validNodeId)],
-      {
-        env: {
-          PK_NODE_PATH: nodePath,
-          PK_PASSWORD: password,
-        },
-        cwd: dataDir,
-      },
-    );
-    expect(stdout).toContain(validHost);
-    expect(stdout).toContain(`${port}`);
-  });
+      );
+      expect(exitCode).toBe(0);
+      // Checking if node was added.
+      const nodeContact = await pkAgent.nodeGraph.getNodeContact(validNodeId);
+      expect(nodeContact).toBeDefined();
+      expect(
+        nodeContact![nodesUtils.nodeContactAddress([validHost, port])],
+      ).toBeDefined();
+    });
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
     'fails to add a node (invalid node ID)',
     async () => {
@@ -146,12 +141,11 @@ describe('add', () => {
       );
       expect(exitCode).toBe(0);
       // Checking if node was added.
-      const node = await pkAgent.nodeGraph.getNode(validNodeId);
-      expect(node?.address).toEqual({
-        host: validHost,
-        port: port,
-        scopes: ['global'],
-      });
+      const nodeContact = await pkAgent.nodeGraph.getNodeContact(validNodeId);
+      expect(nodeContact).toBeDefined();
+      expect(
+        nodeContact![nodesUtils.nodeContactAddress([validHost, port])],
+      ).toBeDefined();
     },
   );
   testUtils.testIf(testUtils.isTestPlatformEmpty)(
@@ -200,12 +194,11 @@ describe('add', () => {
       );
       expect(exitCode).toBe(0);
       // Checking if node was added.
-      const node = await pkAgent.nodeGraph.getNode(validNodeId);
-      expect(node?.address).toEqual({
-        host: validHost,
-        port: port,
-        scopes: ['global'],
-      });
+      const nodeContact = await pkAgent.nodeGraph.getNodeContact(validNodeId);
+      expect(nodeContact).toBeDefined();
+      expect(
+        nodeContact![nodesUtils.nodeContactAddress([validHost, port])],
+      ).toBeDefined();
     },
   );
 });

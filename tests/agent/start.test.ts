@@ -6,13 +6,13 @@ import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
 import process from 'process';
-import * as jestMockProps from 'jest-mock-props';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import Status from 'polykey/dist/status/Status';
 import * as statusErrors from 'polykey/dist/status/errors';
 import config from 'polykey/dist/config';
 import * as keysUtils from 'polykey/dist/keys/utils';
 import { promise } from 'polykey/dist/utils';
+import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
 describe('start', () => {
@@ -923,18 +923,17 @@ describe('start', () => {
             fs,
             logger,
           });
-          const mockedConfigDefaultsNetwork = jestMockProps
-            .spyOnProp(config, 'network')
-            .mockValue({
-              mainnet: {
-                [seedNodeId2]: {
-                  host: seedNodeHost2 as Host,
-                  port: seedNodePort2 as Port,
-                  scopes: ['global'],
-                },
-              },
-              testnet: {},
-            });
+          const mockedResolveSeedNodes = jest.spyOn(
+            nodesUtils,
+            'resolveSeednodes',
+          );
+          mockedResolveSeedNodes.mockResolvedValue({
+            [nodesUtils.encodeNodeId(seedNodeId2)]: [
+              seedNodeHost2 as Host,
+              seedNodePort2 as Port,
+            ],
+          });
+          // Record<NodeIdEncoded, NodeAddress>
           await testUtils.pkStdio(
             [
               'agent',
@@ -970,7 +969,7 @@ describe('start', () => {
             },
             cwd: dataDir,
           });
-          mockedConfigDefaultsNetwork.mockRestore();
+          mockedResolveSeedNodes.mockRestore();
           await status.waitFor('DEAD');
         },
         globalThis.defaultTimeout * 2,
@@ -991,18 +990,16 @@ describe('start', () => {
             fs,
             logger,
           });
-          const mockedConfigDefaultsNetwork = jestMockProps
-            .spyOnProp(config, 'network')
-            .mockValue({
-              mainnet: {},
-              testnet: {
-                [seedNodeId2]: {
-                  host: seedNodeHost2 as Host,
-                  port: seedNodePort2 as Port,
-                  scopes: ['global'],
-                },
-              },
-            });
+          const mockedResolveSeedNodes = jest.spyOn(
+            nodesUtils,
+            'resolveSeednodes',
+          );
+          mockedResolveSeedNodes.mockResolvedValue({
+            [nodesUtils.encodeNodeId(seedNodeId2)]: [
+              seedNodeHost2 as Host,
+              seedNodePort2 as Port,
+            ],
+          });
           await testUtils.pkStdio(
             [
               'agent',
@@ -1036,7 +1033,7 @@ describe('start', () => {
             },
             cwd: dataDir,
           });
-          mockedConfigDefaultsNetwork.mockRestore();
+          mockedResolveSeedNodes.mockRestore();
           await status.waitFor('DEAD');
         },
         globalThis.defaultTimeout * 2,

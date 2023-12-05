@@ -65,17 +65,25 @@ function trackTimers() {
  */
 async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   // Add remote node's details to local node
-  await localNode.nodeManager.setNode(remoteNode.keyRing.getNodeId(), {
-    host: remoteNode.agentServiceHost,
-    port: remoteNode.agentServicePort,
-    scopes: ['global'],
-  });
+  await localNode.nodeManager.setNode(
+    remoteNode.keyRing.getNodeId(),
+    [remoteNode.agentServiceHost, remoteNode.agentServicePort],
+    {
+      mode: 'direct',
+      connectedTime: Date.now(),
+      scopes: ['global'],
+    },
+  );
   // Add local node's details to remote node
-  await remoteNode.nodeManager.setNode(localNode.keyRing.getNodeId(), {
-    host: localNode.agentServiceHost,
-    port: localNode.agentServicePort,
-    scopes: ['global'],
-  });
+  await remoteNode.nodeManager.setNode(
+    localNode.keyRing.getNodeId(),
+    [localNode.agentServiceHost, localNode.agentServicePort],
+    {
+      mode: 'direct',
+      connectedTime: Date.now(),
+      scopes: ['global'],
+    },
+  );
 }
 
 export { testIf, describeIf, trackTimers, nodesConnect };

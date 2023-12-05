@@ -195,7 +195,7 @@ describe('discover/get', () => {
       await pkAgent.gestaltGraph.unsetNode(nodeAId);
       await pkAgent.gestaltGraph.unsetNode(nodeBId);
       await pkAgent.gestaltGraph.unsetIdentity([testProvider.id, identityId]);
-      await pkAgent.nodeGraph.unsetNode(nodeAId);
+      await pkAgent.nodeGraph.unsetNodeContact(nodeAId);
       await pkAgent.identitiesManager.delToken(
         testToken.providerId,
         testToken.identityId,
@@ -276,7 +276,7 @@ describe('discover/get', () => {
       await pkAgent.gestaltGraph.unsetNode(nodeAId);
       await pkAgent.gestaltGraph.unsetNode(nodeBId);
       await pkAgent.gestaltGraph.unsetIdentity([testProvider.id, identityId]);
-      await pkAgent.nodeGraph.unsetNode(nodeAId);
+      await pkAgent.nodeGraph.unsetNodeContact(nodeAId);
       await pkAgent.identitiesManager.delToken(
         testToken.providerId,
         testToken.identityId,

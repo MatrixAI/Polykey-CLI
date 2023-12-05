@@ -222,7 +222,7 @@ describe('trust/untrust/list', () => {
       // Revert side-effects
       await pkAgent.gestaltGraph.unsetNode(nodeId);
       await pkAgent.gestaltGraph.unsetIdentity([provider.id, identity]);
-      await pkAgent.nodeGraph.unsetNode(nodeId);
+      await pkAgent.nodeGraph.unsetNodeContact(nodeId);
       await pkAgent.identitiesManager.delToken(
         testToken.providerId,
         testToken.identityId,
@@ -366,7 +366,7 @@ describe('trust/untrust/list', () => {
       // Revert side-effects
       await pkAgent.gestaltGraph.unsetNode(nodeId);
       await pkAgent.gestaltGraph.unsetIdentity([provider.id, identity]);
-      await pkAgent.nodeGraph.unsetNode(nodeId);
+      await pkAgent.nodeGraph.unsetNodeContact(nodeId);
       await pkAgent.identitiesManager.delToken(
         testToken.providerId,
         testToken.identityId,
