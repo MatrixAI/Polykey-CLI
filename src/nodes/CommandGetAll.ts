@@ -1,4 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import type { NodesGetMessage } from 'polykey/dist/client/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -43,22 +44,32 @@ class CommandGetAll extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const result = await binUtils.retryAuthentication(
-          (auth) =>
-            pkClient.rpcClient.methods.nodesGetAll({
+        const resultOutput = await binUtils.retryAuthentication(
+          async (auth) => {
+            const result = await pkClient.rpcClient.methods.nodesGetAll({
               metadata: auth,
-            }),
+            });
+            const output: Array<NodesGetMessage> = [];
+            for await (const nodesGetMessage of result) {
+              output.push(nodesGetMessage);
+            }
+            return output;
+          },
           auth,
         );
         let output: Array<any> = [];
-        for await (const nodesGetMessage of result) {
-          output.push(nodesGetMessage);
-        }
         if (options.format === 'human') {
-          output = output.map(
-            (value) =>
-              `NodeId ${value.nodeIdEncoded}, Address ${value.host}:${value.port}, bucketIndex ${value.bucketIndex}`,
-          );
+          for (const nodesGetMessage of resultOutput) {
+            const nodeIdEncoded = nodesGetMessage.nodeIdEncoded;
+            const bucketIndex = nodesGetMessage.bucketIndex;
+            for (const address of Object.keys(nodesGetMessage.nodeContact)) {
+              output.push(
+                `NodeId ${nodeIdEncoded}, Address ${address}, bucketIndex ${bucketIndex}`,
+              );
+            }
+          }
+        } else {
+          output = resultOutput;
         }
         const outputFormatted = binUtils.outputFormatter({
           type: options.format === 'json' ? 'json' : 'list',
