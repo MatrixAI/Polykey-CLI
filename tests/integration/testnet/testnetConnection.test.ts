@@ -1,4 +1,4 @@
-import type { NodeIdEncoded, SeedNodes } from 'polykey/dist/nodes/types';
+import type { NodeIdEncoded } from 'polykey/dist/nodes/types';
 import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
@@ -17,7 +17,7 @@ describe.skip('testnet connection', () => {
   logger.handlers.forEach((handler) => handler.setFormatter(format));
   const seedNodes = Object.entries(config.network.testnet);
   const seedNodeId1 = seedNodes[0][0] as NodeIdEncoded;
-  const seedNodeAddress1 = seedNodes[0][1];
+  const _seedNodeAddress1 = seedNodes[0][1];
   let dataDir: string;
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
@@ -232,9 +232,9 @@ describe.skip('testnet connection', () => {
     //     port: seed.proxy.getProxyPort(),
     //   },
     // };
-    const seedNodes: SeedNodes = {
-      [seedNodeId1]: seedNodeAddress1,
-    };
+    // const seedNodes: SeedNodes = {
+    //   [seedNodeId1]: seedNodeAddress1,
+    // };
     // Console.log('Starting Agent1');
     const agent1 = await PolykeyAgent.createPolykeyAgent({
       password,
