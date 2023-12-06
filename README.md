@@ -80,7 +80,7 @@ nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(pr
 Install into Docker:
 
 ```sh
-loaded="$(docker load --input "$(nix-build ./release.nix --attr docker)")"
+loaded="$(docker load --input "$(nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)")")"
 image="$(cut -d' ' -f3 <<< "$loaded")"
 docker run -it "$image"
 ```
