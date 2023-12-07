@@ -39,6 +39,8 @@ describe('polykey', () => {
         '127.0.0.1',
         '--workers',
         'none',
+        '--network',
+        'testnet',
         '--verbose',
         '--format',
         'json',

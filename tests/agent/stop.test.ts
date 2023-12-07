@@ -38,6 +38,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
+          '--network',
+          'testnet',
         ],
         {
           env: {
@@ -104,6 +106,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
+          '--network',
+          'testnet',
         ],
         {
           env: {
@@ -203,6 +207,8 @@ describe('stop', () => {
           '--workers',
           'none',
           '--verbose',
+          '--network',
+          'testnet',
         ],
         {
           env: {
@@ -256,6 +262,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
+          '--network',
+          'testnet',
         ],
         {
           env: {
