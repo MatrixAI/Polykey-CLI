@@ -466,7 +466,7 @@ integration:prerelease:
           builds/*-docker-* \
           builds/*-linux-* \
           builds/*-win32-* \
-          builds/*-macos-* \
+          builds/*-darwin-* \
           --clobber \
           --repo "$GH_PROJECT_PATH"; \
       else \
@@ -476,7 +476,7 @@ integration:prerelease:
           builds/*-docker-* \
           builds/*-linux-* \
           builds/*-win32-* \
-          builds/*-macos-* \
+          builds/*-darwin-* \
           --title "${CI_COMMIT_TAG}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
           --notes "" \
           --prerelease \
@@ -655,7 +655,7 @@ release:distribution:
         builds/*-docker-* \
         builds/*-linux-* \
         builds/*-win32-* \
-        builds/*-macos-* \
+        builds/*-darwin-* \
         --title "${CI_COMMIT_TAG}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
         --notes "" \
         --target master \
