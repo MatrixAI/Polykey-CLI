@@ -371,7 +371,7 @@ integration:docker:
     - >
       nix-shell --arg ci true --run $'
       image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)";
-      docker run -it $image_and_tag;
+      docker run $image_and_tag;
       '
   rules:
     # Runs on staging commits and ignores version commits
