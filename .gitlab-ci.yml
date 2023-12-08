@@ -409,7 +409,7 @@ integration:linux:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
-    - Get-ChildItem -File ./builds/*-win-* | ForEach {& $_.FullName}
+    - Get-ChildItem -File ./builds/*-win32-* | ForEach {& $_.FullName}
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -465,7 +465,7 @@ integration:prerelease:
           builds/*.closure.gz \
           builds/*-docker-* \
           builds/*-linux-* \
-          builds/*-win-* \
+          builds/*-win32-* \
           builds/*-macos-* \
           --clobber \
           --repo "$GH_PROJECT_PATH"; \
@@ -475,7 +475,7 @@ integration:prerelease:
           builds/*.closure.gz \
           builds/*-docker-* \
           builds/*-linux-* \
-          builds/*-win-* \
+          builds/*-win32-* \
           builds/*-macos-* \
           --title "${CI_COMMIT_TAG}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
           --notes "" \
@@ -654,7 +654,7 @@ release:distribution:
         builds/*.closure.gz \
         builds/*-docker-* \
         builds/*-linux-* \
-        builds/*-win-* \
+        builds/*-win32-* \
         builds/*-macos-* \
         --title "${CI_COMMIT_TAG}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
         --notes "" \
