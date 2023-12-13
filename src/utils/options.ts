@@ -153,6 +153,11 @@ const forceNodeAdd = new commander.Option(
   'Force adding node to nodeGraph',
 ).default(false);
 
+const overrideClone = new commander.Option(
+  '--override',
+  'Force clone node and append with a _1',
+).default(false);
+
 const noPing = new commander.Option('--no-ping', 'Skip ping step').default(
   true,
 );
@@ -225,4 +230,5 @@ export {
   passwordMemLimit,
   depth,
   commitId,
+  overrideClone,
 };

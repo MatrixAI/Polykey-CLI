@@ -20,6 +20,7 @@ class CommandClone extends CommandPolykey {
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
+    this.addOption(binOptions.overrideClone);
     this.action(async (vaultNameOrId, nodeId: NodeId, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
@@ -57,6 +58,7 @@ class CommandClone extends CommandPolykey {
             pkClient.rpcClient.methods.vaultsClone({
               metadata: auth,
               nodeIdEncoded: nodesUtils.encodeNodeId(nodeId),
+              force: options.override,
               nameOrId: vaultNameOrId,
             }),
           meta,
