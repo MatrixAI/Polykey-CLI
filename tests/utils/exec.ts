@@ -263,7 +263,7 @@ async function pkExec(
  */
 async function pkSpawn(
   args: Array<string> = [],
-  opts: ExecOpts = { env: {}, command: globalThis.testCmd },
+  opts: ExecOpts = { env: {} },
   logger: Logger = new Logger(pkSpawn.name),
 ): Promise<ChildProcess> {
   if (opts.command == null) {
@@ -347,9 +347,6 @@ async function pkExecWithShell(
     ...process.env,
     ...opts.env,
   };
-  if (globalThis.testPlatform === 'docker') {
-    env.DOCKER_OPTIONS = generateDockerArgs(cwd).join(' ');
-  }
   // Recall that we attempt to connect to all specified seed nodes on agent start.
   // Therefore, for testing purposes only, we default the seed nodes as empty
   // (if not defined in the env) to ensure no attempted connections. A regular
@@ -442,9 +439,6 @@ async function pkSpawnWithShell(
     ...process.env,
     ...opts.env,
   };
-  if (globalThis.testPlatform === 'docker') {
-    env.DOCKER_OPTIONS = generateDockerArgs(cwd).join(' ');
-  }
   // Recall that we attempt to connect to all specified seed nodes on agent start.
   // Therefore, for testing purposes only, we default the seed nodes as empty
   // (if not defined in the env) to ensure no attempted connections. A regular
@@ -585,6 +579,7 @@ function escapeShellArgs(arg: string): string {
 export {
   tsConfigPath,
   polykeyPath,
+  generateDockerArgs,
   exec,
   spawn,
   pk,
