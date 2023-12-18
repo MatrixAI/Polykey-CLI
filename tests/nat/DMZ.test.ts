@@ -15,7 +15,7 @@ import {
   hasUnshare,
 } from '../utils/platform';
 
-const supportsNatTesting =
+const _supportsNatTesting =
   isPlatformLinux && hasIp && hasIptables && hasNsenter && hasUnshare;
 
 test('dummy test to avoid fail', async () => {});
@@ -34,7 +34,7 @@ describe.skip('DMZ', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'can create an agent in a namespace',
     async () => {
       const password = 'abc123';
@@ -119,7 +119,7 @@ describe.skip('DMZ', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'agents in different namespaces can ping each other',
     async () => {
       const {
@@ -238,7 +238,7 @@ describe.skip('DMZ', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'agents in different namespaces can ping each other via seed node',
     async () => {
       const {

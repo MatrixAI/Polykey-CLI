@@ -19,9 +19,7 @@ describe('unlock', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('unlock acquires session token', async () => {
+  test('unlock acquires session token', async () => {
     // Fresh session, to delete the token
     const session = await Session.createSession({
       sessionTokenPath: path.join(agentDir, config.paths.tokenBase),

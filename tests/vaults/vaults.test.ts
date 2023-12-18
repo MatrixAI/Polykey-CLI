@@ -85,139 +85,117 @@ describe('CLI vaults', () => {
   });
 
   describe('commandListVaults', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should list all vaults',
-      async () => {
-        command = ['vaults', 'list', '-np', dataDir];
-        await polykeyAgent.vaultManager.createVault('Vault1' as VaultName);
-        await polykeyAgent.vaultManager.createVault('Vault2' as VaultName);
+    test('should list all vaults', async () => {
+      command = ['vaults', 'list', '-np', dataDir];
+      await polykeyAgent.vaultManager.createVault('Vault1' as VaultName);
+      await polykeyAgent.vaultManager.createVault('Vault2' as VaultName);
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
-      },
-    );
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+    });
   });
   describe('commandCreateVaults', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should create vaults',
-      async () => {
-        command = ['vaults', 'create', '-np', dataDir, 'MyTestVault'];
-        const result = await testUtils.pkStdio([...command], {
+    test('should create vaults', async () => {
+      command = ['vaults', 'create', '-np', dataDir, 'MyTestVault'];
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+      const result2 = await testUtils.pkStdio(
+        ['vaults', 'touch', '-np', dataDir, 'MyTestVault2'],
+        {
           env: {},
           cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
-        const result2 = await testUtils.pkStdio(
-          ['vaults', 'touch', '-np', dataDir, 'MyTestVault2'],
-          {
-            env: {},
-            cwd: dataDir,
-          },
-        );
-        expect(result2.exitCode).toBe(0);
+        },
+      );
+      expect(result2.exitCode).toBe(0);
 
-        const list = (await polykeyAgent.vaultManager.listVaults()).keys();
-        const namesList: string[] = [];
-        for await (const name of list) {
-          namesList.push(name);
-        }
-        expect(namesList).toContain('MyTestVault');
-        expect(namesList).toContain('MyTestVault2');
-      },
-    );
+      const list = (await polykeyAgent.vaultManager.listVaults()).keys();
+      const namesList: string[] = [];
+      for await (const name of list) {
+        namesList.push(name);
+      }
+      expect(namesList).toContain('MyTestVault');
+      expect(namesList).toContain('MyTestVault2');
+    });
   });
   describe('commandRenameVault', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should rename vault',
-      async () => {
-        command = [
-          'vaults',
-          'rename',
-          vaultName,
-          'RenamedVault',
-          '-np',
-          dataDir,
-        ];
-        await polykeyAgent.vaultManager.createVault(vaultName);
-        const id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+    test('should rename vault', async () => {
+      command = ['vaults', 'rename', vaultName, 'RenamedVault', '-np', dataDir];
+      await polykeyAgent.vaultManager.createVault(vaultName);
+      const id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
 
-        const list = (await polykeyAgent.vaultManager.listVaults()).keys();
-        const namesList: string[] = [];
-        for await (const name of list) {
-          namesList.push(name);
-        }
-        expect(namesList).toContain('RenamedVault');
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should fail to rename non-existent vault',
-      async () => {
-        command = [
-          'vaults',
-          'rename',
-          'z4iAXFwgHGeyUrdC5CiCNU4', // Vault does not exist
-          'RenamedVault',
-          '-np',
-          dataDir,
-        ];
-        await polykeyAgent.vaultManager.createVault(vaultName);
-        const id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+      const list = (await polykeyAgent.vaultManager.listVaults()).keys();
+      const namesList: string[] = [];
+      for await (const name of list) {
+        namesList.push(name);
+      }
+      expect(namesList).toContain('RenamedVault');
+    });
+    test('should fail to rename non-existent vault', async () => {
+      command = [
+        'vaults',
+        'rename',
+        'z4iAXFwgHGeyUrdC5CiCNU4', // Vault does not exist
+        'RenamedVault',
+        '-np',
+        dataDir,
+      ];
+      await polykeyAgent.vaultManager.createVault(vaultName);
+      const id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        // Exit code of the exception
-        expect(result.exitCode).toBe(sysexits.USAGE);
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      // Exit code of the exception
+      expect(result.exitCode).toBe(sysexits.USAGE);
 
-        const list = (await polykeyAgent.vaultManager.listVaults()).keys();
-        const namesList: string[] = [];
-        for await (const name of list) {
-          namesList.push(name);
-        }
-        expect(namesList).toContain(vaultName);
-      },
-    );
+      const list = (await polykeyAgent.vaultManager.listVaults()).keys();
+      const namesList: string[] = [];
+      for await (const name of list) {
+        namesList.push(name);
+      }
+      expect(namesList).toContain(vaultName);
+    });
   });
   describe('commandDeleteVault', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should delete vault',
-      async () => {
-        command = ['vaults', 'delete', '-np', dataDir, vaultName];
-        await polykeyAgent.vaultManager.createVault(vaultName);
-        let id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+    test('should delete vault', async () => {
+      command = ['vaults', 'delete', '-np', dataDir, vaultName];
+      await polykeyAgent.vaultManager.createVault(vaultName);
+      let id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+      id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const result2 = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result2.exitCode).toBe(0);
+      const result2 = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result2.exitCode).toBe(0);
 
-        const list = (await polykeyAgent.vaultManager.listVaults()).keys();
-        const namesList: string[] = [];
-        for await (const name of list) {
-          namesList.push(name);
-        }
-        expect(namesList).not.toContain(vaultName);
-      },
-    );
+      const list = (await polykeyAgent.vaultManager.listVaults()).keys();
+      const namesList: string[] = [];
+      for await (const name of list) {
+        namesList.push(name);
+      }
+      expect(namesList).not.toContain(vaultName);
+    });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  test(
     'should clone and pull a vault',
     async () => {
       const dataDir2 = await fs.promises.mkdtemp(
@@ -400,331 +378,287 @@ describe('CLI vaults', () => {
     globalThis.defaultTimeout * 3,
   );
   describe('commandShare', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'Should share a vault',
-      async () => {
-        const mockedSendNotification = jest.spyOn(
-          NotificationsManager.prototype,
-          'sendNotification',
-        );
-        try {
-          // We don't want to actually send a notification
-          mockedSendNotification.mockImplementation(async (_) => {});
-          const vaultId =
-            await polykeyAgent.vaultManager.createVault(vaultName);
-          const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
-          const targetNodeId = nodeIdGenerator();
-          const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
-          await polykeyAgent.gestaltGraph.setNode({
-            nodeId: targetNodeId,
-          });
-          expect(
-            (await polykeyAgent.acl.getNodePerm(targetNodeId))?.vaults[vaultId],
-          ).toBeUndefined();
+    test('Should share a vault', async () => {
+      const mockedSendNotification = jest.spyOn(
+        NotificationsManager.prototype,
+        'sendNotification',
+      );
+      try {
+        // We don't want to actually send a notification
+        mockedSendNotification.mockImplementation(async (_) => {});
+        const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+        const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
+        const targetNodeId = nodeIdGenerator();
+        const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
+        await polykeyAgent.gestaltGraph.setNode({
+          nodeId: targetNodeId,
+        });
+        expect(
+          (await polykeyAgent.acl.getNodePerm(targetNodeId))?.vaults[vaultId],
+        ).toBeUndefined();
 
-          command = [
-            'vaults',
-            'share',
-            '-np',
-            dataDir,
-            vaultIdEncoded,
-            targetNodeIdEncoded,
-          ];
-          const result = await testUtils.pkStdio([...command], {
-            env: {},
-            cwd: dataDir,
-          });
-          expect(result.exitCode).toBe(0);
+        command = [
+          'vaults',
+          'share',
+          '-np',
+          dataDir,
+          vaultIdEncoded,
+          targetNodeIdEncoded,
+        ];
+        const result = await testUtils.pkStdio([...command], {
+          env: {},
+          cwd: dataDir,
+        });
+        expect(result.exitCode).toBe(0);
 
-          // Check permission
-          const permissions1 = (
-            await polykeyAgent.acl.getNodePerm(targetNodeId)
-          )?.vaults[vaultId];
-          expect(permissions1).toBeDefined();
-          expect(permissions1.pull).toBeDefined();
-          expect(permissions1.clone).toBeDefined();
-        } finally {
-          mockedSendNotification.mockRestore();
-        }
-      },
-    );
+        // Check permission
+        const permissions1 = (await polykeyAgent.acl.getNodePerm(targetNodeId))
+          ?.vaults[vaultId];
+        expect(permissions1).toBeDefined();
+        expect(permissions1.pull).toBeDefined();
+        expect(permissions1.clone).toBeDefined();
+      } finally {
+        mockedSendNotification.mockRestore();
+      }
+    });
   });
   describe('commandUnshare', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'Should unshare a vault',
-      async () => {
-        const vaultId1 = await polykeyAgent.vaultManager.createVault(vaultName);
-        const vaultId2 = await polykeyAgent.vaultManager.createVault(
-          vaultName + '1',
-        );
-        const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
-        const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = nodeIdGenerator();
-        const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
-        await polykeyAgent.gestaltGraph.setNode({
-          nodeId: targetNodeId,
-        });
+    test('Should unshare a vault', async () => {
+      const vaultId1 = await polykeyAgent.vaultManager.createVault(vaultName);
+      const vaultId2 = await polykeyAgent.vaultManager.createVault(
+        vaultName + '1',
+      );
+      const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
+      const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
+      const targetNodeId = nodeIdGenerator();
+      const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
+      await polykeyAgent.gestaltGraph.setNode({
+        nodeId: targetNodeId,
+      });
 
-        // Creating permissions
-        await polykeyAgent.gestaltGraph.setGestaltAction(
-          ['node', targetNodeId],
-          'scan',
-        );
-        await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'clone');
-        await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'pull');
-        await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'clone');
-        await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'pull');
+      // Creating permissions
+      await polykeyAgent.gestaltGraph.setGestaltAction(
+        ['node', targetNodeId],
+        'scan',
+      );
+      await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'clone');
+      await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'pull');
+      await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'clone');
+      await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'pull');
 
-        command = [
-          'vaults',
-          'unshare',
-          '-np',
-          dataDir,
-          vaultIdEncoded1,
-          targetNodeIdEncoded,
-        ];
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
+      command = [
+        'vaults',
+        'unshare',
+        '-np',
+        dataDir,
+        vaultIdEncoded1,
+        targetNodeIdEncoded,
+      ];
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
 
-        // Check permission
-        const permissions = (await polykeyAgent.acl.getNodePerm(targetNodeId))
-          ?.vaults[vaultId1];
-        expect(permissions).toBeDefined();
-        expect(permissions.pull).toBeUndefined();
-        expect(permissions.clone).toBeUndefined();
+      // Check permission
+      const permissions = (await polykeyAgent.acl.getNodePerm(targetNodeId))
+        ?.vaults[vaultId1];
+      expect(permissions).toBeDefined();
+      expect(permissions.pull).toBeUndefined();
+      expect(permissions.clone).toBeUndefined();
 
-        expect(
-          (await polykeyAgent.acl.getNodePerm(targetNodeId))?.gestalt['scan'],
-        ).toBeDefined();
+      expect(
+        (await polykeyAgent.acl.getNodePerm(targetNodeId))?.gestalt['scan'],
+      ).toBeDefined();
 
-        command = [
-          'vaults',
-          'unshare',
-          '-np',
-          dataDir,
-          vaultIdEncoded2,
-          targetNodeIdEncoded,
-        ];
-        const result2 = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result2.exitCode).toBe(0);
+      command = [
+        'vaults',
+        'unshare',
+        '-np',
+        dataDir,
+        vaultIdEncoded2,
+        targetNodeIdEncoded,
+      ];
+      const result2 = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result2.exitCode).toBe(0);
 
-        // Check permission
-        const permissions2 = (await polykeyAgent.acl.getNodePerm(targetNodeId))
-          ?.vaults[vaultId2];
-        expect(permissions2).toBeDefined();
-        expect(permissions2.pull).toBeUndefined();
-        expect(permissions2.clone).toBeUndefined();
+      // Check permission
+      const permissions2 = (await polykeyAgent.acl.getNodePerm(targetNodeId))
+        ?.vaults[vaultId2];
+      expect(permissions2).toBeDefined();
+      expect(permissions2.pull).toBeUndefined();
+      expect(permissions2.clone).toBeUndefined();
 
-        // And the scan permission should be removed
-        expect(
-          (await polykeyAgent.acl.getNodePerm(targetNodeId))?.gestalt['scan'],
-        ).toBeUndefined();
-      },
-    );
+      // And the scan permission should be removed
+      expect(
+        (await polykeyAgent.acl.getNodePerm(targetNodeId))?.gestalt['scan'],
+      ).toBeUndefined();
+    });
   });
   describe('commandPermissions', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'Should get a vaults permissions',
-      async () => {
-        const vaultId1 = await polykeyAgent.vaultManager.createVault(vaultName);
-        const vaultId2 = await polykeyAgent.vaultManager.createVault(
-          vaultName + '1',
-        );
-        const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
-        const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
-        const targetNodeId = nodeIdGenerator();
-        const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
-        await polykeyAgent.gestaltGraph.setNode({
-          nodeId: targetNodeId,
-        });
+    test('Should get a vaults permissions', async () => {
+      const vaultId1 = await polykeyAgent.vaultManager.createVault(vaultName);
+      const vaultId2 = await polykeyAgent.vaultManager.createVault(
+        vaultName + '1',
+      );
+      const vaultIdEncoded1 = vaultsUtils.encodeVaultId(vaultId1);
+      const vaultIdEncoded2 = vaultsUtils.encodeVaultId(vaultId2);
+      const targetNodeId = nodeIdGenerator();
+      const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
+      await polykeyAgent.gestaltGraph.setNode({
+        nodeId: targetNodeId,
+      });
 
-        // Creating permissions
-        await polykeyAgent.gestaltGraph.setGestaltAction(
-          ['node', targetNodeId],
-          'scan',
-        );
-        await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'clone');
-        await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'pull');
-        await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'pull');
+      // Creating permissions
+      await polykeyAgent.gestaltGraph.setGestaltAction(
+        ['node', targetNodeId],
+        'scan',
+      );
+      await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'clone');
+      await polykeyAgent.acl.setVaultAction(vaultId1, targetNodeId, 'pull');
+      await polykeyAgent.acl.setVaultAction(vaultId2, targetNodeId, 'pull');
 
-        command = ['vaults', 'permissions', '-np', dataDir, vaultIdEncoded1];
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain(targetNodeIdEncoded);
-        expect(result.stdout).toContain('clone');
-        expect(result.stdout).toContain('pull');
+      command = ['vaults', 'permissions', '-np', dataDir, vaultIdEncoded1];
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout).toContain(targetNodeIdEncoded);
+      expect(result.stdout).toContain('clone');
+      expect(result.stdout).toContain('pull');
 
-        command = ['vaults', 'permissions', '-np', dataDir, vaultIdEncoded2];
-        const result2 = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result2.exitCode).toBe(0);
-        expect(result2.stdout).toContain(targetNodeIdEncoded);
-        expect(result2.stdout).not.toContain('clone');
-        expect(result2.stdout).toContain('pull');
-      },
-    );
+      command = ['vaults', 'permissions', '-np', dataDir, vaultIdEncoded2];
+      const result2 = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result2.exitCode).toBe(0);
+      expect(result2.stdout).toContain(targetNodeIdEncoded);
+      expect(result2.stdout).not.toContain('clone');
+      expect(result2.stdout).toContain('pull');
+    });
   });
   describe('commandVaultVersion', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should switch the version of a vault',
-      async () => {
-        const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
-        const id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+    test('should switch the version of a vault', async () => {
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const secret1 = { name: 'Secret-1', content: 'Secret-1-content' };
-        const secret2 = { name: 'Secret-1', content: 'Secret-2-content' };
+      const secret1 = { name: 'Secret-1', content: 'Secret-1-content' };
+      const secret2 = { name: 'Secret-1', content: 'Secret-2-content' };
 
-        const ver1Oid = await polykeyAgent.vaultManager.withVaults(
-          [vaultId],
-          async (vault) => {
-            await vault.writeF(async (efs) => {
-              await efs.writeFile(secret1.name, secret1.content);
-            });
-            const ver1Oid = (await vault.log(undefined, 1))[0].commitId;
-
-            await vault.writeF(async (efs) => {
-              await efs.writeFile(secret2.name, secret2.content);
-            });
-            return ver1Oid;
-          },
-        );
-
-        const command = [
-          'vaults',
-          'version',
-          '-np',
-          dataDir,
-          vaultName,
-          ver1Oid,
-        ];
-
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
-
-        await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
-          const fileContents = await vault.readF(async (efs) => {
-            return (await efs.readFile(secret1.name)).toString();
+      const ver1Oid = await polykeyAgent.vaultManager.withVaults(
+        [vaultId],
+        async (vault) => {
+          await vault.writeF(async (efs) => {
+            await efs.writeFile(secret1.name, secret1.content);
           });
-          expect(fileContents).toStrictEqual(secret1.content);
+          const ver1Oid = (await vault.log(undefined, 1))[0].commitId;
+
+          await vault.writeF(async (efs) => {
+            await efs.writeFile(secret2.name, secret2.content);
+          });
+          return ver1Oid;
+        },
+      );
+
+      const command = ['vaults', 'version', '-np', dataDir, vaultName, ver1Oid];
+
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        const fileContents = await vault.readF(async (efs) => {
+          return (await efs.readFile(secret1.name)).toString();
         });
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should switch the version of a vault to the latest version',
-      async () => {
-        const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
-        const id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+        expect(fileContents).toStrictEqual(secret1.content);
+      });
+    });
+    test('should switch the version of a vault to the latest version', async () => {
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const secret1 = { name: 'Secret-1', content: 'Secret-1-content' };
-        const secret2 = { name: 'Secret-1', content: 'Secret-2-content' };
+      const secret1 = { name: 'Secret-1', content: 'Secret-1-content' };
+      const secret2 = { name: 'Secret-1', content: 'Secret-2-content' };
 
-        const ver1Oid = await polykeyAgent.vaultManager.withVaults(
-          [vaultId],
-          async (vault) => {
-            await vault.writeF(async (efs) => {
-              await efs.writeFile(secret1.name, secret1.content);
-            });
-            const ver1Oid = (await vault.log(undefined, 1))[0].commitId;
+      const ver1Oid = await polykeyAgent.vaultManager.withVaults(
+        [vaultId],
+        async (vault) => {
+          await vault.writeF(async (efs) => {
+            await efs.writeFile(secret1.name, secret1.content);
+          });
+          const ver1Oid = (await vault.log(undefined, 1))[0].commitId;
 
-            await vault.writeF(async (efs) => {
-              await efs.writeFile(secret2.name, secret2.content);
-            });
-            return ver1Oid;
-          },
-        );
+          await vault.writeF(async (efs) => {
+            await efs.writeFile(secret2.name, secret2.content);
+          });
+          return ver1Oid;
+        },
+      );
 
-        const command = [
-          'vaults',
-          'version',
-          '-np',
-          dataDir,
-          vaultName,
-          ver1Oid,
-        ];
+      const command = ['vaults', 'version', '-np', dataDir, vaultName, ver1Oid];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(0);
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
 
-        const command2 = [
-          'vaults',
-          'version',
-          '-np',
-          dataDir,
-          vaultName,
-          'last',
-        ];
+      const command2 = ['vaults', 'version', '-np', dataDir, vaultName, 'last'];
 
-        const result2 = await testUtils.pkStdio([...command2], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result2.exitCode).toBe(0);
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should handle invalid version IDs',
-      async () => {
-        await polykeyAgent.vaultManager.createVault(vaultName);
-        const id = polykeyAgent.vaultManager.getVaultId(vaultName);
-        expect(id).toBeTruthy();
+      const result2 = await testUtils.pkStdio([...command2], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result2.exitCode).toBe(0);
+    });
+    test('should handle invalid version IDs', async () => {
+      await polykeyAgent.vaultManager.createVault(vaultName);
+      const id = polykeyAgent.vaultManager.getVaultId(vaultName);
+      expect(id).toBeTruthy();
 
-        const command = [
-          'vaults',
-          'version',
-          '-np',
-          dataDir,
-          vaultName,
-          'NOT_A_VALID_CHECKOUT_ID',
-        ];
+      const command = [
+        'vaults',
+        'version',
+        '-np',
+        dataDir,
+        vaultName,
+        'NOT_A_VALID_CHECKOUT_ID',
+      ];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(sysexits.USAGE);
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(sysexits.USAGE);
 
-        expect(result.stderr).toContain('ErrorVaultReferenceInvalid');
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should throw an error if the vault is not found',
-      async () => {
-        const command = [
-          'vaults',
-          'version',
-          '-np',
-          dataDir,
-          'zLnM7puKobbh4YXEz66StAq',
-          'NOT_A_VALID_CHECKOUT_ID',
-        ];
+      expect(result.stderr).toContain('ErrorVaultReferenceInvalid');
+    });
+    test('should throw an error if the vault is not found', async () => {
+      const command = [
+        'vaults',
+        'version',
+        '-np',
+        dataDir,
+        'zLnM7puKobbh4YXEz66StAq',
+        'NOT_A_VALID_CHECKOUT_ID',
+      ];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toBe(sysexits.USAGE);
-        expect(result.stderr).toContain('ErrorVaultsVaultUndefined');
-      },
-    );
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(sysexits.USAGE);
+      expect(result.stderr).toContain('ErrorVaultsVaultUndefined');
+    });
   });
   describe('commandVaultLog', () => {
     const secret1 = { name: 'secret1', content: 'Secret-1-content' };
@@ -759,66 +693,57 @@ describe('CLI vaults', () => {
       await polykeyAgent.vaultManager.destroyVault(vaultId);
     });
 
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'Should get all writeFs',
-      async () => {
-        const command = ['vaults', 'log', '-np', dataDir, vaultName];
+    test('Should get all writeFs', async () => {
+      const command = ['vaults', 'log', '-np', dataDir, vaultName];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toEqual(0);
-        expect(result.stdout).toContain(writeF1Oid);
-        expect(result.stdout).toContain(writeF2Oid);
-        expect(result.stdout).toContain(writeF3Oid);
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should get a part of the log',
-      async () => {
-        const command = ['vaults', 'log', '-np', dataDir, '-d', '2', vaultName];
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toEqual(0);
+      expect(result.stdout).toContain(writeF1Oid);
+      expect(result.stdout).toContain(writeF2Oid);
+      expect(result.stdout).toContain(writeF3Oid);
+    });
+    test('should get a part of the log', async () => {
+      const command = ['vaults', 'log', '-np', dataDir, '-d', '2', vaultName];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toEqual(0);
-        expect(result.stdout).not.toContain(writeF1Oid);
-        expect(result.stdout).toContain(writeF2Oid);
-        expect(result.stdout).toContain(writeF3Oid);
-      },
-    );
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
-      'should get a specific writeF',
-      async () => {
-        const command = [
-          'vaults',
-          'log',
-          '-np',
-          dataDir,
-          '-d',
-          '1',
-          vaultName,
-          '-ci',
-          writeF2Oid,
-        ];
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toEqual(0);
+      expect(result.stdout).not.toContain(writeF1Oid);
+      expect(result.stdout).toContain(writeF2Oid);
+      expect(result.stdout).toContain(writeF3Oid);
+    });
+    test('should get a specific writeF', async () => {
+      const command = [
+        'vaults',
+        'log',
+        '-np',
+        dataDir,
+        '-d',
+        '1',
+        vaultName,
+        '-ci',
+        writeF2Oid,
+      ];
 
-        const result = await testUtils.pkStdio([...command], {
-          env: {},
-          cwd: dataDir,
-        });
-        expect(result.exitCode).toEqual(0);
-        expect(result.stdout).not.toContain(writeF1Oid);
-        expect(result.stdout).toContain(writeF2Oid);
-        expect(result.stdout).not.toContain(writeF3Oid);
-      },
-    );
+      const result = await testUtils.pkStdio([...command], {
+        env: {},
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toEqual(0);
+      expect(result.stdout).not.toContain(writeF1Oid);
+      expect(result.stdout).toContain(writeF2Oid);
+      expect(result.stdout).not.toContain(writeF3Oid);
+    });
     test.todo('test formatting of the output');
   });
   // Fixme: tempermental problem with formatting the output. Fails sometimes due to an added space
   describe('commandScanNode', () => {
-    testUtils.testIf(testUtils.isTestPlatformEmpty)(
+    test(
       'should return the vaults names and ids of the remote vault',
       async () => {
         let remoteOnline: PolykeyAgent | undefined;

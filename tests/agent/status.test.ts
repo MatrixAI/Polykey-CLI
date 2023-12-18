@@ -22,9 +22,7 @@ describe('status', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'status on STARTING, STOPPING, DEAD agent',
     async () => {
       // This test must create its own agent process
@@ -125,9 +123,7 @@ describe('status', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('status on missing agent', async () => {
+  test('status on missing agent', async () => {
     const { exitCode, stdout } = await testUtils.pkExec(
       ['agent', 'status', '--format', 'json'],
       {
@@ -151,9 +147,7 @@ describe('status', () => {
     afterEach(async () => {
       await agentClose();
     });
-    testUtils.testIf(
-      testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-    )('status on LIVE agent', async () => {
+    test('status on LIVE agent', async () => {
       const status = new Status({
         statusPath: path.join(agentDir, config.paths.statusBase),
         statusLockPath: path.join(agentDir, config.paths.statusLockBase),
@@ -186,9 +180,7 @@ describe('status', () => {
         nodesTotal: expect.any(Number),
       });
     });
-    testUtils.testIf(
-      testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-    )('status on remote LIVE agent', async () => {
+    test('status on remote LIVE agent', async () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, agentPassword);
       const status = new Status({

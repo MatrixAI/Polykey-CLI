@@ -59,9 +59,7 @@ describe('send/read/claim', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'sends, receives, and clears notifications',
     async () => {
       let exitCode, stdout;

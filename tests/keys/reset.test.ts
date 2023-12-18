@@ -40,92 +40,89 @@ describe('reset', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'resets the keypair',
-    async () => {
-      // Can't test with target executable due to mocking
-      // Get previous keypair and nodeId
-      let { exitCode, stdout } = await testUtils.pkStdio(
-        ['keys', 'keypair', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-            PK_PASSWORD_NEW: 'some-password',
-          },
-          cwd: dataDir,
+  test('resets the keypair', async () => {
+    // Can't test with target executable due to mocking
+    // Get previous keypair and nodeId
+    let { exitCode, stdout } = await testUtils.pkStdio(
+      ['keys', 'keypair', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+          PK_PASSWORD_NEW: 'some-password',
         },
-      );
-      expect(exitCode).toBe(0);
-      const prevPublicKey = JSON.parse(stdout).publicKey;
-      const prevPrivateKey = JSON.parse(stdout).privateKey;
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['agent', 'status', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    );
+    expect(exitCode).toBe(0);
+    const prevPublicKey = JSON.parse(stdout).publicKey;
+    const prevPrivateKey = JSON.parse(stdout).privateKey;
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['agent', 'status', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      const prevNodeId = JSON.parse(stdout).nodeId;
-      // Reset keypair
-      const passPath = path.join(dataDir, 'reset-password');
-      await fs.promises.writeFile(passPath, 'password-new');
-      ({ exitCode } = await testUtils.pkStdio(
-        ['keys', 'reset', '--password-new-file', passPath],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    const prevNodeId = JSON.parse(stdout).nodeId;
+    // Reset keypair
+    const passPath = path.join(dataDir, 'reset-password');
+    await fs.promises.writeFile(passPath, 'password-new');
+    ({ exitCode } = await testUtils.pkStdio(
+      ['keys', 'reset', '--password-new-file', passPath],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      // Wait for keys changes to propagate to the network
-      await sleep(1000);
-      const nodeIdEncodedNew = nodesUtils.encodeNodeId(
-        pkAgent.keyRing.getNodeId(),
-      );
-      // Get new keypair and nodeId and compare against old
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['keys', 'keypair', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: 'password-new',
-            PK_PASSWORD_NEW: 'some-password',
-            PK_NODE_ID: nodeIdEncodedNew,
-            PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    // Wait for keys changes to propagate to the network
+    await sleep(1000);
+    const nodeIdEncodedNew = nodesUtils.encodeNodeId(
+      pkAgent.keyRing.getNodeId(),
+    );
+    // Get new keypair and nodeId and compare against old
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['keys', 'keypair', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: 'password-new',
+          PK_PASSWORD_NEW: 'some-password',
+          PK_NODE_ID: nodeIdEncodedNew,
+          PK_CLIENT_HOST: '127.0.0.1',
+          PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
         },
-      ));
-      expect(exitCode).toBe(0);
-      const newPublicKey = JSON.parse(stdout).publicKey;
-      const newPrivateKey = JSON.parse(stdout).privateKey;
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['agent', 'status', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: 'password-new',
-            PK_NODE_ID: nodeIdEncodedNew,
-            PK_CLIENT_HOST: '127.0.0.1',
-            PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    const newPublicKey = JSON.parse(stdout).publicKey;
+    const newPrivateKey = JSON.parse(stdout).privateKey;
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['agent', 'status', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: 'password-new',
+          PK_NODE_ID: nodeIdEncodedNew,
+          PK_CLIENT_HOST: '127.0.0.1',
+          PK_CLIENT_PORT: `${pkAgent.clientServicePort}`,
         },
-      ));
-      expect(exitCode).toBe(0);
-      const newNodeId = JSON.parse(stdout).nodeId;
-      expect(newPublicKey).not.toBe(prevPublicKey);
-      expect(newPrivateKey).not.toBe(prevPrivateKey);
-      expect(newNodeId).not.toBe(prevNodeId);
-    },
-  );
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    const newNodeId = JSON.parse(stdout).nodeId;
+    expect(newPublicKey).not.toBe(prevPublicKey);
+    expect(newPrivateKey).not.toBe(prevPrivateKey);
+    expect(newNodeId).not.toBe(prevNodeId);
+  });
 });

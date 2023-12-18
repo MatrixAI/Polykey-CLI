@@ -5,14 +5,12 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import * as testNatUtils from './utils';
 import * as testUtils from '../utils';
 
-const supportsNatTesting =
+const _supportsNatTesting =
   testUtils.isPlatformLinux &&
   testUtils.hasIp &&
   testUtils.hasIptables &&
   testUtils.hasNsenter &&
   testUtils.hasUnshare;
-
-const disabled = false;
 
 test('dummy test to avoid fail', async () => {});
 // FIXME: disabled NAT testing for now, pending changes in agent migration 2
@@ -32,7 +30,7 @@ describe.skip('endpoint independent NAT traversal', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EIM NAT connects to node2',
     async () => {
       const {
@@ -102,7 +100,7 @@ describe.skip('endpoint independent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 connects to node2 behind EIM NAT',
     async () => {
       const {
@@ -242,7 +240,7 @@ describe.skip('endpoint independent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EIM NAT connects to node2 behind EIM NAT',
     async () => {
       const {
@@ -383,7 +381,7 @@ describe.skip('endpoint independent NAT traversal', () => {
     globalThis.defaultTimeout * 4,
   );
   // FIXME: known issue, disabled for now
-  testUtils.testIf(disabled && supportsNatTesting)(
+  test(
     'node1 behind EIM NAT connects to node2 behind EIM NAT via seed node',
     async () => {
       const {
@@ -454,7 +452,7 @@ describe.skip('endpoint independent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EIM NAT cannot connect to node2 behind EDM NAT',
     async () => {
       const {

@@ -144,242 +144,236 @@ describe('search', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'finds connected identities',
-    async () => {
-      // Can't test with target executable due to mocking
-      let exitCode, stdout;
-      let searchResults: Array<IdentityData>;
-      // Search with no authenticated identities
-      // Should return nothing
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('finds connected identities', async () => {
+    // Can't test with target executable due to mocking
+    let exitCode, stdout;
+    let searchResults: Array<IdentityData>;
+    // Search with no authenticated identities
+    // Should return nothing
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      expect(stdout).toBe('');
-      // Authenticate an identity for provider1
-      await testUtils.pkStdio(
-        ['identities', 'authenticate', provider1.id, identityId],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    expect(stdout).toBe('');
+    // Authenticate an identity for provider1
+    await testUtils.pkStdio(
+      ['identities', 'authenticate', provider1.id, identityId],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      // Now our search should include the identities from provider1
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    );
+    // Now our search should include the identities from provider1
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(3);
-      expect(searchResults).toContainEqual(user1);
-      expect(searchResults).toContainEqual(user2);
-      expect(searchResults).toContainEqual(user3);
-      // Authenticate an identity for provider2
-      await testUtils.pkStdio(
-        ['identities', 'authenticate', provider2.id, identityId],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(3);
+    expect(searchResults).toContainEqual(user1);
+    expect(searchResults).toContainEqual(user2);
+    expect(searchResults).toContainEqual(user3);
+    // Authenticate an identity for provider2
+    await testUtils.pkStdio(
+      ['identities', 'authenticate', provider2.id, identityId],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      // Now our search should include the identities from provider1 and
-      // provider2
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    );
+    // Now our search should include the identities from provider1 and
+    // provider2
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(6);
-      expect(searchResults).toContainEqual(user1);
-      expect(searchResults).toContainEqual(user2);
-      expect(searchResults).toContainEqual(user3);
-      expect(searchResults).toContainEqual(user4);
-      expect(searchResults).toContainEqual(user5);
-      expect(searchResults).toContainEqual(user6);
-      // We can narrow this search by providing search terms
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '4', '5', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(6);
+    expect(searchResults).toContainEqual(user1);
+    expect(searchResults).toContainEqual(user2);
+    expect(searchResults).toContainEqual(user3);
+    expect(searchResults).toContainEqual(user4);
+    expect(searchResults).toContainEqual(user5);
+    expect(searchResults).toContainEqual(user6);
+    // We can narrow this search by providing search terms
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '4', '5', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(2);
-      expect(searchResults).toContainEqual(user4);
-      expect(searchResults).toContainEqual(user5);
-      // Authenticate an identity for provider3
-      await testUtils.pkStdio(
-        ['identities', 'authenticate', provider3.id, identityId],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(2);
+    expect(searchResults).toContainEqual(user4);
+    expect(searchResults).toContainEqual(user5);
+    // Authenticate an identity for provider3
+    await testUtils.pkStdio(
+      ['identities', 'authenticate', provider3.id, identityId],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      // We can get results from only some providers using the --provider-id
-      // option
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'identities',
-          'search',
-          '--provider-id',
-          provider2.id,
-          provider3.id,
-          '--format',
-          'json',
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    );
+    // We can get results from only some providers using the --provider-id
+    // option
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'identities',
+        'search',
+        '--provider-id',
+        provider2.id,
+        provider3.id,
+        '--format',
+        'json',
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(5);
-      expect(searchResults).toContainEqual(user4);
-      expect(searchResults).toContainEqual(user5);
-      expect(searchResults).toContainEqual(user6);
-      expect(searchResults).toContainEqual(user7);
-      expect(searchResults).toContainEqual(user8);
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'identities',
-          'search',
-          '--provider-id',
-          provider2.id,
-          '--provider-id',
-          provider3.id,
-          '--format',
-          'json',
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(5);
+    expect(searchResults).toContainEqual(user4);
+    expect(searchResults).toContainEqual(user5);
+    expect(searchResults).toContainEqual(user6);
+    expect(searchResults).toContainEqual(user7);
+    expect(searchResults).toContainEqual(user8);
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'identities',
+        'search',
+        '--provider-id',
+        provider2.id,
+        '--provider-id',
+        provider3.id,
+        '--format',
+        'json',
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(5);
-      expect(searchResults).toContainEqual(user4);
-      expect(searchResults).toContainEqual(user5);
-      expect(searchResults).toContainEqual(user6);
-      expect(searchResults).toContainEqual(user7);
-      expect(searchResults).toContainEqual(user8);
-      // We can search for a specific identity id across providers
-      // This will find identities even if they're disconnected
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '--identity-id', 'user3', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(5);
+    expect(searchResults).toContainEqual(user4);
+    expect(searchResults).toContainEqual(user5);
+    expect(searchResults).toContainEqual(user6);
+    expect(searchResults).toContainEqual(user7);
+    expect(searchResults).toContainEqual(user8);
+    // We can search for a specific identity id across providers
+    // This will find identities even if they're disconnected
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '--identity-id', 'user3', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(3);
-      expect(searchResults).toContainEqual(user3);
-      expect(searchResults).toContainEqual(user6);
-      expect(searchResults).toContainEqual(user9);
-      // We can limit the number of search results to display
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'search', '--limit', '2', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(3);
+    expect(searchResults).toContainEqual(user3);
+    expect(searchResults).toContainEqual(user6);
+    expect(searchResults).toContainEqual(user9);
+    // We can limit the number of search results to display
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'search', '--limit', '2', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
-      expect(searchResults).toHaveLength(2);
-    },
-  );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'should fail on invalid inputs',
-    async () => {
-      let exitCode;
-      // Invalid identity id
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'search', '--identity-id', ''],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    expect(searchResults).toHaveLength(2);
+  });
+  test('should fail on invalid inputs', async () => {
+    let exitCode;
+    // Invalid identity id
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'search', '--identity-id', ''],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-      // Invalid auth identity id
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'search', '--auth-identity-id', ''],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+    // Invalid auth identity id
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'search', '--auth-identity-id', ''],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-      // Invalid value for limit
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'search', '--limit', 'NaN'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+    // Invalid value for limit
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'search', '--limit', 'NaN'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-    },
-  );
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+  });
 });

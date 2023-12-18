@@ -5,19 +5,13 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import * as testUtils from './utils';
 
 describe('polykey', () => {
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty ||
-      testUtils.isTestPlatformLinux ||
-      testUtils.isTestPlatformDocker,
-  )('default help display', async () => {
+  test('default help display', async () => {
     const result = await testUtils.pkExec([]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toBe('');
     expect(result.stderr.length > 0).toBe(true);
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('format option affects STDERR', async () => {
+  test('format option affects STDERR', async () => {
     const logger = new Logger('format test', LogLevel.WARN, [
       new StreamHandler(),
     ]);

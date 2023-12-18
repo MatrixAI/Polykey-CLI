@@ -124,7 +124,7 @@ describe('discover/get', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  test(
     'discovers and gets gestalt by node',
     async () => {
       await testUtils.pkStdio(
@@ -205,113 +205,104 @@ describe('discover/get', () => {
     },
     globalThis.defaultTimeout * 3,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'discovers and gets gestalt by identity',
-    async () => {
-      await testUtils.pkStdio(
-        [
-          'identities',
-          'authenticate',
-          testToken.providerId,
-          testToken.identityId,
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
-        },
-      );
-      // Add one of the nodes to our gestalt graph so that we'll be able to
-      // contact the gestalt during discovery
-      await testUtils.pkStdio(
-        [
-          'nodes',
-          'add',
-          nodesUtils.encodeNodeId(nodeAId),
-          nodeAHost,
-          `${nodeAPort}`,
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
-        },
-      );
-      // Discover gestalt by node
-      const discoverResponse = await testUtils.pkStdio(
-        ['identities', 'discover', providerString],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
-        },
-      );
-      expect(discoverResponse.exitCode).toBe(0);
-      // Since discovery is a background process we need to wait for the
-      while ((await pkAgent.discovery.waitForDiscoveryTasks()) > 0) {
-        // Gestalt to be discovered
-      }
-      // Now we can get the gestalt
-      const getResponse = await testUtils.pkStdio(
-        ['identities', 'get', providerString],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
-        },
-      );
-      expect(getResponse.exitCode).toBe(0);
-      expect(getResponse.stdout).toContain(nodesUtils.encodeNodeId(nodeAId));
-      expect(getResponse.stdout).toContain(nodesUtils.encodeNodeId(nodeBId));
-      expect(getResponse.stdout).toContain(providerString);
-      // Revert side effects
-      await pkAgent.gestaltGraph.unsetNode(nodeAId);
-      await pkAgent.gestaltGraph.unsetNode(nodeBId);
-      await pkAgent.gestaltGraph.unsetIdentity([testProvider.id, identityId]);
-      await pkAgent.nodeGraph.unsetNodeContact(nodeAId);
-      await pkAgent.identitiesManager.delToken(
+  test('discovers and gets gestalt by identity', async () => {
+    await testUtils.pkStdio(
+      [
+        'identities',
+        'authenticate',
         testToken.providerId,
         testToken.identityId,
-      );
-      // @ts-ignore - get protected property
-      pkAgent.discovery.visitedVertices.clear();
-    },
-  );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'should fail on invalid inputs',
-    async () => {
-      let exitCode;
-      // Discover
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'discover', 'invalid'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-      // Get
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'get', 'invalid'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    );
+    // Add one of the nodes to our gestalt graph so that we'll be able to
+    // contact the gestalt during discovery
+    await testUtils.pkStdio(
+      [
+        'nodes',
+        'add',
+        nodesUtils.encodeNodeId(nodeAId),
+        nodeAHost,
+        `${nodeAPort}`,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-    },
-  );
+        cwd: dataDir,
+      },
+    );
+    // Discover gestalt by node
+    const discoverResponse = await testUtils.pkStdio(
+      ['identities', 'discover', providerString],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    );
+    expect(discoverResponse.exitCode).toBe(0);
+    // Since discovery is a background process we need to wait for the
+    while ((await pkAgent.discovery.waitForDiscoveryTasks()) > 0) {
+      // Gestalt to be discovered
+    }
+    // Now we can get the gestalt
+    const getResponse = await testUtils.pkStdio(
+      ['identities', 'get', providerString],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    );
+    expect(getResponse.exitCode).toBe(0);
+    expect(getResponse.stdout).toContain(nodesUtils.encodeNodeId(nodeAId));
+    expect(getResponse.stdout).toContain(nodesUtils.encodeNodeId(nodeBId));
+    expect(getResponse.stdout).toContain(providerString);
+    // Revert side effects
+    await pkAgent.gestaltGraph.unsetNode(nodeAId);
+    await pkAgent.gestaltGraph.unsetNode(nodeBId);
+    await pkAgent.gestaltGraph.unsetIdentity([testProvider.id, identityId]);
+    await pkAgent.nodeGraph.unsetNodeContact(nodeAId);
+    await pkAgent.identitiesManager.delToken(
+      testToken.providerId,
+      testToken.identityId,
+    );
+    // @ts-ignore - get protected property
+    pkAgent.discovery.visitedVertices.clear();
+  });
+  test('should fail on invalid inputs', async () => {
+    let exitCode;
+    // Discover
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'discover', 'invalid'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+    // Get
+    ({ exitCode } = await testUtils.pkStdio(['identities', 'get', 'invalid'], {
+      env: {
+        PK_NODE_PATH: nodePath,
+        PK_PASSWORD: password,
+      },
+      cwd: dataDir,
+    }));
+  });
 });

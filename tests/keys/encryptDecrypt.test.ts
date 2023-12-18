@@ -22,9 +22,7 @@ describe('encrypt-decrypt', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('decrypts data', async () => {
+  test('decrypts data', async () => {
     const dataPath = path.join(agentDir, 'data');
     const publicKey = keysUtils.publicKeyFromNodeId(agentStatus.data.nodeId);
     const encrypted = keysUtils.encryptWithPublicKey(
@@ -50,9 +48,7 @@ describe('encrypt-decrypt', () => {
       decryptedData: 'abc',
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('encrypts data using NodeId', async () => {
+  test('encrypts data using NodeId', async () => {
     const targetkeyPair = keysUtils.generateKeyPair();
     const targetNodeId = keysUtils.publicKeyToNodeId(targetkeyPair.publicKey);
 
@@ -89,9 +85,7 @@ describe('encrypt-decrypt', () => {
     );
     expect(decrypted?.toString()).toBe('abc');
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('encrypts data using JWK file', async () => {
+  test('encrypts data using JWK file', async () => {
     const targetkeyPair = keysUtils.generateKeyPair();
     const publicJWK = keysUtils.publicKeyToJWK(targetkeyPair.publicKey);
 
@@ -123,9 +117,7 @@ describe('encrypt-decrypt', () => {
     );
     expect(decrypted?.toString()).toBe('abc');
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('encrypts data fails with invalid JWK file', async () => {
+  test('encrypts data fails with invalid JWK file', async () => {
     const dataPath = path.join(agentDir, 'data');
     const jwkPath = path.join(agentDir, 'jwk');
     await fs.promises.writeFile(dataPath, 'abc', {

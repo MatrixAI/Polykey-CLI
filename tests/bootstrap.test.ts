@@ -23,9 +23,7 @@ describe('bootstrap', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'bootstraps node state',
     async () => {
       const password = 'password';
@@ -52,9 +50,7 @@ describe('bootstrap', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'bootstraps node state from provided private key',
     async () => {
       const password = 'password';
@@ -99,9 +95,7 @@ describe('bootstrap', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'bootstrapping occupied node state',
     async () => {
       const password = 'password';
@@ -159,9 +153,7 @@ describe('bootstrap', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'concurrent bootstrapping results in 1 success',
     async () => {
       const password = 'password';
@@ -238,9 +230,7 @@ describe('bootstrap', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'bootstrap when interrupted, requires fresh on next bootstrap',
     async () => {
       const password = 'password';

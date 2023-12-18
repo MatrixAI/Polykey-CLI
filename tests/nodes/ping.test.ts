@@ -84,8 +84,7 @@ describe('ping', () => {
     });
   });
   // FIXME: skipped because problem with RPC processing messages after timeout
-  // testUtils.testIf(testUtils.isTestPlatformEmpty)
-  testUtils.testIf(false)(
+  test.skip(
     'fails when pinging an offline node',
     async () => {
       const { exitCode, stdout, stderr } = await testUtils.pkStdio(
@@ -114,8 +113,7 @@ describe('ping', () => {
     globalThis.failedConnectionTimeout,
   );
   // FIXME: skipped because problem with RPC processing messages after timeout
-  // testUtils.testIf(testUtils.isTestPlatformEmpty)
-  testUtils.testIf(false)(
+  test.skip(
     'fails if node cannot be found',
     async () => {
       const fakeNodeId = nodesUtils.decodeNodeId(
@@ -145,30 +143,27 @@ describe('ping', () => {
     },
     globalThis.failedConnectionTimeout,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'succeed when pinging a live node',
-    async () => {
-      const { exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'nodes',
-          'ping',
-          nodesUtils.encodeNodeId(remoteOnlineNodeId),
-          '--format',
-          'json',
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('succeed when pinging a live node', async () => {
+    const { exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'nodes',
+        'ping',
+        nodesUtils.encodeNodeId(remoteOnlineNodeId),
+        '--format',
+        'json',
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      expect(exitCode).toBe(0);
-      expect(JSON.parse(stdout)).toEqual({
-        success: true,
-        message: 'Node is Active.',
-      });
-    },
-  );
+        cwd: dataDir,
+      },
+    );
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout)).toEqual({
+      success: true,
+      message: 'Node is Active.',
+    });
+  });
 });

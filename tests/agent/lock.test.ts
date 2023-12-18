@@ -20,9 +20,7 @@ describe('lock', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('lock deletes the session token', async () => {
+  test('lock deletes the session token', async () => {
     await testUtils.pkExec(['agent', 'unlock'], {
       env: {
         PK_NODE_PATH: agentDir,
@@ -47,34 +45,31 @@ describe('lock', () => {
     expect(await session.readToken()).toBeUndefined();
     await session.stop();
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'lock ensures re-authentication is required',
-    async () => {
-      const password = agentPassword;
-      prompts.mockClear();
-      prompts.mockImplementation(async (_opts: any) => {
-        return { password };
-      });
-      await testUtils.pkStdio(['agent', 'unlock'], {
-        env: {
-          PK_NODE_PATH: agentDir,
-          PK_PASSWORD: agentPassword,
-        },
-        cwd: agentDir,
-      });
-      // Session token is deleted
-      await testUtils.pkStdio(['agent', 'lock'], {
-        env: { PK_NODE_PATH: agentDir },
-        cwd: agentDir,
-      });
-      // Will prompt to reauthenticate
-      await testUtils.pkStdio(['agent', 'status'], {
-        env: { PK_NODE_PATH: agentDir },
-        cwd: agentDir,
-      });
-      // Prompted for password 1 time
-      expect(prompts.mock.calls.length).toBe(1);
-      prompts.mockClear();
-    },
-  );
+  test('lock ensures re-authentication is required', async () => {
+    const password = agentPassword;
+    prompts.mockClear();
+    prompts.mockImplementation(async (_opts: any) => {
+      return { password };
+    });
+    await testUtils.pkStdio(['agent', 'unlock'], {
+      env: {
+        PK_NODE_PATH: agentDir,
+        PK_PASSWORD: agentPassword,
+      },
+      cwd: agentDir,
+    });
+    // Session token is deleted
+    await testUtils.pkStdio(['agent', 'lock'], {
+      env: { PK_NODE_PATH: agentDir },
+      cwd: agentDir,
+    });
+    // Will prompt to reauthenticate
+    await testUtils.pkStdio(['agent', 'status'], {
+      env: { PK_NODE_PATH: agentDir },
+      cwd: agentDir,
+    });
+    // Prompted for password 1 time
+    expect(prompts.mock.calls.length).toBe(1);
+    prompts.mockClear();
+  });
 });
