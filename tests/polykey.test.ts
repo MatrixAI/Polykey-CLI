@@ -47,7 +47,6 @@ describe('polykey', () => {
           PK_PASSWORD_MEM_LIMIT: 'min',
         },
         cwd: dataDir,
-        command: globalThis.testCmd,
       },
       logger,
     );

@@ -396,11 +396,6 @@ async function pkSpawnWithoutShell(
     ...process.env,
     ...opts.env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   const subprocess = childProcess.spawn(
     'ts-node',
     ['--project', tsConfigPath, polykeyPath, ...args],

@@ -33,12 +33,10 @@ describe('lockall', () => {
         PK_PASSWORD: agentPassword,
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     });
     const { exitCode } = await testUtils.pkExec(['agent', 'lockall'], {
       env: { PK_NODE_PATH: agentDir },
       cwd: agentDir,
-      command: globalThis.testCmd,
     });
     expect(exitCode).toBe(0);
     const session = await Session.createSession({
@@ -82,7 +80,6 @@ describe('lockall', () => {
         PK_PASSWORD: agentPassword,
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     });
     const session = await Session.createSession({
       sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
@@ -97,7 +94,6 @@ describe('lockall', () => {
         PK_PASSWORD: agentPassword,
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     });
     // Old token is invalid
     const { exitCode, stderr } = await testUtils.pkExec(
@@ -108,7 +104,6 @@ describe('lockall', () => {
           PK_TOKEN: token,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     testUtils.expectProcessError(exitCode, stderr, [

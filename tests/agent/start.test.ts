@@ -11,7 +11,7 @@ import Status from 'polykey/dist/status/Status';
 import * as statusErrors from 'polykey/dist/status/errors';
 import config from 'polykey/dist/config';
 import * as keysUtils from 'polykey/dist/keys/utils';
-import { promise, sleep } from 'polykey/dist/utils';
+import { promise } from 'polykey/dist/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
@@ -63,7 +63,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -86,7 +85,6 @@ describe('start', () => {
         statusLiveData.recoveryCode.split(' ').length === 12 ||
           statusLiveData.recoveryCode.split(' ').length === 24,
       ).toBe(true);
-      await sleep(5000);
       agentProcess.kill('SIGTERM');
       const status = new Status({
         statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
@@ -139,7 +137,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -235,7 +232,6 @@ describe('start', () => {
               PK_PASSWORD_MEM_LIMIT: 'min',
             },
             cwd: dataDir,
-            command: globalThis.testCmd,
           },
           logger.getChild('agentProcess1'),
         ),
@@ -263,7 +259,6 @@ describe('start', () => {
               PK_PASSWORD_MEM_LIMIT: 'min',
             },
             cwd: dataDir,
-            command: globalThis.testCmd,
           },
           logger.getChild('agentProcess2'),
         ),
@@ -346,7 +341,6 @@ describe('start', () => {
               PK_PASSWORD_MEM_LIMIT: 'min',
             },
             cwd: dataDir,
-            command: globalThis.testCmd,
           },
           logger.getChild('agentProcess'),
         ),
@@ -360,7 +354,6 @@ describe('start', () => {
               PK_PASSWORD_MEM_LIMIT: 'min',
             },
             cwd: dataDir,
-            command: globalThis.testCmd,
           },
           logger.getChild('bootstrapProcess'),
         ),
@@ -438,7 +431,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -470,7 +462,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -518,7 +509,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess1'),
       );
@@ -564,7 +554,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess2'),
       );
@@ -645,7 +634,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess1'),
       );
@@ -686,7 +674,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess2'),
       );
@@ -715,7 +702,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess3'),
       );
@@ -754,7 +740,6 @@ describe('start', () => {
             PK_RECOVERY_CODE: recoveryCode,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess4'),
       );
@@ -812,7 +797,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger.getChild('agentProcess'),
       );
@@ -878,7 +862,6 @@ describe('start', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );

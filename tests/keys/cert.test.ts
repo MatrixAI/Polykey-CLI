@@ -22,7 +22,6 @@ describe('cert', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);

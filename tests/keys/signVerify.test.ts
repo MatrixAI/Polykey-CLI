@@ -37,7 +37,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -85,7 +84,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -120,7 +118,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -147,7 +144,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(sysexits.NOINPUT);

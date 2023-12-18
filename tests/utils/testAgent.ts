@@ -37,7 +37,6 @@ async function setupTestAgent(logger: Logger) {
         PK_PASSWORD_MEM_LIMIT: 'min',
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     },
     logger,
   );

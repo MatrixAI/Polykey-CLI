@@ -59,7 +59,6 @@ describe('status', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -73,7 +72,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -95,7 +93,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -113,7 +110,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -128,7 +124,6 @@ describe('status', () => {
       ['agent', 'status', '--format', 'json'],
       {
         env: { PK_NODE_PATH: path.join(dataDir, 'polykey') },
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -163,7 +158,6 @@ describe('status', () => {
             PK_PASSWORD: agentPassword,
           },
           cwd: agentDir,
-          command: globalThis.testCmd,
         },
       );
       expect(exitCode).toBe(0);
@@ -212,7 +206,6 @@ describe('status', () => {
         {
           env: {},
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       );
       expect(exitCode).toBe(0);

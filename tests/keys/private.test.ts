@@ -25,7 +25,6 @@ describe('private', () => {
           PK_PASSWORD_NEW: 'newPassword',
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);

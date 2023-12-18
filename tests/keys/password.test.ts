@@ -28,7 +28,6 @@ describe('password', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -40,7 +39,6 @@ describe('password', () => {
         PK_PASSWORD_NEW: 'newPassword2',
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     }));
     expect(exitCode).toBe(77);
   }, 80000);

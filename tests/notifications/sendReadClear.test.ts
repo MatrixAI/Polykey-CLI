@@ -79,7 +79,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: senderAgentPassword,
           },
           cwd: senderAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -98,7 +97,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -111,7 +109,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -129,7 +126,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: senderAgentPassword,
           },
           cwd: senderAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -146,7 +142,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: senderAgentPassword,
           },
           cwd: senderAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -163,7 +158,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: senderAgentPassword,
           },
           cwd: senderAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -176,7 +170,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -221,7 +214,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -239,7 +231,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -284,7 +275,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -309,7 +299,6 @@ describe('send/read/claim', () => {
           PK_PASSWORD: receiverAgentPassword,
         },
         cwd: receiverAgentDir,
-        command: globalThis.testCmd,
       }));
       // Check there are no more notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
@@ -320,7 +309,6 @@ describe('send/read/claim', () => {
             PK_PASSWORD: receiverAgentPassword,
           },
           cwd: receiverAgentDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);

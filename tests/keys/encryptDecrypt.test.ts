@@ -40,7 +40,6 @@ describe('encrypt-decrypt', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -71,7 +70,6 @@ describe('encrypt-decrypt', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -103,7 +101,6 @@ describe('encrypt-decrypt', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -131,7 +128,6 @@ describe('encrypt-decrypt', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(sysexits.NOINPUT);
