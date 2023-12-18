@@ -11,7 +11,7 @@ import Status from 'polykey/dist/status/Status';
 import * as statusErrors from 'polykey/dist/status/errors';
 import config from 'polykey/dist/config';
 import * as keysUtils from 'polykey/dist/keys/utils';
-import { promise } from 'polykey/dist/utils';
+import { promise, sleep } from 'polykey/dist/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../utils';
 
@@ -50,8 +50,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
           '--format',
           'json',
@@ -86,6 +86,7 @@ describe('start', () => {
         statusLiveData.recoveryCode.split(' ').length === 12 ||
           statusLiveData.recoveryCode.split(' ').length === 24,
       ).toBe(true);
+      await sleep(5000);
       agentProcess.kill('SIGTERM');
       const status = new Status({
         statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
@@ -125,8 +126,8 @@ describe('start', () => {
           path.join(dataDir, 'err.log'),
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
           '--format',
           'json',
@@ -220,8 +221,8 @@ describe('start', () => {
             '127.0.0.1',
             '--workers',
             'none',
-            '--network',
-            'testnet',
+            '--seed-nodes',
+            '',
             '--verbose',
             '--format',
             'json',
@@ -248,8 +249,8 @@ describe('start', () => {
             '127.0.0.1',
             '--workers',
             'none',
-            '--network',
-            'testnet',
+            '--seed-nodes',
+            '',
             '--verbose',
             '--format',
             'json',
@@ -331,8 +332,8 @@ describe('start', () => {
             '127.0.0.1',
             '--workers',
             'none',
-            '--network',
-            'testnet',
+            '--seed-nodes',
+            '',
             '--verbose',
             '--format',
             'json',
@@ -425,8 +426,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -457,8 +458,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -505,8 +506,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -548,8 +549,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--fresh',
           '--verbose',
           '--format',
@@ -631,8 +632,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
           '--format',
           'json',
@@ -673,8 +674,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -702,8 +703,8 @@ describe('start', () => {
           'start',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -740,8 +741,8 @@ describe('start', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -799,8 +800,8 @@ describe('start', () => {
           agentHost,
           '--agent-port',
           agentPort.toString(),
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -864,8 +865,8 @@ describe('start', () => {
           '--workers',
           'none',
           '--verbose',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--private-key-file',
           privateKeyPath,
         ],
@@ -961,8 +962,8 @@ describe('start', () => {
             'none',
             '--seed-nodes',
             `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1};<defaults>`,
-            '--network',
-            'testnet',
+            '--seed-nodes',
+            '',
             '--verbose',
           ],
           {
@@ -1022,8 +1023,8 @@ describe('start', () => {
             '127.0.0.1',
             '--workers',
             'none',
-            '--network',
-            'testnet',
+            '--seed-nodes',
+            '',
             '--verbose',
           ],
           {

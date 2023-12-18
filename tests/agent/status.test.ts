@@ -47,8 +47,8 @@ describe('status', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
