@@ -15,9 +15,7 @@ describe('public', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('public gets public key', async () => {
+  test('public gets public key', async () => {
     const { exitCode, stdout } = await testUtils.pkExec(
       ['keys', 'public', 'password', '--format', 'json'],
       {
@@ -26,7 +24,6 @@ describe('public', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);

@@ -263,7 +263,7 @@ async function pkExec(
  */
 async function pkSpawn(
   args: Array<string> = [],
-  opts: ExecOpts = { env: {}, command: globalThis.testCmd },
+  opts: ExecOpts = { env: {} },
   logger: Logger = new Logger(pkSpawn.name),
 ): Promise<ChildProcess> {
   if (opts.command == null) {
@@ -347,9 +347,6 @@ async function pkExecWithShell(
     ...process.env,
     ...opts.env,
   };
-  if (globalThis.testPlatform === 'docker') {
-    env.DOCKER_OPTIONS = generateDockerArgs(cwd).join(' ');
-  }
   // Recall that we attempt to connect to all specified seed nodes on agent start.
   // Therefore, for testing purposes only, we default the seed nodes as empty
   // (if not defined in the env) to ensure no attempted connections. A regular
@@ -396,11 +393,6 @@ async function pkSpawnWithoutShell(
     ...process.env,
     ...opts.env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   const subprocess = childProcess.spawn(
     'ts-node',
     ['--project', tsConfigPath, polykeyPath, ...args],
@@ -447,9 +439,6 @@ async function pkSpawnWithShell(
     ...process.env,
     ...opts.env,
   };
-  if (globalThis.testPlatform === 'docker') {
-    env.DOCKER_OPTIONS = generateDockerArgs(cwd).join(' ');
-  }
   // Recall that we attempt to connect to all specified seed nodes on agent start.
   // Therefore, for testing purposes only, we default the seed nodes as empty
   // (if not defined in the env) to ensure no attempted connections. A regular
@@ -590,6 +579,7 @@ function escapeShellArgs(arg: string): string {
 export {
   tsConfigPath,
   polykeyPath,
+  generateDockerArgs,
   exec,
   spawn,
   pk,

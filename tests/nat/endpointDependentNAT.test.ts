@@ -5,7 +5,7 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import * as testNatUtils from './utils';
 import * as testUtils from '../utils';
 
-const supportsNatTesting =
+const _supportsNatTesting =
   testUtils.isPlatformLinux &&
   testUtils.hasIp &&
   testUtils.hasIptables &&
@@ -30,7 +30,7 @@ describe.skip('endpoint dependent NAT traversal', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EDM NAT connects to node2',
     async () => {
       const {
@@ -103,7 +103,7 @@ describe.skip('endpoint dependent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 connects to node2 behind EDM NAT',
     async () => {
       const {
@@ -201,7 +201,7 @@ describe.skip('endpoint dependent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EDM NAT cannot connect to node2 behind EDM NAT',
     async () => {
       const {
@@ -277,7 +277,7 @@ describe.skip('endpoint dependent NAT traversal', () => {
     },
     globalThis.defaultTimeout * 4,
   );
-  testUtils.testIf(supportsNatTesting)(
+  test(
     'node1 behind EDM NAT cannot connect to node2 behind EIM NAT',
     async () => {
       const {

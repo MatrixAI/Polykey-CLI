@@ -19,9 +19,7 @@ describe('unlock', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('unlock acquires session token', async () => {
+  test('unlock acquires session token', async () => {
     // Fresh session, to delete the token
     const session = await Session.createSession({
       sessionTokenPath: path.join(agentDir, config.paths.tokenBase),
@@ -36,7 +34,6 @@ describe('unlock', () => {
         PK_PASSWORD: agentPassword,
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     }));
     expect(exitCode).toBe(0);
     // Run command without password
@@ -47,7 +44,6 @@ describe('unlock', () => {
           PK_NODE_PATH: agentDir,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     ));
     expect(exitCode).toBe(0);
@@ -61,7 +57,6 @@ describe('unlock', () => {
           PK_TOKEN: await session.readToken(),
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     ));
     expect(exitCode).toBe(0);

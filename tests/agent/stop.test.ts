@@ -22,9 +22,7 @@ describe('stop', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'stop LIVE agent',
     async () => {
       const password = 'abc123';
@@ -38,8 +36,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
         ],
         {
           env: {
@@ -49,7 +47,6 @@ describe('stop', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -70,7 +67,6 @@ describe('stop', () => {
           PK_PASSWORD: password,
         },
         cwd: dataDir,
-        command: globalThis.testCmd,
       });
       await status.waitFor('DEAD');
       await sleep(5000);
@@ -78,9 +74,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'stopping is idempotent during concurrent calls and STOPPING or DEAD status',
     async () => {
       const password = 'abc123';
@@ -106,8 +100,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
         ],
         {
           env: {
@@ -117,7 +111,6 @@ describe('stop', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -129,14 +122,12 @@ describe('stop', () => {
             PK_NODE_PATH: path.join(dataDir, 'polykey'),
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         }),
         testUtils.pkExec(['agent', 'stop', '--password-file', passwordPath], {
           env: {
             PK_NODE_PATH: path.join(dataDir, 'polykey'),
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         }),
       ]);
       // Cannot await for STOPPING
@@ -150,7 +141,6 @@ describe('stop', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       );
       await status.waitFor('DEAD');
@@ -161,7 +151,6 @@ describe('stop', () => {
             PK_NODE_PATH: path.join(dataDir, 'polykey'),
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       );
       // If the GRPC server gets closed after the GRPC connection is established
@@ -180,7 +169,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  test(
     'stopping starting agent results in error',
     async () => {
       // This relies on fast execution of `agent stop` while agent is starting,
@@ -207,8 +196,8 @@ describe('stop', () => {
           '--workers',
           'none',
           '--verbose',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
         ],
         {
           env: {
@@ -246,9 +235,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'stopping while unauthenticated does not stop',
     async () => {
       const password = 'abc123';
@@ -262,8 +249,8 @@ describe('stop', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
         ],
         {
           env: {
@@ -273,7 +260,6 @@ describe('stop', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -296,7 +282,6 @@ describe('stop', () => {
             PK_PASSWORD: 'wrong password',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       );
       testUtils.expectProcessError(exitCode, stderr, [
@@ -310,7 +295,6 @@ describe('stop', () => {
           PK_PASSWORD: password,
         },
         cwd: dataDir,
-        command: globalThis.testCmd,
       });
       await status.waitFor('DEAD');
       agentProcess.kill();

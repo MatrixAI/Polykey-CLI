@@ -26,8 +26,6 @@ const globals = {
   failedConnectionTimeout: 50000,
   // Timeouts rely on setTimeout which takes 32 bit numbers
   maxTimeout: Math.pow(2, 31) - 1,
-  testCmd: process.env.PK_TEST_COMMAND,
-  testPlatform: process.env.PK_TEST_PLATFORM,
   tmpDir: path.resolve(process.env.PK_TEST_TMPDIR ?? os.tmpdir()),
 };
 

@@ -22,9 +22,7 @@ describe('status', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )(
+  test(
     'status on STARTING, STOPPING, DEAD agent',
     async () => {
       // This test must create its own agent process
@@ -49,8 +47,8 @@ describe('status', () => {
           '127.0.0.1',
           '--workers',
           'none',
-          '--network',
-          'testnet',
+          '--seed-nodes',
+          '',
           '--verbose',
         ],
         {
@@ -61,7 +59,6 @@ describe('status', () => {
             PK_PASSWORD_MEM_LIMIT: 'min',
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
         logger,
       );
@@ -75,7 +72,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -97,7 +93,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -115,7 +110,6 @@ describe('status', () => {
             PK_PASSWORD: password,
           },
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       ));
       expect(exitCode).toBe(0);
@@ -125,14 +119,11 @@ describe('status', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('status on missing agent', async () => {
+  test('status on missing agent', async () => {
     const { exitCode, stdout } = await testUtils.pkExec(
       ['agent', 'status', '--format', 'json'],
       {
         env: { PK_NODE_PATH: path.join(dataDir, 'polykey') },
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -151,9 +142,7 @@ describe('status', () => {
     afterEach(async () => {
       await agentClose();
     });
-    testUtils.testIf(
-      testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-    )('status on LIVE agent', async () => {
+    test('status on LIVE agent', async () => {
       const status = new Status({
         statusPath: path.join(agentDir, config.paths.statusBase),
         statusLockPath: path.join(agentDir, config.paths.statusLockBase),
@@ -169,7 +158,6 @@ describe('status', () => {
             PK_PASSWORD: agentPassword,
           },
           cwd: agentDir,
-          command: globalThis.testCmd,
         },
       );
       expect(exitCode).toBe(0);
@@ -186,9 +174,7 @@ describe('status', () => {
         nodesTotal: expect.any(Number),
       });
     });
-    testUtils.testIf(
-      testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-    )('status on remote LIVE agent', async () => {
+    test('status on remote LIVE agent', async () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, agentPassword);
       const status = new Status({
@@ -220,7 +206,6 @@ describe('status', () => {
         {
           env: {},
           cwd: dataDir,
-          command: globalThis.testCmd,
         },
       );
       expect(exitCode).toBe(0);

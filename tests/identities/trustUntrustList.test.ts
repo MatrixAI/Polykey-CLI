@@ -102,7 +102,7 @@ describe('trust/untrust/list', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  test(
     'trusts and untrusts a gestalt by node, adds it to the gestalt graph, and lists the gestalt with notify permission',
     async () => {
       let exitCode, stdout;
@@ -232,7 +232,7 @@ describe('trust/untrust/list', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
+  test(
     'trusts and untrusts a gestalt by identity, adds it to the gestalt graph, and lists the gestalt with notify permission',
     async () => {
       let exitCode, stdout;
@@ -376,34 +376,31 @@ describe('trust/untrust/list', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'should fail on invalid inputs',
-    async () => {
-      let exitCode;
-      // Trust
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'trust', 'invalid'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('should fail on invalid inputs', async () => {
+    let exitCode;
+    // Trust
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'trust', 'invalid'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-      // Untrust
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'untrust', 'invalid'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+    // Untrust
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'untrust', 'invalid'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-    },
-  );
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+  });
 });

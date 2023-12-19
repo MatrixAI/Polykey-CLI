@@ -80,25 +80,21 @@ describe('claim', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'sends a gestalt invite',
-    async () => {
-      const { exitCode, stdout } = await testUtils.pkStdio(
-        ['nodes', 'claim', remoteIdEncoded],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('sends a gestalt invite', async () => {
+    const { exitCode, stdout } = await testUtils.pkStdio(
+      ['nodes', 'claim', remoteIdEncoded],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain('Successfully generated a cryptolink claim');
-      expect(stdout).toContain(remoteIdEncoded);
-    },
-  );
-  // TestUtils.testIf(testUtils.isTestPlatformEmpty)
+        cwd: dataDir,
+      },
+    );
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain('Successfully generated a cryptolink claim');
+    expect(stdout).toContain(remoteIdEncoded);
+  });
   test('sends a gestalt invite (force invite)', async () => {
     await remoteNode.notificationsManager.sendNotification(localId, {
       type: 'GestaltInvite',
@@ -117,7 +113,7 @@ describe('claim', () => {
     expect(stdout).toContain('Successfully generated a cryptolink');
     expect(stdout).toContain(nodesUtils.encodeNodeId(remoteId));
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)('claims a node', async () => {
+  test('claims a node', async () => {
     await remoteNode.notificationsManager.sendNotification(localId, {
       type: 'GestaltInvite',
     });

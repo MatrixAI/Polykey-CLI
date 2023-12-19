@@ -13,9 +13,7 @@ describe('cert', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('cert gets the certificate', async () => {
+  test('cert gets the certificate', async () => {
     const { exitCode, stdout } = await testUtils.pkExec(
       ['keys', 'cert', '--format', 'json'],
       {
@@ -24,7 +22,6 @@ describe('cert', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);

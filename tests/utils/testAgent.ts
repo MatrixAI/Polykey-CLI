@@ -24,8 +24,8 @@ async function setupTestAgent(logger: Logger) {
       '127.0.0.1',
       '--workers',
       'none',
-      '--network',
-      'testnet',
+      '--seed-nodes',
+      '',
       '--format',
       'json',
       '--verbose',
@@ -37,7 +37,6 @@ async function setupTestAgent(logger: Logger) {
         PK_PASSWORD_MEM_LIMIT: 'min',
       },
       cwd: agentDir,
-      command: globalThis.testCmd,
     },
     logger,
   );

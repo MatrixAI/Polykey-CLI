@@ -55,100 +55,94 @@ describe('authenticate/authenticated', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'authenticates identity with a provider and gets authenticated identity',
-    async () => {
-      // Can't test with target command due to mocking
-      let exitCode, stdout;
-      // Authenticate an identity
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'identities',
-          'authenticate',
-          testToken.providerId,
-          testToken.identityId,
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('authenticates identity with a provider and gets authenticated identity', async () => {
+    // Can't test with target command due to mocking
+    let exitCode, stdout;
+    // Authenticate an identity
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'identities',
+        'authenticate',
+        testToken.providerId,
+        testToken.identityId,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      expect(stdout).toContain('randomtestcode');
-      // Check that the identity was authenticated
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        ['identities', 'authenticated', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain('randomtestcode');
+    // Check that the identity was authenticated
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      ['identities', 'authenticated', '--format', 'json'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      expect(JSON.parse(stdout)).toEqual({
-        providerId: testToken.providerId,
-        identityId: testToken.identityId,
-      });
-      // Check using providerId flag
-      ({ exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'identities',
-          'authenticated',
-          '--provider-id',
-          testToken.providerId,
-          '--format',
-          'json',
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout)).toEqual({
+      providerId: testToken.providerId,
+      identityId: testToken.identityId,
+    });
+    // Check using providerId flag
+    ({ exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'identities',
+        'authenticated',
+        '--provider-id',
+        testToken.providerId,
+        '--format',
+        'json',
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(0);
-      expect(JSON.parse(stdout)).toEqual({
-        providerId: testToken.providerId,
-        identityId: testToken.identityId,
-      });
-    },
-  );
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'should fail on invalid inputs',
-    async () => {
-      let exitCode;
-      // Authenticate
-      // Invalid provider
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'authenticate', '', testToken.identityId],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout)).toEqual({
+      providerId: testToken.providerId,
+      identityId: testToken.identityId,
+    });
+  });
+  test('should fail on invalid inputs', async () => {
+    let exitCode;
+    // Authenticate
+    // Invalid provider
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'authenticate', '', testToken.identityId],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-      // Authenticated
-      // Invalid provider
-      ({ exitCode } = await testUtils.pkStdio(
-        ['identities', 'authenticate', ''],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+    // Authenticated
+    // Invalid provider
+    ({ exitCode } = await testUtils.pkStdio(
+      ['identities', 'authenticate', ''],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      ));
-      expect(exitCode).toBe(sysexits.USAGE);
-    },
-  );
+        cwd: dataDir,
+      },
+    ));
+    expect(exitCode).toBe(sysexits.USAGE);
+  });
 });

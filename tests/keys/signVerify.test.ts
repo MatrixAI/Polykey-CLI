@@ -23,9 +23,7 @@ describe('sign-verify', () => {
   afterEach(async () => {
     await agentClose();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('signs a file', async () => {
+  test('signs a file', async () => {
     const publicKey = keysUtils.publicKeyFromNodeId(agentStatus.data.nodeId);
     const dataPath = path.join(agentDir, 'data');
     await fs.promises.writeFile(dataPath, 'sign-me', {
@@ -39,7 +37,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -56,9 +53,7 @@ describe('sign-verify', () => {
       ),
     ).toBeTrue();
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('verifies a signature with NodeId', async () => {
+  test('verifies a signature with NodeId', async () => {
     const sourceKeyPair = keysUtils.generateKeyPair();
     const nodeId = keysUtils.publicKeyToNodeId(sourceKeyPair.publicKey);
     const dataPath = path.join(agentDir, 'data');
@@ -89,7 +84,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -97,9 +91,7 @@ describe('sign-verify', () => {
       signatureVerified: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('verifies a signature with JWK', async () => {
+  test('verifies a signature with JWK', async () => {
     const sourceKeyPair = keysUtils.generateKeyPair();
     const jwk = keysUtils.publicKeyToJWK(sourceKeyPair.publicKey);
     const dataPath = path.join(agentDir, 'data');
@@ -126,7 +118,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(0);
@@ -134,9 +125,7 @@ describe('sign-verify', () => {
       signatureVerified: true,
     });
   });
-  testUtils.testIf(
-    testUtils.isTestPlatformEmpty || testUtils.isTestPlatformDocker,
-  )('verifies a signature fails with invalid JWK', async () => {
+  test('verifies a signature fails with invalid JWK', async () => {
     const dataPath = path.join(agentDir, 'data');
     await fs.promises.writeFile(dataPath, 'sign-me', {
       encoding: 'binary',
@@ -155,7 +144,6 @@ describe('sign-verify', () => {
           PK_PASSWORD: agentPassword,
         },
         cwd: agentDir,
-        command: globalThis.testCmd,
       },
     );
     expect(exitCode).toBe(sysexits.NOINPUT);

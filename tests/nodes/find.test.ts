@@ -97,45 +97,39 @@ describe('find', () => {
       recursive: true,
     });
   });
-  testUtils.testIf(testUtils.isTestPlatformEmpty)(
-    'finds an online node',
-    async () => {
-      const { exitCode, stdout } = await testUtils.pkStdio(
-        [
-          'nodes',
-          'find',
-          nodesUtils.encodeNodeId(remoteOnlineNodeId),
-          '--format',
-          'json',
-        ],
-        {
-          env: {
-            PK_NODE_PATH: nodePath,
-            PK_PASSWORD: password,
-          },
-          cwd: dataDir,
+  test('finds an online node', async () => {
+    const { exitCode, stdout } = await testUtils.pkStdio(
+      [
+        'nodes',
+        'find',
+        nodesUtils.encodeNodeId(remoteOnlineNodeId),
+        '--format',
+        'json',
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
         },
-      );
-      expect(exitCode).toBe(0);
-      const output = JSON.parse(stdout);
-      expect(output).toMatchObject({
-        success: true,
-        id: nodesUtils.encodeNodeId(remoteOnlineNodeId),
-      });
-      expect(output.address).toMatchObject({
-        host: remoteOnlineHost,
-        port: remoteOnlinePort,
-      });
-      expect(output.message).toMatch(
-        new RegExp(
-          `Found node at .*?${remoteOnlineHost}:${remoteOnlinePort}.*?`,
-        ),
-      );
-    },
-  );
+        cwd: dataDir,
+      },
+    );
+    expect(exitCode).toBe(0);
+    const output = JSON.parse(stdout);
+    expect(output).toMatchObject({
+      success: true,
+      id: nodesUtils.encodeNodeId(remoteOnlineNodeId),
+    });
+    expect(output.address).toMatchObject({
+      host: remoteOnlineHost,
+      port: remoteOnlinePort,
+    });
+    expect(output.message).toMatch(
+      new RegExp(`Found node at .*?${remoteOnlineHost}:${remoteOnlinePort}.*?`),
+    );
+  });
   // FIXME: Bug with RPC, we can't respond after timeout since client timeout forces close.
-  // disabled
-  testUtils.testIf(false && testUtils.isTestPlatformEmpty)(
+  test.skip(
     'fails to find an unknown node',
     async () => {
       const unknownNodeId = nodesUtils.decodeNodeId(
