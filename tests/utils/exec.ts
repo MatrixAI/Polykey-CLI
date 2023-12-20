@@ -61,6 +61,8 @@ const generateDockerArgs = (mountPath: string) => [
   'PK_PASSWORD_OPS_LIMIT',
   '--env',
   'PK_PASSWORD_MEM_LIMIT',
+  '--env',
+  'PK_SEED_NODES',
 ];
 
 /**
@@ -161,11 +163,6 @@ async function pkStdio(
   const cwd =
     opts.cwd ??
     (await fs.promises.mkdtemp(path.join(globalThis.tmpDir, 'polykey-test-')));
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  opts.env['PK_SEED_NODES'] = opts.env['PK_SEED_NODES'] ?? '';
   // Parse the arguments of process.stdout.write and process.stderr.write
   const parseArgs = (args) => {
     const data = args[0];
@@ -292,11 +289,6 @@ async function pkExecWithoutShell(
     ...process.env,
     ...opts.env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   return new Promise((resolve, reject) => {
     let stdout = '',
       stderr = '';
@@ -347,11 +339,6 @@ async function pkExecWithShell(
     ...process.env,
     ...opts.env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   args = args.map(escapeShellArgs);
   return new Promise((resolve, reject) => {
     let stdout = '',
@@ -439,11 +426,6 @@ async function pkSpawnWithShell(
     ...process.env,
     ...opts.env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   args = args.map(escapeShellArgs);
   const subprocess = childProcess.spawn(opts.command!, args, {
     env,
@@ -497,11 +479,6 @@ async function pkExpect({
     ...process.env,
     ...env,
   };
-  // Recall that we attempt to connect to all specified seed nodes on agent start.
-  // Therefore, for testing purposes only, we default the seed nodes as empty
-  // (if not defined in the env) to ensure no attempted connections. A regular
-  // PolykeyAgent is expected to initially connect to the mainnet seed nodes
-  env['PK_SEED_NODES'] = env['PK_SEED_NODES'] ?? '';
   // Expect chain runs against stdout and stderr
   let expectChain = nexpect.spawn(
     'ts-node',
