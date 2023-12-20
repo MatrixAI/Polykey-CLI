@@ -163,7 +163,7 @@ describe('docker integration tests', () => {
 
     // Checking for connections
     await sleep(5000);
-    const { stdout } = await testUtils.pkStdio(
+    const { stdout, stderr, exitCode } = await testUtils.pkStdio(
       ['nodes', 'connections', '--format', 'json'],
       {
         env: {
@@ -173,8 +173,9 @@ describe('docker integration tests', () => {
         cwd: dataDir,
       },
     );
-    // @eslint
     console.log(stdout);
+    console.log(stderr);
+    console.log(exitCode);
     const connections = JSON.parse(stdout);
     // Expect at least 1 connection
     expect(connections.length).toBeGreaterThanOrEqual(1);
