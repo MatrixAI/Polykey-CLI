@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
@@ -161,7 +162,7 @@ describe('docker integration tests', () => {
     await waitForLiveP;
 
     // Checking for connections
-    await sleep(2000);
+    await sleep(5000);
     const { stdout } = await testUtils.pkStdio(
       ['nodes', 'connections', '--format', 'json'],
       {
@@ -172,6 +173,8 @@ describe('docker integration tests', () => {
         cwd: dataDir,
       },
     );
+    // @eslint
+    console.log(stdout);
     const connections = JSON.parse(stdout);
     // Expect at least 1 connection
     expect(connections.length).toBeGreaterThanOrEqual(1);
