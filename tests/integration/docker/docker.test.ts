@@ -171,6 +171,7 @@ describe('docker integration tests', () => {
           PK_PASSWORD: password,
         },
         cwd: dataDir,
+        command: commandFactory(dataDir),
       },
     );
     console.log(stdout);
