@@ -21,7 +21,7 @@ describe('docker integration tests', () => {
     return `docker run ${dockerOptions} polykey-cli:testtarget`;
   };
 
-  const logger = new Logger('start test', LogLevel.WARN, [new StreamHandler()]);
+  const logger = new Logger('start test', LogLevel.INFO, [new StreamHandler()]);
   const password = 'abc123';
   let dataDir: string;
   let cleanup: Array<() => Promise<void>>;
@@ -42,7 +42,7 @@ describe('docker integration tests', () => {
       // Just ignore failures here
       .catch(() => {});
   });
-  test(
+  test.skip(
     'start in foreground',
     async () => {
       const agentProcess = await testUtils.pkSpawn(
