@@ -186,7 +186,7 @@ build:dist:
 .build:platforms:
   stage: build
   needs:
-    - build:platforms-generate
+#    - build:platforms-generate
   trigger:
     include:
       - artifact: tmp/build-platforms.yml
@@ -206,7 +206,7 @@ build:prerelease:
   stage: build
   needs:
     - build:dist
-    - build:platforms
+#    - build:platforms
   # Don't interrupt publishing job
   interruptible: false
   script:
@@ -248,9 +248,6 @@ integration:builds:
         --max-jobs "$(nproc)" --cores "$(nproc)" \
         ./release.nix \
         --attr docker \
-#        --attr package.linux.x64.elf \
-#        --attr package.windows.x64.exe \
-#        --attr package.macos.x64.macho \
         --argstr npmDepsHash "$npmDepsHash")";
       cp -r $builds ./builds/;
       '
@@ -602,7 +599,7 @@ release:distribution:
   stage: release
   needs:
     - build:dist
-    - build:platforms
+#    - build:platforms
     - integration:builds
     - integration:merge
     - release:deployment:tag
