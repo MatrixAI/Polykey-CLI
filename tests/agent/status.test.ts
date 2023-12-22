@@ -172,6 +172,10 @@ describe('status', () => {
         upTime: expect.any(Number),
         connectionsActive: expect.any(Number),
         nodesTotal: expect.any(Number),
+        version: expect.any(String),
+        sourceVersion: expect.any(String),
+        stateVersion: expect.any(Number),
+        networkVersion: expect.any(Number),
       });
     });
     test('status on remote LIVE agent', async () => {
@@ -220,6 +224,10 @@ describe('status', () => {
         upTime: expect.any(Number),
         connectionsActive: expect.any(Number),
         nodesTotal: expect.any(Number),
+        version: expect.any(String),
+        sourceVersion: expect.any(String),
+        stateVersion: expect.any(Number),
+        networkVersion: expect.any(Number),
       });
     });
   });

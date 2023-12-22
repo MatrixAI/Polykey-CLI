@@ -83,6 +83,10 @@ class CommandStatus extends CommandPolykey {
               upTime: getUnixtime() - response.startTime,
               connectionsActive: response.connectionsActive,
               nodesTotal: response.nodesTotal,
+              version: response.version,
+              sourceVersion: response.sourceVersion,
+              stateVersion: response.stateVersion,
+              networkVersion: response.networkVersion,
             },
           }),
         );
