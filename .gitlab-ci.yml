@@ -297,6 +297,11 @@ integration:deployment:
       nix-shell --run $'
       ./scripts/deploy-service.sh \'polykey-testnet\';
       '
+    - echo 'Waiting for seed nodes to update'
+    - >
+      nix-shell --arg ci true --run $'
+      ./scripts/wait-for-deploy.js;
+      '
   after_script:
     - rm -f "$REGISTRY_AUTH_FILE"
   rules:
@@ -644,11 +649,6 @@ release:distribution:
         "$CI_REGISTRY_IMAGE";
       image=(./builds/*-docker-*);
       ./scripts/deploy-image.sh "${image[0]}" \'mainnet\' "$CI_REGISTRY_IMAGE";
-      '
-    - echo 'Waiting for seed nodes to update'
-    - >
-      nix-shell --arg ci true --run $'
-      ./scripts/wait-for-deploy.js;
       '
   after_script:
     - rm -f ./.npmrc
