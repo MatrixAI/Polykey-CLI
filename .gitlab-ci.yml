@@ -645,6 +645,11 @@ release:distribution:
       image=(./builds/*-docker-*);
       ./scripts/deploy-image.sh "${image[0]}" \'mainnet\' "$CI_REGISTRY_IMAGE";
       '
+    - echo 'Waiting for seed nodes to update'
+    - >
+      nix-shell --arg ci true --run $'
+      ./scripts/wait-for-deploy.js;
+      '
   after_script:
     - rm -f ./.npmrc
     - rm -f "$REGISTRY_AUTH_FILE"

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-
+const { default: config } = require('polykey/dist/config');
+const version = config.version;
 async function main() {
   // Dummy for now, only checking that all listed nodes are live
   const poll = async () => {
@@ -9,13 +10,13 @@ async function main() {
     const statuses = await result.json();
 
     let total = 0;
-    let live = 0;
+    let updated = 0;
     for (const [, status] of Object.entries(statuses)) {
       total++;
-      if (status.status != null && status.status === 'LIVE') live++;
+      if (status.version != null && status.version === version) updated++;
     }
-    process.stdout.write(`polled ${live}/${total} live\n`);
-    return live === total;
+    process.stdout.write(`polled ${updated}/${total} updated\n`);
+    return updated === total;
   };
   // 10 min worth of attempts
   let attempts = 60;
