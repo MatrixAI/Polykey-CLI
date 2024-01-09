@@ -1,5 +1,6 @@
 { npmDepsHash ? ""
 , callPackage
+, commitHash ? builtins.readFile (import ./commitHash.nix {})
 , buildNpmPackage
 }:
 
@@ -16,6 +17,7 @@ in
       pname = utils.packageName;
       version = utils.packageVersion;
       src = utils.src;
+      COMMIT_HASH = commitHash;
       # Filter out things kept by `src`, these were needed for building
       # but not needed for subsequent usage of the store path
       postInstall = ''

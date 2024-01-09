@@ -1,5 +1,6 @@
 { npmDepsHash ? ""
 , pkgs ? import ./pkgs.nix {}
+, commitHash ? builtins.readFile (import ./commitHash.nix {})
 }:
 
 with pkgs;
@@ -17,6 +18,7 @@ let
         src = utils.src;
         PKG_CACHE_PATH = utils.pkgCachePath;
         PKG_IGNORE_TAG = 1;
+        COMMIT_HASH = commitHash;
         postBuild = ''
           npm run pkg -- \
             --output=out \
@@ -32,7 +34,7 @@ let
       };
 in
   rec {
-    application = callPackage ./default.nix { inherit npmDepsHash; };
+    application = callPackage ./default.nix { inherit npmDepsHash; inherit commitHash; };
     docker = dockerTools.buildImage {
       name = application.name;
       copyToRoot = [ application ];
@@ -45,6 +47,9 @@ in
       '';
       config = {
         Entrypoint = [ "polykey" ];
+        Labels = {
+          "commitHash" = commitHash;
+        };
       };
     };
     package = {

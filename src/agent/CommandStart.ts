@@ -3,6 +3,7 @@ import type {
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
+  VersionMetadata,
 } from '../types';
 import type {
   default as PolykeyAgent,
@@ -118,6 +119,9 @@ class CommandStart extends CommandPolykey {
           passwordMemLimit:
             keysUtils.passwordMemLimits[options.passwordMemLimit],
         },
+        versionMetadata: {
+          cliAgentCommitHash: process.env.COMMIT_HASH,
+        } as VersionMetadata,
       };
       let statusLiveData: AgentStatusLiveData;
       let recoveryCodeOut: RecoveryCode | undefined;
