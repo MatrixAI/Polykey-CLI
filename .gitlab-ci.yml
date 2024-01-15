@@ -293,11 +293,6 @@ integration:deployment:
       image=(./builds/*-docker-*);
       ./scripts/deploy-image.sh "${image[0]}" \'testnet\' "$CI_REGISTRY_IMAGE";
       '
-    - echo 'Deploying ECS service to testnet'
-    - >
-      nix-shell --run $'
-      ./scripts/deploy-service.sh \'polykey-testnet\';
-      '
     - echo 'Waiting for seed nodes to update'
     - >
       nix-shell --arg ci true --run $'
