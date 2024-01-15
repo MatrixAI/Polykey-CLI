@@ -16,12 +16,13 @@ import * as testUtils from '../../utils';
 describe('docker integration tests', () => {
   const commandFactory = (cwd: string) => {
     const dockerOptions = testUtils.generateDockerArgs(cwd).join(' ');
-    // Return undefined
     return `docker run ${dockerOptions} polykey-cli:testtarget`;
   };
 
   const logger = new Logger('start test', LogLevel.WARN, [new StreamHandler()]);
   const password = 'abc123';
+  // Get the network from the env, otherwise default to testnet
+  const network = process.env.PK_NETWORK ?? 'testnet';
   let dataDir: string;
   let cleanup: Array<() => Promise<void>>;
 
@@ -113,7 +114,7 @@ describe('docker integration tests', () => {
   //  We can't test for hole punching on the same network, but we can see that all the nodes connect.
   //  I'm also simplifying this for now, there seems to be an issue with making CLI client calls to agents in the DIND
   //  docker CI job that needs to be looked into.
-  test('connect to testnet', async () => {
+  test('connect to network', async () => {
     const password = 'abc123';
     const polykeyPath = path.join(dataDir, 'polykey');
     await fs.promises.mkdir(polykeyPath);
@@ -125,8 +126,6 @@ describe('docker integration tests', () => {
         path.join(dataDir, 'polykey'),
         '--workers',
         'none',
-        '--network',
-        'testnet',
         '--verbose',
         '--format',
         'json',
@@ -137,6 +136,7 @@ describe('docker integration tests', () => {
           PK_PASSWORD: password,
           PK_PASSWORD_OPS_LIMIT: 'min',
           PK_PASSWORD_MEM_LIMIT: 'min',
+          PK_NETWORK: network,
         },
         cwd: dataDir,
         command: commandFactory(dataDir),

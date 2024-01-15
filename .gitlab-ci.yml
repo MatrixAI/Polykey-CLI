@@ -338,6 +338,7 @@ integration:docker:
     DOCKER_TLS_CERTDIR: "/certs"
     FF_NETWORK_PER_BUILD: "true"
     PK_TEST_TMPDIR: "${CI_PROJECT_DIR}/tmp/test"
+    PK_NETWORK: "testnet"
   script:
     - docker info
     - mkdir $PK_TEST_TMPDIR
