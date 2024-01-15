@@ -296,7 +296,7 @@ integration:deployment:
     - echo 'Waiting for seed nodes to update'
     - >
       nix-shell --arg ci true --run $'
-      ./scripts/wait-for-deploy.js;
+      ./scripts/wait-for-deploy.js testnet;
       '
   after_script:
     - rm -f "$REGISTRY_AUTH_FILE"

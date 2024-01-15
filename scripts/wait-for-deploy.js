@@ -1,11 +1,16 @@
 #!/usr/bin/env node
+const process = require('process');
 const { default: config } = require('polykey/dist/config');
 const version = config.version;
-async function main() {
+async function main(argv = process.argv) {
+  const network = argv[2];
+  if (network !== 'testnet' && network !== 'mainnet') {
+    throw Error('network must be "testnet" or "mainnet"');
+  }
   // Dummy for now, only checking that all listed nodes are live
   const poll = async () => {
     const result = await fetch(
-      'http://testnet.polykey.com/api/seednodes/status',
+      `http://${network}.polykey.com/api/seednodes/status`,
     );
     const statuses = await result.json();
 
