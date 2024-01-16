@@ -594,6 +594,11 @@ release:deployment:tag:
       ./scripts/deploy-image.sh "${image[0]}" \'mainnet\' "$CI_REGISTRY_IMAGE";
       echo \'Deploying ECS service to mainnet\';
       '
+    - echo 'Waiting for seed nodes to update'
+    - >
+      nix-shell --arg ci true --run $'
+      ./scripts/wait-for-deploy.js mainnet;
+      '
   after_script:
     - rm -f "$REGISTRY_AUTH_FILE"
   rules:
