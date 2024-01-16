@@ -48,6 +48,9 @@ async function main(argv = process.argv) {
     // Minify and keep the original names
     minify: true,
     keepNames: true,
+    define: {
+      'process.env.COMMIT_HASH': `${JSON.stringify(process.env.COMMIT_HASH)}`,
+    },
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);

@@ -251,7 +251,8 @@ integration:builds:
         --attr package.linux.x64.elf \
         --attr package.windows.x64.exe \
         --attr package.macos.x64.macho \
-        --argstr npmDepsHash "$npmDepsHash")";
+        --argstr npmDepsHash "$npmDepsHash" \
+        --argstr commitHash "$CI_COMMIT_SHA")";
       cp -r $builds ./builds/;
       '
   artifacts:
