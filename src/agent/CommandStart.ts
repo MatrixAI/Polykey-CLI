@@ -3,7 +3,6 @@ import type {
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
-  VersionMetadata,
 } from '../types';
 import type {
   default as PolykeyAgent,
@@ -103,6 +102,11 @@ class CommandStart extends CommandPolykey {
           this.logger.warn(e.message);
         }
       }
+      // @ts-ignore: dynamic import of build-time metadata
+      const buildJSON: any = await import('../build.json').then(
+        (e) => e.default,
+        () => ({}),
+      );
       const agentOptions: DeepPartial<PolykeyAgentOptions> = {
         nodePath: options.nodePath,
         clientServiceHost: options.clientHost,
@@ -119,9 +123,7 @@ class CommandStart extends CommandPolykey {
           passwordMemLimit:
             keysUtils.passwordMemLimits[options.passwordMemLimit],
         },
-        versionMetadata: {
-          cliAgentCommitHash: process.env.COMMIT_HASH,
-        } as VersionMetadata,
+        versionMetadata: buildJSON.versionMetadata,
       };
       let statusLiveData: AgentStatusLiveData;
       let recoveryCodeOut: RecoveryCode | undefined;

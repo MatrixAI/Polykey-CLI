@@ -48,15 +48,10 @@ type AgentChildProcessOutput =
       error: POJO;
     };
 
-type VersionMetadata = {
-  cliAgentCommitHash: string;
-};
-
 export type {
   TableRow,
   TableOptions,
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
-  VersionMetadata,
 };

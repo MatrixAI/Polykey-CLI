@@ -29,6 +29,16 @@ async function main(argv = process.argv) {
     encoding: 'utf-8',
     shell: platform === 'win32' ? true : false,
   });
+  // This collects the build metadata and adds it to the build folder so that dynamic imports to it will resolve correctly.
+  const buildJSON = {
+    versionMetadata: {
+      cliAgentCommitHash: process.env.COMMIT_HASH,
+    },
+  };
+  await fs.promises.writeFile(
+    path.join(buildPath, 'build.json'),
+    JSON.stringify(buildJSON, null, 2),
+  );
   // This specifies import paths that is left as an external require
   // This is kept to packages that have a native binding
   const externalDependencies = Object.keys(packageJSON.optionalDependencies);
@@ -38,6 +48,7 @@ async function main(argv = process.argv) {
       path.join(buildPath, 'polykey.js'),
       path.join(buildPath, 'polykeyWorker.js'),
     ],
+    sourceRoot: buildPath,
     bundle: true,
     platform: 'node',
     outdir: distPath,
@@ -48,9 +59,6 @@ async function main(argv = process.argv) {
     // Minify and keep the original names
     minify: true,
     keepNames: true,
-    define: {
-      'process.env.COMMIT_HASH': `${JSON.stringify(process.env.COMMIT_HASH)}`,
-    },
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);

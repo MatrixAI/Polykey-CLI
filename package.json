@@ -79,20 +79,19 @@
     ]
   },
   "scripts": {
-    "prepare": "npm run set-env node ./scripts/build.js",
-    "build": "npm run set-env node ./scripts/build.js",
-    "postversion": "npm run set-env npm install --package-lock-only --ignore-scripts --silent",
-    "ts-node": "npm run set-env ts-node",
-    "test": "npm run set-env jest",
+    "prepare": "cross-env COMMIT_HASH=${COMMIT_HASH:-$(git rev-parse HEAD)} node ./scripts/build.js",
+    "build": "cross-env COMMIT_HASH=${COMMIT_HASH:-$(git rev-parse HEAD)} node ./scripts/build.js",
+    "postversion": "npm install --package-lock-only --ignore-scripts --silent",
+    "ts-node": "ts-node",
+    "test": "jest",
     "lint": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}'",
     "lintfix": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}' --fix",
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
     "pkg": "node ./scripts/pkg.js",
-    "polykey": "npm run set-env ts-node src/polykey.ts",
-    "start": "npm run set-env ts-node src/polykey.ts -- agent start --verbose",
-    "dev": "npm run set-env nodemon src/polykey.ts -- agent start --verbose",
-    "set-env": "cross-env COMMIT_HASH=${COMMIT_HASH:-$(git rev-parse HEAD)}"
+    "polykey": "ts-node src/polykey.ts",
+    "start": "ts-node src/polykey.ts -- agent start --verbose",
+    "dev": "nodemon src/polykey.ts -- agent start --verbose"
   },
   "optionalDependencies": {
     "@matrixai/db": "*",
