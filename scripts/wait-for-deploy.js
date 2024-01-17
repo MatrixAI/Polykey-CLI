@@ -8,14 +8,9 @@ async function main(argv = process.argv) {
   const cliAgentCommitHashCurrentTarget =
     process.env.CI_COMMIT_SHA ??
     childProcess.execSync('git rev-parse HEAD').toString();
-  const network = argv[2];
-  if (network !== 'testnet' && network !== 'mainnet') {
-    throw Error('network must be "testnet" or "mainnet"');
-  }
+  const hostname = argv[2];
   const poll = async () => {
-    const result = await fetch(
-      `https://${network}.polykey.com/api/seednodes/status`,
-    );
+    const result = await fetch(`https://${hostname}/api/seednodes/status`);
     const statuses = await result.json();
 
     let total = 0;
