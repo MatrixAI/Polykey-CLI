@@ -18,7 +18,7 @@ async function main(argv = process.argv) {
     for (const [, status] of Object.entries(statuses)) {
       const versionCurrent = status.version;
       const cliAgentCommitHashCurrent =
-        status.versionMetadata.cliAgentCommitHash;
+        status?.versionMetadata?.cliAgentCommitHash;
       total++;
       // If the Polykey lib version and CLI commit hash match then it is updated
       if (
