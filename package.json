@@ -79,8 +79,8 @@
     ]
   },
   "scripts": {
-    "prepare": "cross-env COMMIT_HASH=${COMMIT_HASH:-$(git rev-parse HEAD)} node ./scripts/build.js",
-    "build": "cross-env COMMIT_HASH=${COMMIT_HASH:-$(git rev-parse HEAD)} node ./scripts/build.js",
+    "prepare": "node ./scripts/build.js",
+    "build": "node ./scripts/build.js",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
     "ts-node": "ts-node",
     "test": "jest",
