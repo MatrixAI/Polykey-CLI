@@ -1,19 +1,34 @@
 #!/usr/bin/env node
+const process = require('process');
+const childProcess = require('child_process');
 const { default: config } = require('polykey/dist/config');
-const version = config.version;
-async function main() {
-  // Dummy for now, only checking that all listed nodes are live
+const versionTarget = config.version;
+async function main(argv = process.argv) {
+  // Test getting the hash
+  const cliAgentCommitHashCurrentTarget =
+    process.env.CI_COMMIT_SHA ??
+    childProcess.execSync('git rev-parse HEAD').toString();
+  const hostname = argv[2];
   const poll = async () => {
-    const result = await fetch(
-      'http://testnet.polykey.com/api/seednodes/status',
-    );
+    const result = await fetch(`https://${hostname}/api/seednodes/status`);
     const statuses = await result.json();
 
     let total = 0;
     let updated = 0;
     for (const [, status] of Object.entries(statuses)) {
+      const versionCurrent = status.version;
+      const cliAgentCommitHashCurrent =
+        status.versionMetadata.cliAgentCommitHash;
       total++;
-      if (status.version != null && status.version === version) updated++;
+      // If the Polykey lib version and CLI commit hash match then it is updated
+      if (
+        versionCurrent != null &&
+        versionCurrent === versionTarget &&
+        cliAgentCommitHashCurrent != null &&
+        cliAgentCommitHashCurrent === cliAgentCommitHashCurrentTarget
+      ) {
+        updated++;
+      }
     }
     process.stdout.write(`polled ${updated}/${total} updated\n`);
     return updated === total;
