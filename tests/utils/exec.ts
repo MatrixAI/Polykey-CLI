@@ -150,7 +150,7 @@ async function pk(args: Array<string>): Promise<any> {
  * Runs pk command functionally with mocked STDIO
  * Both stdout and stderr are the entire output including newlines
  * This can only be used serially, because the mocks it relies on are global singletons
- * If it is used concurrently, the mocking side-effects can conflict
+ * If it is used concurrently, the mocking side effects can conflict
  */
 async function pkStdio(
   args: Array<string> = [],
@@ -164,7 +164,7 @@ async function pkStdio(
     opts.cwd ??
     (await fs.promises.mkdtemp(path.join(globalThis.tmpDir, 'polykey-test-')));
   // Parse the arguments of process.stdout.write and process.stderr.write
-  const parseArgs = (args) => {
+  const parseArgs = (args: Array<any>) => {
     const data = args[0];
     if (typeof data === 'string') {
       return data;
@@ -526,7 +526,7 @@ async function processExit(
 
 /**
  * Checks exit code and stderr against ErrorPolykey
- * Errors should contain all of the errors in the expected error chain
+ * Errors should contain all the errors in the expected error chain
  * starting with the outermost error (excluding ErrorPolykeyRemote)
  * When using this function, the command must be run with --format=json
  */

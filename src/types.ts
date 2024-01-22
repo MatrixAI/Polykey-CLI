@@ -18,7 +18,7 @@ type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
 };
 
 /**
- * PolykeyAgent Starting Input when Backgrounded
+ * PolykeyAgent Starting Input when backgrounded
  * When using advanced serialization, rich structures like
  * Map, Set and more can be passed over IPC
  * However traditional classes cannot be

@@ -111,7 +111,7 @@ class CommandFind extends CommandPolykey {
           });
         }
         process.stdout.write(outputFormatted);
-        // Like ping it should error when failing to find node for automation reasons.
+        // Like ping, it should error when failing to find node for automation reasons.
         if (!result.success) {
           throw new errors.ErrorPolykeyCLINodeFindFailed(result.message);
         }

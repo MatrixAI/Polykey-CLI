@@ -48,7 +48,7 @@ class CommandPing extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        let error;
+        let error: any;
         const statusMessage = await binUtils.retryAuthentication(
           (auth) =>
             pkClient.rpcClient.methods.nodesPing({

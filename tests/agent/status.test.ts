@@ -63,7 +63,7 @@ describe('status', () => {
         logger,
       );
       await status.waitFor('STARTING');
-      let exitCode, stdout;
+      let exitCode: number, stdout: string;
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['agent', 'status', '--format', 'json'],
         {
@@ -132,9 +132,9 @@ describe('status', () => {
     });
   });
   describe('status with global agent', () => {
-    let agentDir;
-    let agentPassword;
-    let agentClose;
+    let agentDir: string;
+    let agentPassword: string;
+    let agentClose: () => Promise<void>;
     beforeEach(async () => {
       ({ agentDir, agentPassword, agentClose } =
         await testUtils.setupTestAgent(logger));

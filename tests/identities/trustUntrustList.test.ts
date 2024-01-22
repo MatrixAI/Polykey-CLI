@@ -103,9 +103,9 @@ describe('trust/untrust/list', () => {
     });
   });
   test(
-    'trusts and untrusts a gestalt by node, adds it to the gestalt graph, and lists the gestalt with notify permission',
+    'trusts and un-trusts a gestalt by node, adds it to the gestalt graph, and lists the gestalt with notify permission',
     async () => {
-      let exitCode, stdout;
+      let exitCode: number, stdout: string;
       // Add the node to our node graph and authenticate an identity on the
       // provider
       // This allows us to contact the members of the gestalt we want to trust
@@ -233,9 +233,9 @@ describe('trust/untrust/list', () => {
     globalThis.defaultTimeout * 2,
   );
   test(
-    'trusts and untrusts a gestalt by identity, adds it to the gestalt graph, and lists the gestalt with notify permission',
+    'trusts and un-trusts a gestalt by identity, adds it to the gestalt graph, and lists the gestalt with notify permission',
     async () => {
-      let exitCode, stdout;
+      let exitCode: number, stdout: string;
       // Add the node to our node graph and authenticate an identity on the
       // provider
       // This allows us to contact the members of the gestalt we want to trust
@@ -377,7 +377,7 @@ describe('trust/untrust/list', () => {
     globalThis.defaultTimeout * 2,
   );
   test('should fail on invalid inputs', async () => {
-    let exitCode;
+    let exitCode: number;
     // Trust
     ({ exitCode } = await testUtils.pkStdio(
       ['identities', 'trust', 'invalid'],

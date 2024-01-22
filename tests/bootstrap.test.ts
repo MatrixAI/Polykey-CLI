@@ -56,10 +56,10 @@ describe('bootstrap', () => {
       const passwordPath = path.join(dataDir, 'password');
       await fs.promises.writeFile(passwordPath, password);
       const keyPair = keysUtils.generateKeyPair();
-      const privateKeyjwK = keysUtils.privateKeyToJWK(keyPair.privateKey);
+      const privateKeyJWK = keysUtils.privateKeyToJWK(keyPair.privateKey);
       const privateKeyJWE = keysUtils.wrapWithPassword(
         password,
-        privateKeyjwK,
+        privateKeyJWK,
         keysUtils.passwordOpsLimits.min,
         keysUtils.passwordMemLimits.min,
       );
@@ -99,8 +99,7 @@ describe('bootstrap', () => {
       const password = 'password';
       await fs.promises.mkdir(path.join(dataDir, 'polykey'));
       await fs.promises.writeFile(path.join(dataDir, 'polykey', 'test'), '');
-      let exitCode, stdout, stderr;
-      ({ exitCode, stdout, stderr } = await testUtils.pkExec(
+      const { exitCode: exitCode1, stderr: stderr1 } = await testUtils.pkExec(
         [
           'bootstrap',
           '--node-path',
@@ -117,13 +116,13 @@ describe('bootstrap', () => {
           },
           cwd: dataDir,
         },
-      ));
+      );
       const errorBootstrapExistingState =
         new bootstrapErrors.ErrorBootstrapExistingState();
-      testUtils.expectProcessError(exitCode, stderr, [
+      testUtils.expectProcessError(exitCode1, stderr1, [
         errorBootstrapExistingState,
       ]);
-      ({ exitCode, stdout, stderr } = await testUtils.pkExec(
+      const { exitCode: exitCode2, stdout: stdout2 } = await testUtils.pkExec(
         [
           'bootstrap',
           '--node-path',
@@ -139,9 +138,9 @@ describe('bootstrap', () => {
           },
           cwd: dataDir,
         },
-      ));
-      expect(exitCode).toBe(0);
-      const recoveryCode = stdout.trim();
+      );
+      expect(exitCode2).toBe(0);
+      const recoveryCode = stdout2.trim();
       expect(
         recoveryCode.split(' ').length === 12 ||
           recoveryCode.split(' ').length === 24,
@@ -183,8 +182,8 @@ describe('bootstrap', () => {
       ]);
       // These will be the last line of STDERR
       // The readline library will automatically trim off newlines
-      let stdErrLine1;
-      let stdErrLine2;
+      let stdErrLine1: string | undefined;
+      let stdErrLine2: string | undefined;
       const rlErr1 = readline.createInterface(bootstrapProcess1.stderr!);
       const rlErr2 = readline.createInterface(bootstrapProcess2.stderr!);
       rlErr1.on('line', (l) => {
@@ -208,14 +207,14 @@ describe('bootstrap', () => {
       // It's either the first or second process
       if (index === 0) {
         expect(stdErrLine1).toBeDefined();
-        testUtils.expectProcessError(exitCode!, stdErrLine1, [
+        testUtils.expectProcessError(exitCode!, stdErrLine1!, [
           errorStatusLocked,
         ]);
         const [exitCode2] = await testUtils.processExit(bootstrapProcess2);
         expect(exitCode2).toBe(0);
       } else if (index === 1) {
         expect(stdErrLine2).toBeDefined();
-        testUtils.expectProcessError(exitCode!, stdErrLine2, [
+        testUtils.expectProcessError(exitCode!, stdErrLine2!, [
           errorStatusLocked,
         ]);
         const [exitCode2] = await testUtils.processExit(bootstrapProcess1);

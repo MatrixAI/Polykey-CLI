@@ -101,7 +101,7 @@ describe('allow/disallow/permissions', () => {
     });
   });
   test('allows/disallows/gets gestalt permissions by node', async () => {
-    let exitCode, stdout;
+    let exitCode: number, stdout: string;
     // Add the node to our node graph, otherwise we won't be able to contact it
     await testUtils.pkStdio(
       [
@@ -213,7 +213,7 @@ describe('allow/disallow/permissions', () => {
   });
   test('allows/disallows/gets gestalt permissions by identity', async () => {
     // Can't test with target executable due to mocking
-    let exitCode, stdout;
+    let exitCode: number, stdout: string;
     // Add the node to our node graph, otherwise we won't be able to contact it
     await testUtils.pkStdio(
       [
@@ -250,7 +250,7 @@ describe('allow/disallow/permissions', () => {
     // This is because trusting the identity sets it in our gestalt graph,
     // which we need in order to set permissions
     // This command should fail first time since the identity won't be linked
-    // to any nodes. It will trigger this process via discovery and we must
+    // to any nodes. It will trigger this process via discovery, and we must
     // wait and then retry
     await testUtils.pkStdio(['identities', 'trust', providerString], {
       env: {
@@ -341,7 +341,7 @@ describe('allow/disallow/permissions', () => {
     });
   });
   test('should fail on invalid inputs', async () => {
-    let exitCode;
+    let exitCode: number;
     // Allow
     // Invalid gestalt id
     ({ exitCode } = await testUtils.pkExec(

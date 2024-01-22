@@ -12,9 +12,9 @@ describe('sign-verify', () => {
   const logger = new Logger('sign-verify test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
-  let agentDir;
-  let agentPassword;
-  let agentClose;
+  let agentDir: string;
+  let agentPassword: string;
+  let agentClose: () => Promise<void>;
   let agentStatus: StatusLive;
   beforeEach(async () => {
     ({ agentDir, agentPassword, agentClose, agentStatus } =

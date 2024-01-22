@@ -11,9 +11,9 @@ describe('encrypt-decrypt', () => {
   const logger = new Logger('encrypt-decrypt test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
-  let agentDir;
-  let agentPassword;
-  let agentClose;
+  let agentDir: string;
+  let agentPassword: string;
+  let agentClose: () => Promise<void>;
   let agentStatus: StatusLive;
   beforeEach(async () => {
     ({ agentDir, agentPassword, agentClose, agentStatus } =
@@ -48,8 +48,8 @@ describe('encrypt-decrypt', () => {
     });
   });
   test('encrypts data using NodeId', async () => {
-    const targetkeyPair = keysUtils.generateKeyPair();
-    const targetNodeId = keysUtils.publicKeyToNodeId(targetkeyPair.publicKey);
+    const targetKeyPair = keysUtils.generateKeyPair();
+    const targetNodeId = keysUtils.publicKeyToNodeId(targetKeyPair.publicKey);
 
     const dataPath = path.join(agentDir, 'data');
     await fs.promises.writeFile(dataPath, 'abc', {
@@ -78,14 +78,14 @@ describe('encrypt-decrypt', () => {
     });
     const encrypted = JSON.parse(stdout).encryptedData;
     const decrypted = keysUtils.decryptWithPrivateKey(
-      targetkeyPair,
+      targetKeyPair,
       Buffer.from(encrypted, 'binary'),
     );
     expect(decrypted?.toString()).toBe('abc');
   });
   test('encrypts data using JWK file', async () => {
-    const targetkeyPair = keysUtils.generateKeyPair();
-    const publicJWK = keysUtils.publicKeyToJWK(targetkeyPair.publicKey);
+    const targetKeyPair = keysUtils.generateKeyPair();
+    const publicJWK = keysUtils.publicKeyToJWK(targetKeyPair.publicKey);
 
     const dataPath = path.join(agentDir, 'data');
     const jwkPath = path.join(agentDir, 'jwk');
@@ -109,7 +109,7 @@ describe('encrypt-decrypt', () => {
     });
     const encrypted = JSON.parse(stdout).encryptedData;
     const decrypted = keysUtils.decryptWithPrivateKey(
-      targetkeyPair,
+      targetKeyPair,
       Buffer.from(encrypted, 'binary'),
     );
     expect(decrypted?.toString()).toBe('abc');

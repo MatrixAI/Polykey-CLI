@@ -66,7 +66,7 @@ class ErrorPolykeyCLIUnhandledRejection<T> extends ErrorPolykeyCLI<T> {
 }
 
 /**
- * Asychronous deadlocks is a logic error.
+ * Asynchronous deadlocks is a logic error.
  * If these exceptions occur, there is a bug.
  */
 class ErrorPolykeyCLIAsynchronousDeadlock<T> extends ErrorPolykeyCLI<T> {

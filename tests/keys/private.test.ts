@@ -5,9 +5,9 @@ describe('private', () => {
   const logger = new Logger('private test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
-  let agentDir;
-  let agentPassword;
-  let agentClose;
+  let agentDir: string;
+  let agentPassword: string;
+  let agentClose: () => Promise<void>;
   beforeEach(async () => {
     ({ agentDir, agentPassword, agentClose } =
       await testUtils.setupTestAgent(logger));

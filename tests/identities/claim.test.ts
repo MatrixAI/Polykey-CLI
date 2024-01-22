@@ -120,7 +120,7 @@ describe('claim', () => {
     expect(exitCode).toBe(sysexits.NOPERM);
   });
   test('should fail on invalid inputs', async () => {
-    let exitCode;
+    let exitCode: number;
     // Invalid provider
     ({ exitCode } = await testUtils.pkStdio(
       ['identities', 'claim', `:${testToken.identityId}`],

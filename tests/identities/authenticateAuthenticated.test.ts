@@ -57,7 +57,7 @@ describe('authenticate/authenticated', () => {
   });
   test('authenticates identity with a provider and gets authenticated identity', async () => {
     // Can't test with target command due to mocking
-    let exitCode, stdout;
+    let exitCode: number, stdout: string;
     // Authenticate an identity
     ({ exitCode, stdout } = await testUtils.pkStdio(
       [
@@ -117,7 +117,7 @@ describe('authenticate/authenticated', () => {
     });
   });
   test('should fail on invalid inputs', async () => {
-    let exitCode;
+    let exitCode: number;
     // Authenticate
     // Invalid provider
     ({ exitCode } = await testUtils.pkStdio(

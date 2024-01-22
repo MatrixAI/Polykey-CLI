@@ -62,9 +62,9 @@ describe('send/read/claim', () => {
   test(
     'sends, receives, and clears notifications',
     async () => {
-      let exitCode, stdout;
+      let exitCode: number, stdout: string;
       let readNotifications: Array<Notification>;
-      // Add receiver to sender's node graph so it can be contacted
+      // Add receiver to sender's node graph, so it can be contacted
       ({ exitCode } = await testUtils.pkExec(
         [
           'nodes',
@@ -82,7 +82,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      // Add sender to receiver's node graph so it can be trusted
+      // Add sender to receiver's node graph, so it can be trusted
       ({ exitCode } = await testUtils.pkExec(
         [
           'nodes',
@@ -176,7 +176,7 @@ describe('send/read/claim', () => {
       readNotifications = stdout
         .split('\n')
         .slice(undefined, -1)
-        .map(JSON.parse);
+        .map((v) => JSON.parse(v));
       expect(readNotifications).toHaveLength(3);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -220,7 +220,7 @@ describe('send/read/claim', () => {
       readNotifications = stdout
         .split('\n')
         .slice(undefined, -1)
-        .map(JSON.parse);
+        .map((v) => JSON.parse(v));
       expect(readNotifications).toHaveLength(0);
       // Read notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
@@ -237,7 +237,7 @@ describe('send/read/claim', () => {
       readNotifications = stdout
         .split('\n')
         .slice(undefined, -1)
-        .map(JSON.parse);
+        .map((v) => JSON.parse(v));
       expect(readNotifications).toHaveLength(3);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -281,7 +281,7 @@ describe('send/read/claim', () => {
       readNotifications = stdout
         .split('\n')
         .slice(undefined, -1)
-        .map(JSON.parse);
+        .map((v) => JSON.parse(v));
       expect(readNotifications).toHaveLength(1);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -293,13 +293,13 @@ describe('send/read/claim', () => {
         isRead: true,
       });
       // Clear notifications
-      ({ exitCode } = await testUtils.pkExec(['notifications', 'clear'], {
+      await testUtils.pkExec(['notifications', 'clear'], {
         env: {
           PK_NODE_PATH: receiverAgentDir,
           PK_PASSWORD: receiverAgentPassword,
         },
         cwd: receiverAgentDir,
-      }));
+      });
       // Check there are no more notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['notifications', 'read', '--format', 'json'],
@@ -315,7 +315,7 @@ describe('send/read/claim', () => {
       readNotifications = stdout
         .split('\n')
         .slice(undefined, -1)
-        .map(JSON.parse);
+        .map((v) => JSON.parse(v));
       expect(readNotifications).toHaveLength(0);
     },
     globalThis.defaultTimeout * 3,
