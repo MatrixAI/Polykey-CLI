@@ -61,23 +61,27 @@ class CommandRead extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const response = await binUtils.retryAuthentication(
-          (auth) =>
-            pkClient.rpcClient.methods.notificationsRead({
-              metadata: auth,
-              unread: options.unread,
-              number: options.number,
-              order: options.order,
-            }),
+        const notifications = await binUtils.retryAuthentication(
+          async (auth) => {
+            const response = await pkClient.rpcClient.methods.notificationsRead(
+              {
+                metadata: auth,
+                unread: options.unread,
+                number: options.number,
+                order: options.order,
+              },
+            );
+            const notifications: Array<Notification> = [];
+            for await (const notificationMessage of response) {
+              const notification = notificationsUtils.parseNotification(
+                notificationMessage.notification,
+              );
+              notifications.push(notification);
+            }
+            return notifications;
+          },
           meta,
         );
-        const notifications: Array<Notification> = [];
-        for await (const notificationMessage of response) {
-          const notification = notificationsUtils.parseNotification(
-            notificationMessage.notification,
-          );
-          notifications.push(notification);
-        }
         for (const notification of notifications) {
           const outputFormatted = binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
