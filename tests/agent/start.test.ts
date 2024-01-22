@@ -310,8 +310,7 @@ describe('start', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  // FIXME: disabled for now, both are succeeding when 1 should fail
-  test.skip(
+  test(
     'concurrent with bootstrap results in 1 success',
     async () => {
       const password = 'abc123';
