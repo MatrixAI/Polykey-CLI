@@ -1,6 +1,6 @@
 { npmDepsHash ? ""
+, commitHash ? null
 , callPackage
-, commitHash ? builtins.readFile (import ./commitHash.nix {})
 , buildNpmPackage
 }:
 
@@ -18,9 +18,11 @@ in
       version = utils.packageVersion;
       src = utils.src;
       COMMIT_HASH = commitHash;
+      GIT_DIR = utils.dotGit;
       # Filter out things kept by `src`, these were needed for building
       # but not needed for subsequent usage of the store path
       postInstall = ''
+        mv "$packageOut"/build/build.json "$out"/build.json;
         rm -rf \
           "$packageOut"/build \
           "$packageOut"/src \

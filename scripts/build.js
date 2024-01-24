@@ -6,6 +6,7 @@ const path = require('path');
 const process = require('process');
 const childProcess = require('child_process');
 const esbuild = require('esbuild');
+const polykey = require('polykey');
 const packageJSON = require('../package.json');
 
 const platform = os.platform();
@@ -16,7 +17,7 @@ async function main(argv = process.argv) {
   const projectRoot = path.join(__dirname, '..');
   const buildPath = path.join(projectRoot, 'build');
   const distPath = path.join(projectRoot, 'dist');
-  const gitPath = path.join(projectRoot, '.git');
+  const gitPath = process.env.GIT_DIR ?? path.join(projectRoot, '.git');
   await fs.promises.rm(distPath, {
     recursive: true,
     force: true,
@@ -36,15 +37,18 @@ async function main(argv = process.argv) {
     gitHead = await fs.promises.readFile(path.join(gitPath, 'HEAD'), 'utf-8');
     if (gitHead.startsWith('ref: ')) {
       const refPath = gitHead.slice(5).trim();
-      gitHead = await fs.promises.readFile(
-        path.join(gitPath, refPath),
-        'utf-8',
-      );
+      gitHead = await fs.promises
+        .readFile(path.join(gitPath, refPath), 'utf-8')
+        .then((ref) => ref.trim());
     }
   }
   const buildJSON = {
     versionMetadata: {
       cliAgentCommitHash: gitHead,
+      libVersion: polykey.config.version,
+      libSourceVersion: polykey.config.sourceVersion,
+      libStateVersion: polykey.config.stateVersion,
+      libNetworkVersion: polykey.config.networkVersion,
     },
   };
   console.error('Writing build metadata (build.json):');

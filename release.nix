@@ -1,6 +1,6 @@
 { npmDepsHash ? ""
+, commitHash ? null
 , pkgs ? import ./pkgs.nix {}
-, commitHash ? builtins.readFile (import ./commitHash.nix {})
 }:
 
 with pkgs;
@@ -18,7 +18,7 @@ let
         src = utils.src;
         PKG_CACHE_PATH = utils.pkgCachePath;
         PKG_IGNORE_TAG = 1;
-        COMMIT_HASH = commitHash;
+        GIT_DIR = utils.dotGit;
         postBuild = ''
           npm run pkg -- \
             --output=out \
@@ -35,6 +35,7 @@ let
 in
   rec {
     application = callPackage ./default.nix { inherit npmDepsHash; inherit commitHash; };
+    buildJSON = builtins.fromJSON (builtins.readFile "${application}/build.json");
     docker = dockerTools.buildImage {
       name = application.name;
       copyToRoot = [ application ];
@@ -48,7 +49,11 @@ in
       config = {
         Entrypoint = [ "polykey" ];
         Labels = {
-          "commitHash" = commitHash;
+          "commitHash" = buildJSON.versionMetadata.cliAgentCommitHash;
+          "libVersion" = buildJSON.versionMetadata.libVersion;
+          "libSourceVersion" = buildJSON.versionMetadata.libSourceVersion;
+          "libStateVersion" = toString buildJSON.versionMetadata.libStateVersion;
+          "libNetworkVersion" = toString buildJSON.versionMetadata.libNetworkVersion;
         };
       };
     };
