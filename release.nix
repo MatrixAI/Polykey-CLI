@@ -49,6 +49,7 @@ in
       config = {
         Entrypoint = [ "polykey" ];
         Labels = {
+          "version" = buildJSON.versionMetadata.cliAgentVersion;
           "commitHash" = buildJSON.versionMetadata.cliAgentCommitHash;
           "libVersion" = buildJSON.versionMetadata.libVersion;
           "libSourceVersion" = buildJSON.versionMetadata.libSourceVersion;

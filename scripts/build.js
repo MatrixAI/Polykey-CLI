@@ -44,6 +44,7 @@ async function main(argv = process.argv) {
   }
   const buildJSON = {
     versionMetadata: {
+      cliAgentVersion: packageJSON.version,
       cliAgentCommitHash: gitHead,
       libVersion: polykey.config.version,
       libSourceVersion: polykey.config.sourceVersion,
