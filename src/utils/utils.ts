@@ -206,7 +206,6 @@ function decodeEscaped(str: string): string {
  *
  * @param msg - The msg that needs to be formatted.
  * @see {@link outputFormatterTable} for information regarding usage where `msg.type === 'table'`.
- * @see {@link encodeWrappedStrings} for information regarding wrapping strings with `""` for encoding escaped characters
  * @returns
  */
 function outputFormatter(msg: OutputObject): string | Uint8Array {
