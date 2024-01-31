@@ -146,7 +146,7 @@ describe('search', () => {
   });
   test('finds connected identities', async () => {
     // Can't test with target executable due to mocking
-    let exitCode, stdout;
+    let exitCode: number, stdout: string;
     let searchResults: Array<IdentityData>;
     // Search with no authenticated identities
     // Should return nothing
@@ -185,7 +185,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(3);
     expect(searchResults).toContainEqual(user1);
     expect(searchResults).toContainEqual(user2);
@@ -214,7 +217,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(6);
     expect(searchResults).toContainEqual(user1);
     expect(searchResults).toContainEqual(user2);
@@ -234,7 +240,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(2);
     expect(searchResults).toContainEqual(user4);
     expect(searchResults).toContainEqual(user5);
@@ -270,7 +279,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(5);
     expect(searchResults).toContainEqual(user4);
     expect(searchResults).toContainEqual(user5);
@@ -297,7 +309,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(5);
     expect(searchResults).toContainEqual(user4);
     expect(searchResults).toContainEqual(user5);
@@ -317,7 +332,10 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(3);
     expect(searchResults).toContainEqual(user3);
     expect(searchResults).toContainEqual(user6);
@@ -334,11 +352,14 @@ describe('search', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    searchResults = stdout.split('\n').slice(undefined, -1).map(JSON.parse);
+    searchResults = stdout
+      .split('\n')
+      .slice(undefined, -1)
+      .map((v) => JSON.parse(v));
     expect(searchResults).toHaveLength(2);
   });
   test('should fail on invalid inputs', async () => {
-    let exitCode;
+    let exitCode: number;
     // Invalid identity id
     ({ exitCode } = await testUtils.pkStdio(
       ['identities', 'search', '--identity-id', ''],

@@ -741,7 +741,7 @@ describe('CLI vaults', () => {
     });
     test.todo('test formatting of the output');
   });
-  // Fixme: tempermental problem with formatting the output. Fails sometimes due to an added space
+  // Fixme: temperamental problem with formatting the output. Fails sometimes due to an added space
   describe('commandScanNode', () => {
     test(
       'should return the vaults names and ids of the remote vault',

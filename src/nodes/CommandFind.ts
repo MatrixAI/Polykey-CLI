@@ -51,14 +51,15 @@ class CommandFind extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const result = {
+        const result: {
+          success: boolean;
+          message: string;
+          id: string;
+          address?: { host: Host | Hostname; port: Port };
+        } = {
           success: false,
           message: '',
           id: '',
-          address: {
-            host: '',
-            port: 0,
-          },
         };
         let foundAddress:
           | {
@@ -111,7 +112,7 @@ class CommandFind extends CommandPolykey {
           });
         }
         process.stdout.write(outputFormatted);
-        // Like ping it should error when failing to find node for automation reasons.
+        // Like ping, it should error when failing to find node for automation reasons.
         if (!result.success) {
           throw new errors.ErrorPolykeyCLINodeFindFailed(result.message);
         }

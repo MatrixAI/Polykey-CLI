@@ -5,8 +5,8 @@ import * as errors from '../errors';
 
 class ExitHandlers {
   /**
-   * Mutate this array to control handlers
-   * Handlers will be executed in reverse order
+   * Mutate this array to control handlers.
+   * Handlers will be executed in reverse order.
    */
   public handlers: Array<(signal?: NodeJS.Signals) => Promise<void>>;
   protected _exiting: boolean = false;

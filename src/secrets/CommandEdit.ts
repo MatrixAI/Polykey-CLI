@@ -87,7 +87,7 @@ class CommandEdit extends CommandPolykey {
           secretName: secretPath[1],
           secretContent: content.toString('binary'),
         });
-        await this.fs.promises.rmdir(tmpDir, { recursive: true });
+        await this.fs.promises.rm(tmpDir, { recursive: true, force: true });
         // Windows
         // TODO: complete windows impl
       } finally {

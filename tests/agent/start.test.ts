@@ -265,8 +265,8 @@ describe('start', () => {
       ]);
       // These will be the last line of STDERR
       // The readline library will automatically trim off newlines
-      let stdErrLine1;
-      let stdErrLine2;
+      let stdErrLine1: string;
+      let stdErrLine2: string;
       const rlErr1 = readline.createInterface(agentProcess1.stderr!);
       const rlErr2 = readline.createInterface(agentProcess2.stderr!);
       const agentStartedProm1 = promise<[number, string]>();
@@ -310,8 +310,7 @@ describe('start', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  // FIXME: disabled for now, both are succeeding when 1 should fail
-  test.skip(
+  test(
     'concurrent with bootstrap results in 1 success',
     async () => {
       const password = 'abc123';
@@ -360,8 +359,8 @@ describe('start', () => {
       ]);
       // These will be the last line of STDERR
       // The readline library will automatically trim off newlines
-      let stdErrLine1;
-      let stdErrLine2;
+      let stdErrLine1: string;
+      let stdErrLine2: string;
       const rlErr1 = readline.createInterface(agentProcess.stderr!);
       const rlErr2 = readline.createInterface(bootstrapProcess.stderr!);
       const agentStartedProm1 = promise<[number, string]>();
@@ -679,7 +678,7 @@ describe('start', () => {
       );
       const statusInfo2 = await status.waitFor('LIVE');
       expect(statusInfo2.status).toBe('LIVE');
-      // Node Id hasn't changed
+      // Node ID hasn't changed
       expect(statusInfo1.data.nodeId).toStrictEqual(statusInfo2.data.nodeId);
       agentProcess2.kill('SIGTERM');
       await testUtils.processExit(agentProcess2);
@@ -874,7 +873,7 @@ describe('start', () => {
     globalThis.defaultTimeout * 2,
   );
   describe('start with global agent', () => {
-    let agentDataDir;
+    let agentDataDir: string;
     let agent1Status: StatusLive;
     let agent1Close: () => Promise<void>;
     let agent2Status: StatusLive;

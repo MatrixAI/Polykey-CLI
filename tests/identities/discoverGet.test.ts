@@ -43,7 +43,7 @@ describe('discover/get', () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    // Setup the remote gestalt state here
+    // Set up the remote gestalt state here
     // Setting up remote nodes
     nodeA = await PolykeyAgent.createPolykeyAgent({
       password,
@@ -283,9 +283,8 @@ describe('discover/get', () => {
     pkAgent.discovery.visitedVertices.clear();
   });
   test('should fail on invalid inputs', async () => {
-    let exitCode;
     // Discover
-    ({ exitCode } = await testUtils.pkStdio(
+    const { exitCode } = await testUtils.pkStdio(
       ['identities', 'discover', 'invalid'],
       {
         env: {
@@ -294,15 +293,15 @@ describe('discover/get', () => {
         },
         cwd: dataDir,
       },
-    ));
+    );
     expect(exitCode).toBe(sysexits.USAGE);
     // Get
-    ({ exitCode } = await testUtils.pkStdio(['identities', 'get', 'invalid'], {
+    await testUtils.pkStdio(['identities', 'get', 'invalid'], {
       env: {
         PK_NODE_PATH: nodePath,
         PK_PASSWORD: password,
       },
       cwd: dataDir,
-    }));
+    });
   });
 });

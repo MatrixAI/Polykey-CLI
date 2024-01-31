@@ -129,7 +129,7 @@ describe('find', () => {
     );
   });
   // FIXME: Bug with RPC, we can't respond after timeout since client timeout forces close.
-  test.skip(
+  test(
     'fails to find an unknown node',
     async () => {
       const unknownNodeId = nodesUtils.decodeNodeId(
@@ -158,7 +158,6 @@ describe('find', () => {
           unknownNodeId!,
         )}`,
         id: nodesUtils.encodeNodeId(unknownNodeId!),
-        address: [],
       });
     },
     globalThis.failedConnectionTimeout,

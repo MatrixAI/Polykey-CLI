@@ -9,9 +9,9 @@ describe('unlock', () => {
   const logger = new Logger('unlock test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
-  let agentDir;
-  let agentPassword;
-  let agentClose;
+  let agentDir: string;
+  let agentPassword: string;
+  let agentClose: () => Promise<void>;
   beforeEach(async () => {
     ({ agentDir, agentPassword, agentClose } =
       await testUtils.setupTestAgent(logger));
@@ -27,7 +27,7 @@ describe('unlock', () => {
       logger,
       fresh: true,
     });
-    let exitCode, stdout;
+    let exitCode: number, stdout: string;
     ({ exitCode } = await testUtils.pkExec(['agent', 'unlock'], {
       env: {
         PK_NODE_PATH: agentDir,

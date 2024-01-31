@@ -12,7 +12,7 @@ function describeIf(condition: boolean) {
 function trackTimers() {
   const timerMap: Map<any, any> = new Map();
   const oldClearTimeout = globalThis.clearTimeout;
-  const newClearTimeout = (...args) => {
+  const newClearTimeout = (...args: Array<any>) => {
     timerMap.delete(args[0]);
     // @ts-ignore: slight type mismatch
     oldClearTimeout(...args);
@@ -23,7 +23,7 @@ function trackTimers() {
   const newSetTimeout = (handler: TimerHandler, timeout?: number) => {
     const prom = promise();
     const stack = Error();
-    const newCallback = async (...args) => {
+    const newCallback = async (...args: Array<any>) => {
       // @ts-ignore: only expecting functions
       await handler(...args);
       prom.resolveP();
