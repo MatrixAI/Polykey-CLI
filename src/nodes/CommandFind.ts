@@ -51,14 +51,15 @@ class CommandFind extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const result = {
+        const result: {
+          success: boolean;
+          message: string;
+          id: string;
+          address?: { host: Host | Hostname; port: Port };
+        } = {
           success: false,
           message: '',
           id: '',
-          address: {
-            host: '',
-            port: 0,
-          },
         };
         let foundAddress:
           | {

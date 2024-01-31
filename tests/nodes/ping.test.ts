@@ -83,8 +83,7 @@ describe('ping', () => {
       recursive: true,
     });
   });
-  // FIXME: skipped because problem with RPC processing messages after timeout
-  test.skip(
+  test(
     'fails when pinging an offline node',
     async () => {
       const { exitCode, stdout, stderr } = await testUtils.pkStdio(
@@ -112,8 +111,7 @@ describe('ping', () => {
     },
     globalThis.failedConnectionTimeout,
   );
-  // FIXME: skipped because problem with RPC processing messages after timeout
-  test.skip(
+  test(
     'fails if node cannot be found',
     async () => {
       const fakeNodeId = nodesUtils.decodeNodeId(
