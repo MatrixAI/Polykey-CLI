@@ -1,6 +1,5 @@
 { npmDepsHash ? ""
 , commitHash ? null
-, gitDir ? null
 , pkgs ? import ./pkgs.nix {}
 }:
 
@@ -19,7 +18,7 @@ let
         src = utils.src;
         PKG_CACHE_PATH = utils.pkgCachePath;
         PKG_IGNORE_TAG = 1;
-        GIT_DIR = gitDir;
+        GIT_DIR = utils.dotGit;
         postBuild = ''
           npm run pkg -- \
             --output=out \
