@@ -69,7 +69,7 @@ check:nix-dry:
     - >
       nix-shell --arg ci true --run $'
       npmDepsHash="$(prefetch-npm-deps ./package-lock.json)";
-      nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash" --argstr commitHash "$CI_COMMIT_SHA";
+      nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash";
       '
   rules:
     # Runs on feature and staging commits and ignores version commits
