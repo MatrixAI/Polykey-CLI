@@ -25,7 +25,6 @@ rec {
     "/tests"
     "/jest.config.js"
   ] ./.;
-  dotGit = ./.git;
   packageJSON = builtins.fromJSON (builtins.readFile "${src}/package.json");
   # This removes the org scoping
   packageName = builtins.baseNameOf packageJSON.name;
