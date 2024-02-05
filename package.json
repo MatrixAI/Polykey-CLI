@@ -82,6 +82,7 @@
     "prepare": "node ./scripts/build.js",
     "build": "node ./scripts/build.js",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
+    "dependencies": "node ./scripts/npmDepsHash.js",
     "ts-node": "ts-node",
     "test": "jest",
     "lint": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}'",
