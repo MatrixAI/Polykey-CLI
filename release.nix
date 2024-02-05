@@ -18,7 +18,7 @@ let
         src = utils.src;
         PKG_CACHE_PATH = utils.pkgCachePath;
         PKG_IGNORE_TAG = 1;
-        GIT_DIR = utils.dotGit;
+        GIT_DIR = if commitHash != null then null else utils.dotGit;
         postBuild = ''
           npm run pkg -- \
             --output=out \
