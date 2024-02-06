@@ -43,13 +43,15 @@ async function main(argv = process.argv) {
     }
   }
   const buildJSON = {
+    // All of the keys and values need to be strings!
+    // This is because they are used for the labels on the docker image.
     versionMetadata: {
-      cliAgentVersion: packageJSON.version,
-      cliAgentCommitHash: gitHead,
+      version: packageJSON.version,
+      commitHash: gitHead,
       libVersion: polykey.config.version,
       libSourceVersion: polykey.config.sourceVersion,
-      libStateVersion: polykey.config.stateVersion,
-      libNetworkVersion: polykey.config.networkVersion,
+      libStateVersion: polykey.config.stateVersion.toString(),
+      libNetworkVersion: polykey.config.networkVersion.toString(),
     },
   };
   console.error('Writing build metadata (build.json):');

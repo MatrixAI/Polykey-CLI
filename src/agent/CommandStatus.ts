@@ -48,11 +48,7 @@ class CommandStatus extends CommandPolykey {
         this.exitHandlers.handlers.push(async () => {
           if (pkClient != null) await pkClient.stop();
         });
-        let response: StatusResultMessage & {
-          versionMetadata: {
-            cliAgentCommitHash?: string;
-          };
-        };
+        let response: StatusResultMessage;
         try {
           pkClient = await PolykeyClient.createPolykeyClient({
             nodeId: clientStatus.nodeId!,
