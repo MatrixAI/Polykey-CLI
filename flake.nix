@@ -46,6 +46,8 @@
         packages = {
           polykey-cli = polykey_cli { commitHash = commitHash; npmDepsHash = npmDepsHash; utils = utils; }; 
         };
+
+        devShells.default = import ./shell.nix { inherit pkgs; };
       }
     );
 }
