@@ -48,14 +48,7 @@ in
       '';
       config = {
         Entrypoint = [ "polykey" ];
-        Labels = {
-          "version" = buildJSON.versionMetadata.cliAgentVersion;
-          "commitHash" = buildJSON.versionMetadata.cliAgentCommitHash;
-          "libVersion" = buildJSON.versionMetadata.libVersion;
-          "libSourceVersion" = buildJSON.versionMetadata.libSourceVersion;
-          "libStateVersion" = toString buildJSON.versionMetadata.libStateVersion;
-          "libNetworkVersion" = toString buildJSON.versionMetadata.libNetworkVersion;
-        };
+        Labels = buildJSON.versionMetadata;
       };
     };
     package = {

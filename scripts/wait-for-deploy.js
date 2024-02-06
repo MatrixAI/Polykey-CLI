@@ -5,7 +5,7 @@ const { default: config } = require('polykey/dist/config');
 const versionTarget = config.version;
 async function main(argv = process.argv) {
   // Test getting the hash
-  const cliAgentCommitHashCurrentTarget =
+  const commitHashCurrentTarget =
     process.env.CI_COMMIT_SHA ??
     childProcess.execSync('git rev-parse HEAD').toString();
   const hostname = argv[2];
@@ -17,15 +17,14 @@ async function main(argv = process.argv) {
     let updated = 0;
     for (const [, status] of Object.entries(statuses)) {
       const versionCurrent = status.version;
-      const cliAgentCommitHashCurrent =
-        status?.versionMetadata?.cliAgentCommitHash;
+      const commitHashCurrent = status?.versionMetadata?.commitHash;
       total++;
       // If the Polykey lib version and CLI commit hash match then it is updated
       if (
         versionCurrent != null &&
         versionCurrent === versionTarget &&
-        cliAgentCommitHashCurrent != null &&
-        cliAgentCommitHashCurrent === cliAgentCommitHashCurrentTarget
+        commitHashCurrent != null &&
+        commitHashCurrent === commitHashCurrentTarget
       ) {
         updated++;
       }
