@@ -13,14 +13,11 @@
 
         utils = pkgs.callPackage ./utils.nix {};
 
-        # This isn't supposed to be set from flakes;
-        # parameters in flakes reduce reproducability,
-        # lockfiles should be used instead.
-        commitHash = "";
-        npmDepsHash = "";
+        commitHash = toString (self.rev or self.dirtyRev);
+        npmDepsHash = import ./npmDepsHash.nix;
 
-        polykey_cli = { commitHash, npmDepsHash, utils }: pkgs.buildNpmPackage {
-          inherit npmDepsHash;
+        polykey_cli = pkgs.buildNpmPackage {
+          inherit (npmDepsHash) npmDepsHash;
           pname = utils.packageName;
           version = utils.packageVersion;
           src = utils.src;
@@ -41,10 +38,36 @@
               "$packageOut"/README.md;
           '';
         };
+
+        buildJSON = builtins.fromJSON (builtins.readFile "${polykey_cli}/build.json");
+
+        dockerImage = pkgs.dockerTools.buildImage {
+          name = polykey_cli.name;
+          copyToRoot = [ polykey_cli ];
+          # This ensures symlinks to directories are preserved in the image
+          keepContentsDirlinks = true;
+          # This adds a correct timestamp, however breaks binary reproducibility
+          created = "now";
+          extraCommands = ''
+            mkdir -m 1777 tmp
+          '';
+          config = {
+            Entrypoint = [ "polykey" ];
+            Labels = {
+              "version" = buildJSON.versionMetadata.cliAgentVersion;
+              "commitHash" = buildJSON.versionMetadata.cliAgentCommitHash;
+              "libVersion" = buildJSON.versionMetadata.libVersion;
+              "libSourceVersion" = buildJSON.versionMetadata.libSourceVersion;
+              "libStateVersion" = toString buildJSON.versionMetadata.libStateVersion;
+              "libNetworkVersion" = toString buildJSON.versionMetadata.libNetworkVersion;
+            };
+          };
+        };
       in
       {
         packages = {
-          polykey-cli = polykey_cli { commitHash = commitHash; npmDepsHash = npmDepsHash; utils = utils; }; 
+          polykey-cli = polykey_cli;
+          docker = dockerImage;
         };
 
         devShells.default = import ./shell.nix { inherit pkgs; };

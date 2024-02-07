@@ -53,6 +53,8 @@ Note that JavaScript libraries are not packaged in Nix. Only JavaScript applicat
 Building the package:
 
 ```sh
+nix build .#polykey-cli
+
 npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
 nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \"$npmDepsHash\"; }"
 ```
@@ -62,8 +64,13 @@ nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \
 Building the releases:
 
 ```sh
+nix build .#polykey-cli
+nix build .#docker
+
+
 nix-build ./release.nix --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+
 nix-build ./release.nix --attr package.linux.x64.elf --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 nix-build ./release.nix --attr package.windows.x64.exe --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 nix-build ./release.nix --attr package.macos.x64.macho --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
@@ -72,6 +79,8 @@ nix-build ./release.nix --attr package.macos.x64.macho --argstr npmDepsHash "$(p
 Install into Nix user profile:
 
 ```sh
+nix profile install github:MatrixAI/Polykey-CLI
+
 nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
 ```
 
@@ -80,6 +89,9 @@ nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(pr
 Install into Docker:
 
 ```sh
+docker load < result
+docker run -it "$image"
+
 loaded="$(docker load --input "$(nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)")")"
 image="$(cut -d' ' -f3 <<< "$loaded")"
 docker run -it "$image"
