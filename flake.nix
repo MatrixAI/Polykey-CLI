@@ -5,7 +5,7 @@
   };
 
   outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+    flake-utils.lib.eachSystem flake-utils.lib.allSystems (system:
       let
         pkgs = import nixpkgs {
           inherit system;
@@ -65,12 +65,22 @@
         };
       in
       {
+        apps = {
+          polykey-cli = {
+            type = "app";
+            program = "${self.packages.${system}.polykey-cli}/bin/polykey";
+          };
+        };
+
         packages = {
           polykey-cli = polykey_cli;
           docker = dockerImage;
         };
 
-        devShells.default = import ./shell.nix { inherit pkgs; };
+        devShells = {
+          default = import ./shell.nix { inherit pkgs; };
+          ci = import ./shell.nix { inherit pkgs; ci = true; };
+        };
       }
     );
 }
