@@ -15,8 +15,10 @@ describe('pull and clone', () => {
   const password = 'password';
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
+  let dataDir2: string;
   let passwordFile: string;
   let polykeyAgent: PolykeyAgent;
+  let polykeyAgentTarget: PolykeyAgent;
   let command: Array<string>;
   let vaultNumber: number;
   let vaultName: VaultName;
@@ -42,6 +44,9 @@ describe('pull and clone', () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
+    dataDir2 = await fs.promises.mkdtemp(
+      path.join(globalThis.tmpDir, 'polykey-test-'),
+    );
     passwordFile = path.join(dataDir, 'passwordFile');
     await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
@@ -62,6 +67,21 @@ describe('pull and clone', () => {
     await polykeyAgent.gestaltGraph.setNode(node2);
     await polykeyAgent.gestaltGraph.setNode(node3);
 
+    polykeyAgentTarget = await PolykeyAgent.createPolykeyAgent({
+      password,
+      options: {
+        nodePath: dataDir2,
+        agentServiceHost: '127.0.0.1',
+        clientServiceHost: '127.0.0.1',
+        keys: {
+          passwordOpsLimit: keysUtils.passwordOpsLimits.min,
+          passwordMemLimit: keysUtils.passwordMemLimits.min,
+          strictMemoryLock: false,
+        },
+      },
+      logger: logger,
+    });
+
     vaultNumber = 0;
 
     // Authorize session
@@ -77,7 +97,12 @@ describe('pull and clone', () => {
   });
   afterEach(async () => {
     await polykeyAgent.stop();
+    await polykeyAgentTarget.stop();
     await fs.promises.rm(dataDir, {
+      force: true,
+      recursive: true,
+    });
+    await fs.promises.rm(dataDir2, {
       force: true,
       recursive: true,
     });
@@ -86,26 +111,9 @@ describe('pull and clone', () => {
   test(
     'should clone and pull a vault',
     async () => {
-      const dataDir2 = await fs.promises.mkdtemp(
-        path.join(globalThis.tmpDir, 'polykey-test-'),
-      );
-      const targetPolykeyAgent = await PolykeyAgent.createPolykeyAgent({
-        password,
-        options: {
-          nodePath: dataDir2,
-          agentServiceHost: '127.0.0.1',
-          clientServiceHost: '127.0.0.1',
-          keys: {
-            passwordOpsLimit: keysUtils.passwordOpsLimits.min,
-            passwordMemLimit: keysUtils.passwordMemLimits.min,
-            strictMemoryLock: false,
-          },
-        },
-        logger: logger,
-      });
       const vaultId =
-        await targetPolykeyAgent.vaultManager.createVault(vaultName);
-      await targetPolykeyAgent.vaultManager.withVaults(
+        await polykeyAgentTarget.vaultManager.createVault(vaultName);
+      await polykeyAgentTarget.vaultManager.withVaults(
         [vaultId],
         async (vault) => {
           await vault.writeF(async (efs) => {
@@ -114,16 +122,16 @@ describe('pull and clone', () => {
         },
       );
 
-      await targetPolykeyAgent.gestaltGraph.setNode({
+      await polykeyAgentTarget.gestaltGraph.setNode({
         nodeId: polykeyAgent.keyRing.getNodeId(),
       });
-      const targetNodeId = targetPolykeyAgent.keyRing.getNodeId();
+      const targetNodeId = polykeyAgentTarget.keyRing.getNodeId();
       const targetNodeIdEncoded = nodesUtils.encodeNodeId(targetNodeId);
       await polykeyAgent.nodeManager.setNode(
         targetNodeId,
         [
-          targetPolykeyAgent.agentServiceHost,
-          targetPolykeyAgent.agentServicePort,
+          polykeyAgentTarget.agentServiceHost,
+          polykeyAgentTarget.agentServicePort,
         ],
         {
           mode: 'direct',
@@ -131,7 +139,7 @@ describe('pull and clone', () => {
           scopes: ['global'],
         },
       );
-      await targetPolykeyAgent.nodeManager.setNode(
+      await polykeyAgentTarget.nodeManager.setNode(
         polykeyAgent.keyRing.getNodeId(),
         [polykeyAgent.agentServiceHost, polykeyAgent.agentServicePort],
         {
@@ -148,12 +156,12 @@ describe('pull and clone', () => {
       });
 
       const nodeId = polykeyAgent.keyRing.getNodeId();
-      await targetPolykeyAgent.gestaltGraph.setGestaltAction(
+      await polykeyAgentTarget.gestaltGraph.setGestaltAction(
         ['node', nodeId],
         'scan',
       );
-      await targetPolykeyAgent.acl.setVaultAction(vaultId, nodeId, 'clone');
-      await targetPolykeyAgent.acl.setVaultAction(vaultId, nodeId, 'pull');
+      await polykeyAgentTarget.acl.setVaultAction(vaultId, nodeId, 'clone');
+      await polykeyAgentTarget.acl.setVaultAction(vaultId, nodeId, 'pull');
 
       command = [
         'vaults',
@@ -207,7 +215,7 @@ describe('pull and clone', () => {
         },
       );
 
-      await targetPolykeyAgent.vaultManager.withVaults(
+      await polykeyAgentTarget.vaultManager.withVaults(
         [vaultId],
         async (vault) => {
           await vault.writeF(async (efs) => {
@@ -256,13 +264,53 @@ describe('pull and clone', () => {
       ];
       result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
       expect(result.exitCode).toBe(sysexits.USAGE);
-
-      await targetPolykeyAgent.stop();
-      await fs.promises.rm(dataDir2, {
-        force: true,
-        recursive: true,
-      });
     },
     globalThis.defaultTimeout * 3,
   );
+  test('should handle duplicate name when cloning', async () => {
+    // Create local vault
+    await polykeyAgent.vaultManager.createVault(vaultName);
+    const vaultIdTarget =
+      await polykeyAgentTarget.vaultManager.createVault(vaultName);
+
+    // Create connection to work from
+    const nodeIdTarget = polykeyAgentTarget.keyRing.getNodeId();
+    await polykeyAgent.nodeConnectionManager.createConnection(
+      [nodeIdTarget],
+      polykeyAgentTarget.nodeConnectionManager.host,
+      polykeyAgentTarget.nodeConnectionManager.port,
+    );
+
+    // Create permission to clone
+    const nodeId = polykeyAgent.keyRing.getNodeId();
+    await polykeyAgentTarget.gestaltGraph.setNode({
+      nodeId,
+    });
+    await polykeyAgentTarget.gestaltGraph.setGestaltAction(
+      ['node', nodeId],
+      'scan',
+    );
+    await polykeyAgentTarget.acl.setVaultAction(vaultIdTarget, nodeId, 'clone');
+    await polykeyAgentTarget.acl.setVaultAction(vaultIdTarget, nodeId, 'pull');
+
+    // Attempt to clone the vault
+    const result = await testUtils.pkStdio(
+      [
+        'vaults',
+        'clone',
+        '-np',
+        dataDir,
+        vaultName,
+        nodesUtils.encodeNodeId(nodeIdTarget),
+      ],
+      {
+        env: {},
+        cwd: dataDir,
+      },
+    );
+    expect(result.exitCode).toBe(0);
+    const result2 = await polykeyAgent.vaultManager.listVaults();
+    // Now have two separate vaults
+    expect(result2.size).toBe(2);
+  });
 });
