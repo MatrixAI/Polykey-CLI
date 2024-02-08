@@ -313,4 +313,28 @@ describe('pull and clone', () => {
     // Now have two separate vaults
     expect(result2.size).toBe(2);
   });
+  test('should handle failure to connect while cloning', async () => {
+    // Attempt to clone the vault
+    const result = await testUtils.pkStdio(
+      [
+        'vaults',
+        'clone',
+        '-np',
+        dataDir,
+        vaultName,
+        nodesUtils.encodeNodeId(
+          nodesUtils.generateRandomNodeIdForBucket(
+            polykeyAgent.keyRing.getNodeId(),
+            100,
+          ),
+        ),
+      ],
+      {
+        env: {},
+        cwd: dataDir,
+      },
+    );
+    expect(result.exitCode).toBe(75);
+    expect(result.stderr).toContain('ErrorNodeManagerConnectionFailed');
+  });
 });
