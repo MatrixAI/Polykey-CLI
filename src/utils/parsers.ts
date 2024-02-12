@@ -71,8 +71,9 @@ function parseSecretPath(secretPath: string): [string, string, string?] {
       `${secretPath} is not of the format <vaultName>:<directoryPath>`,
     );
   }
-  const [, vaultName, directoryPath] = secretPath.match(secretPathRegex)!;
-  return [vaultName, directoryPath, undefined];
+  const [, vaultName, directoryPath, value] =
+    secretPath.match(secretPathRegex)!;
+  return [vaultName, directoryPath, value];
 }
 
 const parseInteger: (data: string) => number = validateParserToArgParser(

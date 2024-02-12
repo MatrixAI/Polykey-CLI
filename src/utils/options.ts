@@ -197,6 +197,24 @@ const commitId = new commander.Option(
   'Id for a specific commit to read from',
 );
 
+const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
+  .makeOptionMandatory(true)
+  .argParser(
+    (value: string, previous: Array<[string, string, string?]> | undefined) => {
+      const acc = previous ?? [];
+      acc.push(binParsers.parseSecretPath(value));
+      return acc;
+    },
+  );
+
+// '-f, --format <format>', 'Output Format'
+const envFormat = new commander.Option(
+  '-of --output-format <outputFormat>',
+  'How the env variables are formatted when outputted. Only used if no commands are executed',
+)
+  .choices(['dotenv', 'json', 'prepend'])
+  .default('dotenv');
+
 export {
   nodePath,
   format,
@@ -225,4 +243,6 @@ export {
   passwordMemLimit,
   depth,
   commitId,
+  envVariables,
+  envFormat,
 };
