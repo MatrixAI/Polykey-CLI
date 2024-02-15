@@ -134,7 +134,7 @@
     "nexpect": "^0.6.0",
     "node-gyp-build": "^4.4.0",
     "nodemon": "^3.0.1",
-    "polykey": "^1.2.1-alpha.47",
+    "polykey": "^1.2.1-alpha.49",
     "prettier": "^3.0.0",
     "shelljs": "^0.8.5",
     "shx": "^0.3.4",
