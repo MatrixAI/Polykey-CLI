@@ -81,7 +81,7 @@
   "scripts": {
     "prepare": "node ./scripts/build.js",
     "build": "node ./scripts/build.js",
-    "version": "node ./scripts/npmDepsHash.js && git add npmDepsHash",
+    "version": "node ./scripts/version.js",
     "postversion": "npm install --package-lock-only --ignore-scripts --silent",
     "dependencies": "node ./scripts/npmDepsHash.js",
     "ts-node": "ts-node",
