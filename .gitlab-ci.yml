@@ -234,7 +234,7 @@ integration:builds:
         --max-jobs "$(nproc)" \
         --cores "$(nproc)" \
         --print-out-paths \
-        .#application \
+        .# \
       )";
       nix-store --export $( \
         nix-store --query --requisites "$build_application" \
@@ -243,11 +243,11 @@ integration:builds:
         --max-jobs "$(nproc)" \
         --cores "$(nproc)" \
         --print-out-paths \
-        .#application \
+        .# \
         .#docker \
-        .#packages.x86_64-linux.polykey-cli \
-        .#packages.x86_64-windows.polykey-cli \
-        .#packages.x86_64-darwin.polykey-cli \
+        .#packages.x86_64-linux.executable \
+        .#packages.x86_64-windows.executable \
+        .#packages.x86_64-darwin.executable \
       )";
       cp -r $(echo $builds | tr '\n' ' ') ./builds/;
   artifacts:

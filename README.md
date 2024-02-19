@@ -46,27 +46,6 @@ Have a security issue you want to let us know? You can contact us on our website
 
 Our main website is https://polykey.com
 
-## Flakes
-
-Polykey-CLI uses flakes for its build process. By default Nix does not enable this feature.
-To enable it by default, add the following to `~/.config/nix/nix.conf` or `/etc/nix/nix.conf`:
-
-```
-experimental-features = nix-command flakes
-```
-
-Or if you're on NixOS, you can add it to your flakes system configuration:
-
-```
-nix.settings.experimental-features = [ "nix-command" "flakes" ];
-```
-
-Alternatively, to enable it temporarily append the following to any nix related commands:
-
-```
---extra-experimental-features flakes
-```
-
 ## Installation
 
 Note that JavaScript libraries are not packaged in Nix. Only JavaScript applications are.
@@ -74,23 +53,18 @@ Note that JavaScript libraries are not packaged in Nix. Only JavaScript applicat
 Building the package:
 
 ```sh
-nix build .#polykey-cli
+nix build
 ```
 
 ### Nix/NixOS
 
-Building the releases:
-
 ```sh
-# Build the packages for your current platform
-nix build .#polykey-cli
-
-# You can also specify the platform to build for
-nix build .#application
-nix build .#docker
-nix build .#packages.x86_64-linux.polykey-cli
-nix build .#packages.x86_64-windows.polykey-cli
-nix build .#packages.x86_64-darwin.polykey-cli
+nix build
+nix build '.#executable'
+nix build '.#docker'
+nix build '.#packages.x86_64-linux.executable'
+nix build '.#packages.x86_64-windows.executable'
+nix build '.#packages.x86_64-darwin.executable'
 ```
 
 Install into Nix user profile:

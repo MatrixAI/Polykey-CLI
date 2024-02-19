@@ -31,13 +31,9 @@
         commitHash = toString (self.rev or self.dirtyRev);
         npmDepsHash = builtins.readFile ./npmDepsHash;
 
-        polykey-cli-app = pkgs.buildNpmPackage {
+        polykey-cli = pkgs.buildNpmPackage {
           inherit npmDepsHash;
           pname = utils.packageName;
-          meta = {
-            # Other meta attributes like description, homepage, license, etc.
-            mainProgram = "polykey";
-          };
           version = utils.packageVersion;
           src = utils.src;
           COMMIT_HASH = commitHash;
@@ -58,7 +54,7 @@
           '';
         };
 
-        polykey-cli-pkg = pkgs.buildNpmPackage {
+        polykey-cli-executable = pkgs.buildNpmPackage {
           inherit npmDepsHash;
           name = "${utils.packageName}-${utils.packageVersion}-${platform}-${arch}";
           src = utils.src;
@@ -80,11 +76,11 @@
           dontFixup = true;
         };
 
-        buildJSON = builtins.fromJSON (builtins.readFile "${polykey-cli-app}/build.json");
+        buildJSON = builtins.fromJSON (builtins.readFile "${polykey-cli}/build.json");
 
-        dockerImage = pkgs.dockerTools.buildImage {
-          name = polykey-cli-app.name;
-          copyToRoot = [ polykey-cli-app ];
+        docker = pkgs.dockerTools.buildImage {
+          name = polykey-cli.name;
+          copyToRoot = [ polykey-cli ];
           keepContentsDirlinks = true;
           created = "now";
           extraCommands = ''
@@ -138,18 +134,18 @@
         apps = {
           default ={
             type = "app";
-            program = "${self.packages.${targetSystem}.application}/bin/polykey";
+            program = "${self.packages.${targetSystem}.default}/bin/polykey";
           };
-          polykey-cli = {
+          executable = {
             type = "app";
-            program = "${self.packages.${targetSystem}.polykey-cli}";
+            program = "${self.packages.${targetSystem}.executable}";
           };
         };
 
         packages = {
-          polykey-cli = polykey-cli-pkg;
-          application = polykey-cli-app;
-          docker = dockerImage;
+          default = polykey-cli;
+          executable = polykey-cli-executable;
+          docker = docker;
         };
 
         devShells = {
