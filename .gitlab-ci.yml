@@ -244,11 +244,12 @@ integration:builds:
         --max-jobs "$(nproc)" \
         --cores "$(nproc)" \
         --print-out-paths \
+        .#application \
         .#docker \
         .#packages.x86_64-linux.polykey-cli \
         .#packages.x86_64-windows.polykey-cli \
-        .#packages.x86_64-darwin.polykey-cli;
-      cp -r $builds ./builds/;
+        .#packages.x86_64-darwin.polykey-cli)";
+      cp -r $(echo $builds | tr '\n' ' ') ./builds/;
       '
   artifacts:
     paths:
