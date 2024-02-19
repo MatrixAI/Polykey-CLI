@@ -84,7 +84,7 @@ nix run . -- agent start
 Install into Docker:
 
 ```sh
-nix build .#docker
+nix build '.#docker'
 image="$(docker load < result | cut -d' ' -f3)"
 docker run -it "$image"
 ```
