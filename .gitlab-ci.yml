@@ -49,7 +49,7 @@ check:lint:
   needs: []
   script:
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       npm run lint;
       npm run lint-shell;
       '
@@ -67,10 +67,7 @@ check:nix-dry:
   needs: []
   script:
     - >
-      nix-shell --arg ci true --run $'
-      npmDepsHash="$(prefetch-npm-deps ./package-lock.json)";
-      nix-build -v -v --dry-run ./release.nix --argstr npmDepsHash "$npmDepsHash";
-      '
+      nix build .#docker --dry-run
   rules:
     # Runs on feature and staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH =~ /^(?:feature.*|staging)$/ && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -85,7 +82,7 @@ check:test-generate:
   needs: []
   script:
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       ./scripts/check-test-generate.sh > ./tmp/check-test.yml;
       '
   artifacts:
@@ -127,7 +124,7 @@ build:merge:
     # Required for `gh pr create`
     - git remote add upstream "$GH_PROJECT_URL"
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       gh pr create \
         --head staging \
         --base master \
@@ -152,7 +149,7 @@ build:dist:
   needs: []
   script:
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       npm run build --verbose;
       '
   artifacts:
@@ -170,7 +167,7 @@ build:platforms-generate:
   needs: []
   script:
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       ./scripts/build-platforms-generate.sh > ./tmp/build-platforms.yml;
       '
   artifacts:
@@ -213,7 +210,7 @@ build:prerelease:
     - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
     - echo 'Publishing library prerelease'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       npm publish --tag prerelease --access public;
       '
   after_script:
@@ -233,26 +230,24 @@ integration:builds:
   script:
     - mkdir -p ./builds
     - >
-      nix-shell --arg ci true --run $'
-      npmDepsHash="$(prefetch-npm-deps ./package-lock.json)";
-      build_application="$(nix-build \
-        --max-jobs "$(nproc)" --cores "$(nproc)" \
-        ./release.nix  \
-        --attr application \
-        --argstr npmDepsHash "$npmDepsHash" \
+      nix develop .#ci --command bash -c $'
+      build_application="$(nix build \
+        --max-jobs "$(nproc)" \
+        --cores "$(nproc)" \
+        --print-out-paths \
+        .#application \
       )";
       nix-store --export $( \
         nix-store --query --requisites "$build_application" \
       ) | gzip > ./builds/polykey-cli.closure.gz;
-      builds="$(nix-build \
-        --max-jobs "$(nproc)" --cores "$(nproc)" \
-        ./release.nix \
-        --attr docker \
-        --attr package.linux.x64.elf \
-        --attr package.windows.x64.exe \
-        --attr package.macos.x64.macho \
-        --argstr npmDepsHash "$npmDepsHash" \
-        --argstr commitHash "$CI_COMMIT_SHA")";
+      builds="$(nix build \
+        --max-jobs "$(nproc)" \
+        --cores "$(nproc)" \
+        --print-out-paths \
+        .#docker \
+        .#packages.x86_64-linux.polykey-cli \
+        .#packages.x86_64-windows.polykey-cli \
+        .#packages.x86_64-darwin.polykey-cli;
       cp -r $builds ./builds/;
       '
   artifacts:
@@ -283,7 +278,7 @@ integration:deployment:
   script:
     - echo 'Deploying container image to ECR'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       aws ecr get-login-password \
         | skopeo login \
         --username AWS \
@@ -295,7 +290,7 @@ integration:deployment:
       '
     - echo 'Waiting for Testnet Deployment'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       ./scripts/wait-for-deploy.js testnet.polykey.com;
       '
   after_script:
@@ -343,7 +338,7 @@ integration:docker:
     - docker info
     - mkdir $PK_TEST_TMPDIR
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)";
       docker tag "$image_and_tag" "polykey-cli:testtarget";
       npm run test tests/integration/docker;
@@ -433,7 +428,7 @@ integration:prerelease:
   script:
     - echo 'Publishing application prerelease'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       if gh release view "$CI_COMMIT_TAG" --repo "$GH_PROJECT_PATH" >/dev/null; then \
         gh release \
           upload "$CI_COMMIT_TAG" \
@@ -461,7 +456,7 @@ integration:prerelease:
       '
     - echo 'Prereleasing container image'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       skopeo login \
         --username "$CI_REGISTRY_USER" \
         --password "$CI_REGISTRY_PASSWORD" \
@@ -505,7 +500,7 @@ integration:merge:
     GIT_DEPTH: 0
   script:
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       printf "Pipeline Succeeded on ${CI_PIPELINE_ID} for ${CI_COMMIT_SHA}\n\n${CI_PIPELINE_URL}" \
       | gh pr comment staging \
         --body-file - \
@@ -545,7 +540,7 @@ release:deployment:branch:
   script:
     - echo 'Deploying container image to ECR'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       aws ecr get-login-password \
         | skopeo login \
         --username AWS \
@@ -557,7 +552,7 @@ release:deployment:branch:
       '
     - echo 'Waiting for Mainnet Deployment'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       ./scripts/wait-for-deploy.js mainnet.polykey.com;
       '
   after_script:
@@ -587,7 +582,7 @@ release:deployment:tag:
   script:
     - echo 'Deploying container image to ECR'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       aws ecr get-login-password \
         | skopeo login \
         --username AWS \
@@ -599,7 +594,7 @@ release:deployment:tag:
       '
     - echo 'Waiting for Mainnet Deployment'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       ./scripts/wait-for-deploy.js mainnet.polykey.com;
       '
   after_script:
@@ -625,7 +620,7 @@ release:docker:
     - docker info
     - mkdir $PK_TEST_TMPDIR
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)";
       docker tag "$image_and_tag" "polykey-cli:testtarget";
       npm run test tests/integration/docker;
@@ -653,12 +648,12 @@ release:distribution:
     - echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
     - echo 'Publishing library'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       npm publish --access public;
       '
     - echo 'Releasing application builds'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       gh release \
         create "$CI_COMMIT_TAG" \
         builds/*.closure.gz \
@@ -673,7 +668,7 @@ release:distribution:
       '
     - echo 'Releasing container image'
     - >
-      nix-shell --arg ci true --run $'
+      nix develop .#ci --command bash -c $'
       skopeo login \
         --username "$CI_REGISTRY_USER" \
         --password "$CI_REGISTRY_PASSWORD" \

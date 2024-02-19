@@ -46,6 +46,27 @@ Have a security issue you want to let us know? You can contact us on our website
 
 Our main website is https://polykey.com
 
+## Flakes
+
+Polykey-CLI uses flakes for its build process. By default Nix does not enable this feature.
+To enable it by default, add the following to `~/.config/nix/nix.conf` or `/etc/nix/nix.conf`:
+
+```
+experimental-features = nix-command flakes
+```
+
+Or if you're on NixOS, you can add it to your flakes system configuration:
+
+```
+nix.settings.experimental-features = [ "nix-command" "flakes" ];
+```
+
+Alternatively, to enable it temporarily append the following to any nix related commands:
+
+```
+--extra-experimental-features flakes
+```
+
 ## Installation
 
 Note that JavaScript libraries are not packaged in Nix. Only JavaScript applications are.
@@ -53,8 +74,7 @@ Note that JavaScript libraries are not packaged in Nix. Only JavaScript applicat
 Building the package:
 
 ```sh
-npmDepsHash="$(prefetch-npm-deps ./package-lock.json)"
-nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \"$npmDepsHash\"; }"
+nix build .#polykey-cli
 ```
 
 ### Nix/NixOS
@@ -62,17 +82,27 @@ nix-build -E "(import ./pkgs.nix {}).callPackage ./default.nix { npmDepsHash = \
 Building the releases:
 
 ```sh
-nix-build ./release.nix --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
-nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
-nix-build ./release.nix --attr package.linux.x64.elf --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
-nix-build ./release.nix --attr package.windows.x64.exe --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
-nix-build ./release.nix --attr package.macos.x64.macho --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+# Build the packages for your current platform
+nix build .#polykey-cli
+
+# You can also specify the platform to build for
+nix build .#application
+nix build .#docker
+nix build .#packages.x86_64-linux.polykey-cli
+nix build .#packages.x86_64-windows.polykey-cli
+nix build .#packages.x86_64-darwin.polykey-cli
 ```
 
 Install into Nix user profile:
 
 ```sh
-nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)"
+nix profile install github:MatrixAI/Polykey-CLI
+```
+
+The program can be run directly without installing via `nix run`
+
+```sh
+nix run . -- agent start
 ```
 
 ### Docker
@@ -80,14 +110,14 @@ nix-env -f ./release.nix --install --attr application --argstr npmDepsHash "$(pr
 Install into Docker:
 
 ```sh
-loaded="$(docker load --input "$(nix-build ./release.nix --attr docker --argstr npmDepsHash "$(prefetch-npm-deps ./package-lock.json)")")"
-image="$(cut -d' ' -f3 <<< "$loaded")"
+nix build .#docker
+image="$(docker load < result | cut -d' ' -f3)"
 docker run -it "$image"
 ```
 
 ## Development
 
-Run `nix-shell`, and once you're inside, you can use:
+Run `nix develop`, and once you're inside, you can use:
 
 ```sh
 # install (or reinstall packages from package.json)
