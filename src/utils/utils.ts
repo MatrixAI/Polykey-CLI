@@ -121,7 +121,7 @@ function decodeEscapedWrapped(str: string): string {
 
 // We want to actually match control codes here!
 // eslint-disable-next-line no-control-regex
-const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`]/g;
+const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`\\]/g;
 
 /**
  * This function:
@@ -149,6 +149,7 @@ function encodeEscaped(str: string): string {
       case '"':
       case "'":
       case '`':
+      case '\\':
         return '\\' + char;
       // Add cases for other whitespace characters if needed
       default:
@@ -158,7 +159,7 @@ function encodeEscaped(str: string): string {
   });
 }
 
-const decodeEscapedRegex = /\\([nrtvf"'`]|u[0-9a-fA-F]{4})/g;
+const decodeEscapedRegex = /\\([nrtvf"'`\\]|u[0-9a-fA-F]{4})/g;
 
 /**
  * This function:
@@ -195,6 +196,7 @@ function decodeEscaped(str: string): string {
       case '"':
       case "'":
       case '`':
+      case '\\':
         return lastChar;
     }
     utils.never();
