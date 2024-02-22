@@ -62,6 +62,9 @@ class CommandAuthenticate extends CommandPolykey {
               metadata: auth,
               providerId: providerId,
             },
+            {
+              timer: 120000,
+            },
           );
           for await (const message of genReadable) {
             if (message.request != null) {
