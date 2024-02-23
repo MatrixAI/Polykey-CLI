@@ -1,12 +1,12 @@
 { nix-gitignore
 , linkFarm
-, nodejs
+, nodejs_20
 , lib
 , fetchurl
 }:
 
 rec {
-  nodeVersion = builtins.elemAt (lib.versions.splitVersion nodejs.version) 0;
+  nodeVersion = builtins.elemAt (lib.versions.splitVersion nodejs_20.version) 0;
   # Filter source to only what's necessary for building
   src = nix-gitignore.gitignoreSource [
     # The `.git` itself should be ignored
@@ -33,18 +33,18 @@ rec {
   pkgBuilds = {
     "3.5" = {
       "linux-x64" = fetchurl {
-        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v18.15.0-linux-x64";
-        sha256 = "0pwbh2wxvkhl57s1fb2rivfjay963f00hz98kh5nvs4r2brl2a2p";
+        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-linux-x64";
+        sha256 = "0f065bb2ccfdedaa7889e04604516604c2d0c0a0d9d13869578a6b3916b9a93e";
       };
       "win32-x64" = fetchurl {
-        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v18.15.0-win-x64";
-        sha256 = "04brqm5avx8crfg28w706r0hkm8jx5gyadq9knq67s7jwd8x9j50";
+        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-win-x64";
+        sha256 = "140c377c2c91751832e673cb488724cbd003f01aa237615142cd2907f34fa1a2";
       };
       "macos-x64" = fetchurl {
-        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v18.15.0-macos-x64";
-        sha256 = "0xbqbd6bdfd7qbf94575103n2awndlnfv013mc92scvshl015ffx";
+        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-macos-x64";
+        sha256 = "1558a49dfea01ae42702a71eaa1c7a6479abde8b2778bc7cb4f9a65d65a0afa6";
       };
-      # No build for v18.15.0 macos-arm64 build
+      # No build for v20.11.1 macos-arm64 build
       # "macos-arm64" = fetchurl {
       #   url = "";
       #   sha256 = "";

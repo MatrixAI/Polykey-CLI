@@ -12,7 +12,9 @@
       # The target systems and their vercel/pkg mapping
       systems = {
         "x86_64-linux" = [ "linux" "x64" ];
+        "aarch64-linux" = [ "linux" "arm64" ];
         "x86_64-windows" = [ "win32" "x64" ];
+        "aarch64-windows" = [ "win32" "arm64" ];
         "x86_64-darwin" = [ "darwin" "x64" ];
         "aarch64-darwin" = [ "darwin" "arm64" ];
       };
@@ -94,7 +96,7 @@
 
         shell = { ci ? false }: with pkgs; pkgs.mkShell {
           nativeBuildInputs = [
-            nodejs
+            nodejs_20
             prefetch-npm-deps
             shellcheck
             gitAndTools.gh
