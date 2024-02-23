@@ -44,11 +44,10 @@ rec {
         url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-macos-x64";
         sha256 = "1558a49dfea01ae42702a71eaa1c7a6479abde8b2778bc7cb4f9a65d65a0afa6";
       };
-      # No build for v20.11.1 macos-arm64 build
-      # "macos-arm64" = fetchurl {
-      #   url = "";
-      #   sha256 = "";
-      # };
+      "macos-arm64" = fetchurl {
+        url = "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-macos-arm64";
+        sha256 = "1fa7f9e233820cfc5668ba21b70c463214f981fc69f1b8175b25dfa871451e26";
+      };
     };
   };
   pkgCachePath =
@@ -70,10 +69,9 @@ rec {
             name = fetchedName pkgBuild.macos-x64.name;
             path = pkgBuild.macos-x64;
           }
-          # No build for v18.15 macos-arm64 build
-          # {
-          #   name = fetchedName pkgBuild.macos-arm64.name;
-          #   path = pkgBuild.macos-arm64;
-          # }
+          {
+            name = fetchedName pkgBuild.macos-arm64.name;
+            path = pkgBuild.macos-arm64;
+          }
         ];
 }
