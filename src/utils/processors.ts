@@ -84,6 +84,10 @@ async function processPassword(
   let password: string | undefined;
   if (passwordFile != null) {
     try {
+      const stats = await fs.promises.stat(passwordFile);
+      const perms = '0' + (stats.mode & parseInt('777', 8)).toString(8);
+      if (perms !== '0600') throw new Error('Password file permissions unsafe, expected 0600 permissions');
+
       password = (await fs.promises.readFile(passwordFile, 'utf-8')).trim();
     } catch (e) {
       throw new errors.ErrorPolykeyCLIPasswordFileRead(e.message, {

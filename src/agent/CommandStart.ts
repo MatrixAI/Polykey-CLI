@@ -12,6 +12,7 @@ import type { DeepPartial } from 'polykey/dist/types';
 import type { RecoveryCode } from 'polykey/dist/keys/types';
 import childProcess from 'child_process';
 import process from 'process';
+import * as fs from 'fs';
 import config from 'polykey/dist/config';
 import * as keysErrors from 'polykey/dist/keys/errors';
 import * as polykeyEvents from 'polykey/dist/events';
@@ -28,6 +29,7 @@ class CommandStart extends CommandPolykey {
     this.name('start');
     this.description('Start the Polykey Agent');
     this.addOption(binOptions.recoveryCodeFile);
+    this.addOption(binOptions.recoveryCodeOutFile);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
     this.addOption(binOptions.agentHost);
@@ -265,12 +267,18 @@ class CommandStart extends CommandPolykey {
           type: options.format === 'json' ? 'json' : 'dict',
           data: {
             ...statusLiveData!,
-            ...(recoveryCodeOut != null
+            ...(recoveryCodeOut != null && options.recoveryCodeOutFile == null
               ? { recoveryCode: recoveryCodeOut }
               : {}),
           },
         }),
       );
+      if (options.recoveryCodeOutFile != null && recoveryCodeOut != null) {
+        await fs.promises.writeFile(
+          options.recoveryCodeOutFile,
+          recoveryCodeOut,
+        );
+      }
     });
   }
 }
