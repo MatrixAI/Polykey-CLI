@@ -1,4 +1,5 @@
 import process from 'process';
+import * as fs from 'fs';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -10,6 +11,7 @@ class CommandBootstrap extends CommandPolykey {
     this.name('bootstrap');
     this.description('Bootstrap Keynode State');
     this.addOption(binOptions.recoveryCodeFile);
+    this.addOption(binOptions.recoveryCodeOutFile);
     this.addOption(binOptions.fresh);
     this.addOption(binOptions.privateKeyFile);
     this.addOption(binOptions.passwordOpsLimit);
@@ -37,14 +39,22 @@ class CommandBootstrap extends CommandPolykey {
         logger: this.logger,
       });
       this.logger.info(`Bootstrapped ${options.nodePath}`);
-      process.stdout.write(
-        binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'dict',
-          data: {
-            recoveryCode: recoveryCodeOut,
-          },
-        }),
-      );
+
+      if (options.recoveryCodeOutFile == null) {
+        process.stdout.write(
+          binUtils.outputFormatter({
+            type: options.format === 'json' ? 'json' : 'dict',
+            data: {
+              recoveryCode: recoveryCodeOut,
+            },
+          }),
+        );
+      } else if (recoveryCodeOut != null) {
+        await fs.promises.writeFile(
+          options.recoveryCodeOutFile,
+          recoveryCodeOut,
+        );      
+      }
     });
   }
 }
