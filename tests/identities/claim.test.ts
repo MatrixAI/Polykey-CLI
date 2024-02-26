@@ -103,7 +103,7 @@ describe('claim', () => {
     // Expect(claim!.payload.data.type).toBe('identity');
   });
   test('cannot claim unauthenticated identities', async () => {
-    const { exitCode } = await testUtils.pkStdio(
+    const { exitCode } = await testUtils.pkExec(
       [
         'identities',
         'claim',
@@ -122,7 +122,7 @@ describe('claim', () => {
   test('should fail on invalid inputs', async () => {
     let exitCode: number;
     // Invalid provider
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'claim', `:${testToken.identityId}`],
       {
         env: {
@@ -134,7 +134,7 @@ describe('claim', () => {
     ));
     expect(exitCode).toBe(sysexits.USAGE);
     // Invalid identity
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'claim', `${testToken.providerId}:`],
       {
         env: {

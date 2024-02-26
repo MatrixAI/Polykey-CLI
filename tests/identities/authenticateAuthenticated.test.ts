@@ -120,7 +120,7 @@ describe('authenticate/authenticated', () => {
     let exitCode: number;
     // Authenticate
     // Invalid provider
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'authenticate', '', testToken.identityId],
       {
         env: {
@@ -133,16 +133,13 @@ describe('authenticate/authenticated', () => {
     expect(exitCode).toBe(sysexits.USAGE);
     // Authenticated
     // Invalid provider
-    ({ exitCode } = await testUtils.pkStdio(
-      ['identities', 'authenticate', ''],
-      {
-        env: {
-          PK_NODE_PATH: nodePath,
-          PK_PASSWORD: password,
-        },
-        cwd: dataDir,
+    ({ exitCode } = await testUtils.pkExec(['identities', 'authenticate', ''], {
+      env: {
+        PK_NODE_PATH: nodePath,
+        PK_PASSWORD: password,
       },
-    ));
+      cwd: dataDir,
+    }));
     expect(exitCode).toBe(sysexits.USAGE);
   });
 });
