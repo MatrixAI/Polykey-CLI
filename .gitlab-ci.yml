@@ -248,6 +248,7 @@ integration:builds:
         .#packages.x86_64-linux.executable \
         .#packages.x86_64-windows.executable \
         .#packages.x86_64-darwin.executable \
+        .#packages.aarch64-darwin.executable \
       )";
       cp -r $(echo $builds | tr '\n' ' ') ./builds/;
   artifacts:

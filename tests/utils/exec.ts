@@ -150,7 +150,9 @@ async function pk(args: Array<string>): Promise<any> {
  * Runs pk command functionally with mocked STDIO
  * Both stdout and stderr are the entire output including newlines
  * This can only be used serially, because the mocks it relies on are global singletons
- * If it is used concurrently, the mocking side effects can conflict
+ * If it is used concurrently, the mocking side effects can conflict.
+ * Note that because this does not launch Polykey in a subprocess, the `process.exitCode` of the main process is overriden.
+ * This should only be used for commands that are expected to exit with code 0.
  */
 async function pkStdio(
   args: Array<string> = [],
@@ -160,6 +162,7 @@ async function pkStdio(
   stdout: string;
   stderr: string;
 }> {
+  const lastExitCode = process.exitCode;
   const cwd =
     opts.cwd ??
     (await fs.promises.mkdtemp(path.join(globalThis.tmpDir, 'polykey-test-')));
@@ -221,6 +224,7 @@ async function pkStdio(
   mockProcessAddListener.mockRestore();
   mockProcessOnce.mockRestore();
   mockProcessOn.mockRestore();
+  process.exitCode = lastExitCode;
   return {
     exitCode,
     stdout,

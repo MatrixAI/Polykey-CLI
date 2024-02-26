@@ -361,7 +361,7 @@ describe('search', () => {
   test('should fail on invalid inputs', async () => {
     let exitCode: number;
     // Invalid identity id
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'search', '--identity-id', ''],
       {
         env: {
@@ -373,7 +373,7 @@ describe('search', () => {
     ));
     expect(exitCode).toBe(sysexits.USAGE);
     // Invalid auth identity id
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'search', '--auth-identity-id', ''],
       {
         env: {
@@ -385,7 +385,7 @@ describe('search', () => {
     ));
     expect(exitCode).toBe(sysexits.USAGE);
     // Invalid value for limit
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'search', '--limit', 'NaN'],
       {
         env: {

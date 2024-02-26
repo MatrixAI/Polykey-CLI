@@ -284,7 +284,7 @@ describe('discover/get', () => {
   });
   test('should fail on invalid inputs', async () => {
     // Discover
-    const { exitCode } = await testUtils.pkStdio(
+    const { exitCode } = await testUtils.pkExec(
       ['identities', 'discover', 'invalid'],
       {
         env: {
@@ -296,7 +296,7 @@ describe('discover/get', () => {
     );
     expect(exitCode).toBe(sysexits.USAGE);
     // Get
-    await testUtils.pkStdio(['identities', 'get', 'invalid'], {
+    await testUtils.pkExec(['identities', 'get', 'invalid'], {
       env: {
         PK_NODE_PATH: nodePath,
         PK_PASSWORD: password,

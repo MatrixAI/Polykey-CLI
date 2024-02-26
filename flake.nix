@@ -94,7 +94,7 @@
 
         shell = { ci ? false }: with pkgs; pkgs.mkShell {
           nativeBuildInputs = [
-            nodejs
+            nodejs_20
             prefetch-npm-deps
             shellcheck
             gitAndTools.gh

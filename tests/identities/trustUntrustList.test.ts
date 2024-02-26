@@ -274,7 +274,7 @@ describe('trust/untrust/list', () => {
       // belongs to and add it to our gestalt graph
       // This command should fail first time as we need to allow time for the
       // identity to be linked to a node in the node graph
-      ({ exitCode } = await testUtils.pkStdio(
+      ({ exitCode } = await testUtils.pkExec(
         ['identities', 'trust', providerString],
         {
           env: {
@@ -379,19 +379,16 @@ describe('trust/untrust/list', () => {
   test('should fail on invalid inputs', async () => {
     let exitCode: number;
     // Trust
-    ({ exitCode } = await testUtils.pkStdio(
-      ['identities', 'trust', 'invalid'],
-      {
-        env: {
-          PK_NODE_PATH: nodePath,
-          PK_PASSWORD: password,
-        },
-        cwd: dataDir,
+    ({ exitCode } = await testUtils.pkExec(['identities', 'trust', 'invalid'], {
+      env: {
+        PK_NODE_PATH: nodePath,
+        PK_PASSWORD: password,
       },
-    ));
+      cwd: dataDir,
+    }));
     expect(exitCode).toBe(sysexits.USAGE);
     // Untrust
-    ({ exitCode } = await testUtils.pkStdio(
+    ({ exitCode } = await testUtils.pkExec(
       ['identities', 'untrust', 'invalid'],
       {
         env: {
