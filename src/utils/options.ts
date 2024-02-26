@@ -202,18 +202,32 @@ const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
   .argParser(
     (value: string, previous: Array<[string, string, string?]> | undefined) => {
       const acc = previous ?? [];
-      acc.push(binParsers.parseSecretPath(value));
+      acc.push(binParsers.parseEnvPath(value));
       return acc;
     },
   );
 
 // '-f, --format <format>', 'Output Format'
 const envFormat = new commander.Option(
-  '-of --output-format <outputFormat>',
+  '-ef --env-format <outputFormat>',
   'How the env variables are formatted when outputted. Only used if no commands are executed',
 )
   .choices(['dotenv', 'json', 'prepend'])
   .default('dotenv');
+
+const envInvalid = new commander.Option(
+  '-ei --env-invalid <envInvalid>',
+  'How invalid env variable names are handled when retrieving secrets. `error` will throw, `warn` will log a warning and drop and `ignore` will silently drop.',
+)
+  .choices(['error', 'warn', 'ignore'])
+  .default('error');
+
+const envDuplicate = new commander.Option(
+  '-ed --env-duplicate <envDuplicate>',
+  'How duplicate env variable names are handled. `keep` will keep the exising secret, `overwrite` will overwrite existing with the new secret, `warn` will log a warning and overwrite and `error` will throw.',
+)
+  .choices(['keep', 'overwrite', 'warn', 'error'])
+  .default('overwrite');
 
 export {
   nodePath,
@@ -245,4 +259,6 @@ export {
   commitId,
   envVariables,
   envFormat,
+  envInvalid,
+  envDuplicate,
 };

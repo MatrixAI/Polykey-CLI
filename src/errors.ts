@@ -141,6 +141,17 @@ class ErrorPolykeyCLINodePingFailed<T> extends ErrorPolykeyCLI<T> {
   exitCode = 1;
 }
 
+class ErrorPolykeyCLIInvalidEnvName<T> extends ErrorPolykeyCLI<T> {
+  static description =
+    'Secret retrieved has an invalid environment variable name';
+  exitCode = sysexits.USAGE;
+}
+
+class ErrorPolykeyCLIDuplicateEnvName<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Environment variable name already retrieved';
+  exitCode = sysexits.USAGE;
+}
+
 export {
   ErrorPolykeyCLI,
   ErrorPolykeyCLIUncaughtException,
@@ -159,4 +170,6 @@ export {
   ErrorPolykeyCLIAgentProcess,
   ErrorPolykeyCLINodeFindFailed,
   ErrorPolykeyCLINodePingFailed,
+  ErrorPolykeyCLIInvalidEnvName,
+  ErrorPolykeyCLIDuplicateEnvName,
 };

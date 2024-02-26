@@ -509,6 +509,8 @@ function remoteErrorCause(e: any): [any, number] {
   return [errorCause, depth];
 }
 
+const validEnvRegex = /[a-zA-Z_]+[a-zA-Z0-9_]*/;
+
 export {
   verboseToLogLevel,
   standardErrorReplacer,
@@ -527,6 +529,7 @@ export {
   decodeEscapedWrapped,
   decodeEscaped,
   decodeEscapedRegex,
+  validEnvRegex,
 };
 
 export type { OutputObject };

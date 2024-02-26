@@ -4,6 +4,7 @@ import * as utils from 'polykey/dist/utils';
 import { exec } from '@matrixai/exec';
 import * as binProcessors from '../utils/processors';
 import * as binUtils from '../utils';
+import * as binErrors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 
@@ -19,15 +20,21 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.addOption(binOptions.envVariables);
     this.addOption(binOptions.envFormat);
+    this.addOption(binOptions.envInvalid);
+    this.addOption(binOptions.envDuplicate);
     this.argument('[cmd] [argv...]', 'command and arguments');
     this.action(async (args: Array<string>, options) => {
       const [cmd, ...argv] = args;
       const {
         env: envVariables,
-        outputFormat,
+        envInvalid,
+        envDuplicate,
+        envFormat,
       }: {
         env: Array<[string, string, string?]>;
-        outputFormat: 'dotenv' | 'json' | 'prepend';
+        envInvalid: 'error' | 'warn' | 'ignore';
+        envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
+        envFormat: 'dotenv' | 'json' | 'prepend';
       } = options;
 
       // There are a few stages here
@@ -94,7 +101,51 @@ class CommandEnv extends CommandPolykey {
           for await (const value of responseStream.readable) {
             const { secretName, secretContent } = value;
             let newName = secretRenameMap.get(secretName);
-            newName = newName ?? path.basename(secretName);
+            if (newName == null) {
+              const secretEnvName = path.basename(secretName);
+              // Validating name
+              if (!binUtils.validEnvRegex.test(secretEnvName)) {
+                switch (envInvalid) {
+                  case 'error':
+                    throw new binErrors.ErrorPolykeyCLIInvalidEnvName(
+                      `The following env variable name (${secretEnvName}) is invalid`,
+                    );
+                  case 'warn':
+                    this.logger.warn(
+                      `The following env variable name (${secretEnvName}) is invalid and was dropped`,
+                    );
+                  // Fallthrough
+                  case 'ignore':
+                    continue;
+                  default:
+                    utils.never();
+                }
+              }
+              newName = secretEnvName;
+            }
+            // Handling duplicate names
+            if (envp[newName] != null) {
+              switch (envDuplicate) {
+                // Continue without modifying
+                case 'error':
+                  throw new binErrors.ErrorPolykeyCLIDuplicateEnvName(
+                    `The env variable (${newName}) is duplicate`,
+                  );
+                // Fallthrough
+                case 'keep':
+                  continue;
+                // Log a warning and overwrite
+                case 'warn':
+                  this.logger.warn(
+                    `The env variable (${newName}) is duplicate, overwriting`,
+                  );
+                // Fallthrough
+                case 'overwrite':
+                  break;
+                default:
+                  utils.never();
+              }
+            }
             envp[newName] = secretContent;
           }
           await writeP;
@@ -109,7 +160,7 @@ class CommandEnv extends CommandPolykey {
           exec.execvp(cmd, argv, envp);
         } else {
           // Otherwise we switch between output formats
-          switch (outputFormat) {
+          switch (envFormat) {
             case 'dotenv':
               {
                 // Formatting as a .env file

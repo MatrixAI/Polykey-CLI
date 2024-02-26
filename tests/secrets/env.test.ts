@@ -5,6 +5,7 @@ import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import { vaultOps } from 'polykey/dist/vaults';
 import * as keysUtils from 'polykey/dist/keys/utils';
+import { sysexits } from 'polykey/dist/utils';
 import * as testUtils from '../utils';
 
 describe('commandEnv', () => {
@@ -309,7 +310,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--output-format',
+      '--env-format',
       'dotenv',
     ];
 
@@ -338,7 +339,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--output-format',
+      '--env-format',
       'json',
     ];
 
@@ -369,7 +370,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--output-format',
+      '--env-format',
       'prepend',
     ];
 
@@ -378,5 +379,224 @@ describe('commandEnv', () => {
     expect(result.stdout).toBe(
       'SECRET1="this is the secret1" SECRET2="this is the secret2" SECRET3="this is the secret3" SECRET4="this is the secret4"',
     );
+  });
+  test('testing valid and invalid rename inputs', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'SECRET', 'this is the secret');
+    });
+
+    const valid = [
+      'one',
+      'ONE',
+      'one_two',
+      'ONE_two',
+      'one_TWO',
+      'ONE_TWO',
+      'ONE123',
+      'ONE_123',
+    ];
+
+    const invalid = ['123', '123abc', '123_123', '123_abc', '123 abc', ' '];
+
+    command = [
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-e',
+      `${vaultName}:SECRET=one_123_ABC`,
+      '--',
+      'node',
+      '-e',
+      'console.log(JSON.stringify(process.env))',
+    ];
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-e',
+      ...valid.map((v) => `${vaultName}:SECRET=${v}`),
+    ]);
+    expect(result.exitCode).toBe(0);
+
+    // Checking invalid
+    for (const nameNew of invalid) {
+      const result = await testUtils.pkExec([
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '-e',
+        `${vaultName}:SECRET=${nameNew}`,
+      ]);
+      expect(result.exitCode).toBe(sysexits.USAGE);
+    }
+  });
+  test('invalid handled with error', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, '123', 'this is an invalid secret');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ei',
+      'error',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(64);
+  });
+  test('invalid handled with warn', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, '123', 'this is an invalid secret');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ei',
+      'warn',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toInclude(
+      'The following env variable name (123) is invalid and was dropped',
+    );
+  });
+  test('invalid handled with ignore', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, '123', 'this is an invalid secret');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ei',
+      'ignore',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).not.toInclude(
+      'The following env variable name (123) is invalid and was dropped',
+    );
+  });
+  test('duplicate handled with error', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'secret', 'this is a secret');
+      await vaultOps.mkdir(vault, 'dir');
+      await vaultOps.addSecret(vault, 'dir/secret', 'this is a secret');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ed',
+      'error',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(64);
+    expect(result.stderr).toInclude('ErrorPolykeyCLIDuplicateEnvName');
+  });
+  test('duplicate handled with warn', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'secret', 'this is a secret');
+      await vaultOps.mkdir(vault, 'dir');
+      await vaultOps.addSecret(vault, 'dir/secret', 'this is a secret');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ed',
+      'warn',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).toInclude(
+      'The env variable (secret) is duplicate, overwriting',
+    );
+  });
+  test('duplicate handled with keep', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'secret', 'this is a secret1');
+      await vaultOps.mkdir(vault, 'dir');
+      await vaultOps.addSecret(vault, 'dir/secret', 'this is a secret2');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ed',
+      'keep',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toInclude('this is a secret1');
+  });
+  test('duplicate handled with overwrite', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'secret', 'this is a secret1');
+      await vaultOps.mkdir(vault, 'dir');
+      await vaultOps.addSecret(vault, 'dir/secret', 'this is a secret2');
+    });
+
+    // Checking valid
+    const result = await testUtils.pkExec([
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-ed',
+      'overwrite',
+      '-e',
+      `${vaultName}:.`,
+    ]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toInclude('this is a secret2');
   });
 });
