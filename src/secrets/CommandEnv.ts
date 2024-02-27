@@ -1,179 +1,254 @@
-// Import { spawn } from 'child_process';
-// import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-// import * as vaultsPB from 'polykey/dist/proto/js/polykey/v1/vaults/vaults_pb';
-// import * as secretsPB from 'polykey/dist/proto/js/polykey/v1/secrets/secrets_pb';
-// import PolykeyClient from 'polykey/dist/PolykeyClient';
-// import * as utils from 'polykey/dist/utils';
-// import * as binUtils from '../utils';
-// import * as CLIErrors from '../errors';
-// import * as grpcErrors from 'polykey/dist/grpc/errors';
+import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import path from 'path';
+import os from 'os';
+import * as utils from 'polykey/dist/utils';
+import * as binProcessors from '../utils/processors';
+import * as binUtils from '../utils';
+import * as binErrors from '../errors';
+import CommandPolykey from '../CommandPolykey';
+import * as binOptions from '../utils/options';
 
-// import CommandPolykey from '../CommandPolykey';
-// import * as binOptions from '../utils/options';
+class CommandEnv extends CommandPolykey {
+  constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
+    super(...args);
 
-// class CommandEnv extends CommandPolykey {
-//   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
-//     super(...args);
-//     this.name('env');
-//     this.description('Secrets Env');
-//     this.option(
-//       '--command <command>',
-//       'In the environment of the derivation, run the shell command cmd in an interactive shell (Use --run to use a non-interactive shell instead)',
-//     );
-//     this.option(
-//       '--run <run>',
-//       'In the environment of the derivation, run the shell command cmd in a non-interactive shell, meaning (among other things) that if you hit Ctrl-C while the command is running, the shell exits (Use --command to use an interactive shell instead)',
-//     );
-//     this.arguments(
-//       "Secrets to inject into env, of the format '<vaultName>:<secretPath>[=<variableName>]', you can also control what the environment variable will be called using '[<variableName>]' (defaults to upper, snake case of the original secret name)",
-//     );
-//     this.addOption(binOptions.nodeId);
-//     this.addOption(binOptions.clientHost);
-//     this.addOption(binOptions.clientPort);
-//     this.action(async (options, command) => {
+    // Modify the --format choices to include `dotenv` and `prepend`
+    // @ts-ignore: missing type for `options`
+    const formatOption = this.options.filter((v) => v.short === '-f')[0];
+    if (formatOption == null) {
+      utils.never('The -f --format option should exist');
+    }
+    formatOption.argChoices.push('dotenv', 'prepend');
 
-//     });
-//   }
-// }
+    this.name('env');
+    this.description(
+      `Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.\n\nWhen selecting secrets with --env secrets with invalid names can be selected. By default when these are encountered then the command will throw an error. This behaviour can be modified with '--env-invalid'. the invalid name can be silently dropped with 'ignore' or logged out with 'warn'\n\nDuplicate secret names can be specified, by default with 'overwrite' the env variable will be overwritten with the latest found secret of that name. It can be specified to 'keep' the first found secret of that name, 'error' to throw if there is a duplicate and 'warn' to log a warning while overwriting.`,
+    );
+    this.addOption(binOptions.nodeId);
+    this.addOption(binOptions.clientHost);
+    this.addOption(binOptions.clientPort);
+    this.addOption(binOptions.envVariables);
+    this.addOption(binOptions.envInvalid);
+    this.addOption(binOptions.envDuplicate);
+    this.argument('[cmd] [argv...]', 'command and arguments');
+    this.action(async (args: Array<string>, options) => {
+      const [cmd, ...argv] = args;
+      const {
+        env: envVariables,
+        envInvalid,
+        envDuplicate,
+        format,
+      }: {
+        env: Array<[string, string, string?]>;
+        envInvalid: 'error' | 'warn' | 'ignore';
+        envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
+        format: 'human' | 'dotenv' | 'json' | 'prepend';
+      } = options;
 
-// export default CommandEnv;
+      // There are a few stages here
+      // 1. parse the desired secrets
+      // 2. obtain the desired secrets
+      // 3. switching behaviour here based on parameters
+      //   a. exec the command with the provided env variables from the secrets
+      //   b. output the env variables in the desired format
 
-// OLD COMMAND
-// const env = binUtils.createCommand('env', {
-//   description: 'Runs a modified environment with injected secrets',
-//   nodePath: true,
-//   verbose: true,
-//   format: true,
-// });
-// env.option(
-//   '--command <command>',
-//   'In the environment of the derivation, run the shell command cmd in an interactive shell (Use --run to use a non-interactive shell instead)',
-// );
-// env.option(
-//   '--run <run>',
-//   'In the environment of the derivation, run the shell command cmd in a non-interactive shell, meaning (among other things) that if you hit Ctrl-C while the command is running, the shell exits (Use --command to use an interactive shell instead)',
-// );
-// env.arguments(
-//   "Secrets to inject into env, of the format '<vaultName>:<secretPath>[=<variableName>]', you can also control what the environment variable will be called using '[<variableName>]' (defaults to upper, snake case of the original secret name)",
-// );
-// env.action(async (options, command) => {
-//   const clientConfig = {};
-//   clientConfig['logger'] = new Logger('CLI Logger', LogLevel.WARN, [
-//     new StreamHandler(),
-//   ]);
-//   if (options.verbose) {
-//     clientConfig['logger'].setLevel(LogLevel.DEBUG);
-//   }
-//   clientConfig['nodePath'] = options.nodePath
-//     ? options.nodePath
-//     : utils.getDefaultNodePath();
+      const { default: PolykeyClient } = await import(
+        'polykey/dist/PolykeyClient'
+      );
+      const clientOptions = await binProcessors.processClientOptions(
+        options.nodePath,
+        options.nodeId,
+        options.clientHost,
+        options.clientPort,
+        this.fs,
+        this.logger.getChild(binProcessors.processClientOptions.name),
+      );
+      const meta = await binProcessors.processAuthentication(
+        options.passwordFile,
+        this.fs,
+      );
 
-//   const client = await PolykeyClient.createPolykeyClient(clientConfig);
-//   const vaultMessage = new vaultsPB.Vault();
-//   const secretMessage = new secretsPB.Secret();
-//   secretMessage.setVault(vaultMessage);
-//   const secretPathList: string[] = Array.from<string>(command.args.values());
+      let pkClient: PolykeyClient;
+      this.exitHandlers.handlers.push(async () => {
+        if (pkClient != null) await pkClient.stop();
+      });
+      try {
+        pkClient = await PolykeyClient.createPolykeyClient({
+          nodeId: clientOptions.nodeId,
+          host: clientOptions.clientHost,
+          port: clientOptions.clientPort,
+          options: {
+            nodePath: options.nodePath,
+          },
+          logger: this.logger.getChild(PolykeyClient.name),
+        });
 
-//   try {
-//     if (secretPathList.length < 1) {
-//       throw new CLIErrors.ErrorSecretsUndefined();
-//     }
+        // Getting envs
+        const envp = await binUtils.retryAuthentication(async (auth) => {
+          const responseStream =
+            await pkClient.rpcClient.methods.vaultsSecretsEnv();
+          // Writing desired secrets
+          const secretRenameMap = new Map<string, string | undefined>();
+          const writeP = (async () => {
+            const writer = responseStream.writable.getWriter();
+            let first = true;
+            for (const envVariable of envVariables) {
+              const [nameOrId, secretName, secretNameNew] = envVariable;
+              secretRenameMap.set(secretName, secretNameNew);
+              await writer.write({
+                nameOrId,
+                secretName,
+                metadata: first ? auth : undefined,
+              });
+              first = false;
+            }
+            await writer.close();
+          })();
 
-//     const parsedPathList: {
-//       vaultName: string;
-//       secretName: string;
-//       variableName: string;
-//     }[] = [];
+          const envp: Record<string, string> = {};
+          for await (const value of responseStream.readable) {
+            const { secretName, secretContent } = value;
+            let newName = secretRenameMap.get(secretName);
+            if (newName == null) {
+              const secretEnvName = path.basename(secretName);
+              // Validating name
+              if (!binUtils.validEnvRegex.test(secretEnvName)) {
+                switch (envInvalid) {
+                  case 'error':
+                    throw new binErrors.ErrorPolykeyCLIInvalidEnvName(
+                      `The following env variable name (${secretEnvName}) is invalid`,
+                    );
+                  case 'warn':
+                    this.logger.warn(
+                      `The following env variable name (${secretEnvName}) is invalid and was dropped`,
+                    );
+                  // Fallthrough
+                  case 'ignore':
+                    continue;
+                  default:
+                    utils.never();
+                }
+              }
+              newName = secretEnvName;
+            }
+            // Handling duplicate names
+            if (envp[newName] != null) {
+              switch (envDuplicate) {
+                // Continue without modifying
+                case 'error':
+                  throw new binErrors.ErrorPolykeyCLIDuplicateEnvName(
+                    `The env variable (${newName}) is duplicate`,
+                  );
+                // Fallthrough
+                case 'keep':
+                  continue;
+                // Log a warning and overwrite
+                case 'warn':
+                  this.logger.warn(
+                    `The env variable (${newName}) is duplicate, overwriting`,
+                  );
+                // Fallthrough
+                case 'overwrite':
+                  break;
+                default:
+                  utils.never();
+              }
+            }
+            envp[newName] = secretContent;
+          }
+          await writeP;
+          return envp;
+        }, meta);
+        // End connection early to avoid errors on server
+        await pkClient.stop();
 
-//     for (const path of secretPathList) {
-//       if (!binUtils.pathRegex.test(path)) {
-//         throw new CLIErrors.ErrorSecretPathFormat();
-//       }
+        // Here we want to switch between the different usages
+        if (cmd != null) {
+          // If a cmd is| provided then we default to exec it
+          const platform = os.platform();
+          switch (platform) {
+            case 'linux':
+            // Fallthrough
+            case 'darwin':
+              {
+                const { exec } = await import('@matrixai/exec');
+                exec.execvp(cmd, argv, envp);
+              }
+              break;
+            default: {
+              const { spawnSync } = await import('child_process');
+              const result = spawnSync(cmd, argv, {
+                env: {
+                  ...process.env,
+                  ...envp,
+                },
+                shell: false,
+                windowsHide: true,
+                stdio: 'inherit',
+              });
+              process.exit(result.status ?? 255);
+            }
+          }
+        } else {
+          // Otherwise we switch between output formats
+          switch (format) {
+            case 'human':
+            // Fallthrough
+            case 'dotenv':
+              {
+                // Formatting as a .env file
+                let data = '';
+                for (const [key, value] of Object.entries(envp)) {
+                  data += `${key}="${value}"\n`;
+                }
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'raw',
+                    data,
+                  }),
+                );
+              }
+              break;
+            case 'prepend':
+              {
+                // Formatting as a command input
+                let first = true;
+                let data = '';
+                for (const [key, value] of Object.entries(envp)) {
+                  data += `${first ? '' : ' '}${key}="${value}"`;
+                  first = false;
+                }
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'raw',
+                    data,
+                  }),
+                );
+              }
+              break;
+            case 'json':
+              {
+                const data = {};
+                for (const [key, value] of Object.entries(envp)) {
+                  data[key] = value;
+                }
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'json',
+                    data: data,
+                  }),
+                );
+              }
+              break;
+            default:
+              utils.never();
+          }
+        }
+      } finally {
+        if (pkClient! != null) await pkClient.stop();
+      }
+    });
+  }
+}
 
-//       const [, vaultName, secretName, variableName] = path.match(
-//         binUtils.pathRegex,
-//       )!;
-//       parsedPathList.push({
-//         vaultName,
-//         secretName,
-//         variableName:
-//           variableName ?? secretName.toUpperCase().replace('-', '_'),
-//       });
-//     }
-
-//     const secretEnv = { ...process.env };
-
-//     await client.start({});
-//     const grpcClient = client.grpcClient;
-
-//     for (const obj of parsedPathList) {
-//       vaultMessage.setNameOrId(obj.vaultName);
-//       secretMessage.setSecretName(obj.secretName);
-//       const res = await binUtils.unaryCallCARL<secretsPB.Secret>(
-//         client,
-//         attemptUnaryCall(client, grpcClient.vaultsSecretsGet),
-//       )(secretMessage);
-
-//       const secret = res.getSecretName();
-//       secretEnv[obj.variableName] = secret;
-//     }
-
-//     const shellPath = process.env.SHELL ?? 'sh';
-//     const args: string[] = [];
-
-//     if (options.command && options.run) {
-//       throw new CLIErrors.ErrorInvalidArguments(
-//         'Only one of --command or --run can be specified',
-//       );
-//     } else if (options.command) {
-//       args.push('-i');
-//       args.push('-c');
-//       args.push(`"${options.command}"`);
-//     } else if (options.run) {
-//       args.push('-c');
-//       args.push(`"${options.run}"`);
-//     }
-
-//     const shell = spawn(shellPath, args, {
-//       stdio: 'inherit',
-//       env: secretEnv,
-//       shell: true,
-//     });
-
-//     shell.on('close', (code) => {
-//       if (code !== 0) {
-//         process.stdout.write(
-//           binUtils.outputFormatter({
-//             type: options.format === 'json' ? 'json' : 'list',
-//             data: [`Terminated with ${code}`],
-//           }),
-//         );
-//       }
-//     });
-//   } catch (err) {
-//     if (err instanceof grpcErrors.ErrorGRPCClientTimeout) {
-//       process.stderr.write(`${err.message}\n`);
-//     }
-//     if (err instanceof grpcErrors.ErrorGRPCServerNotStarted) {
-//       process.stderr.write(`${err.message}\n`);
-//     } else {
-//       process.stderr.write(
-//         binUtils.outputFormatter({
-//           type: 'error',
-//           description: err.description,
-//           message: err.message,
-//         }),
-//       );
-//       throw err;
-//     }
-//   } finally {
-//     await client.stop();
-//     options.nodePath = undefined;
-//     options.verbose = undefined;
-//     options.format = undefined;
-//     options.command = undefined;
-//     options.run = undefined;
-//   }
-// });
-
-// export default env;
+export default CommandEnv;

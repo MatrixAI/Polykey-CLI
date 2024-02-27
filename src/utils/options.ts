@@ -197,6 +197,30 @@ const commitId = new commander.Option(
   'Id for a specific commit to read from',
 );
 
+const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
+  .makeOptionMandatory(true)
+  .argParser(
+    (value: string, previous: Array<[string, string, string?]> | undefined) => {
+      const acc = previous ?? [];
+      acc.push(binParsers.parseEnvPath(value));
+      return acc;
+    },
+  );
+
+const envInvalid = new commander.Option(
+  '-ei --env-invalid <envInvalid>',
+  'How invalid env variable names are handled when retrieving secrets. `error` will throw, `warn` will log a warning and drop and `ignore` will silently drop.',
+)
+  .choices(['error', 'warn', 'ignore'])
+  .default('error');
+
+const envDuplicate = new commander.Option(
+  '-ed --env-duplicate <envDuplicate>',
+  'How duplicate env variable names are handled. `keep` will keep the exising secret, `overwrite` will overwrite existing with the new secret, `warn` will log a warning and overwrite and `error` will throw.',
+)
+  .choices(['keep', 'overwrite', 'warn', 'error'])
+  .default('overwrite');
+
 export {
   nodePath,
   format,
@@ -225,4 +249,7 @@ export {
   passwordMemLimit,
   depth,
   commitId,
+  envVariables,
+  envInvalid,
+  envDuplicate,
 };

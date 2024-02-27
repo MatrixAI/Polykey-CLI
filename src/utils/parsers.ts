@@ -71,8 +71,26 @@ function parseSecretPath(secretPath: string): [string, string, string?] {
       `${secretPath} is not of the format <vaultName>:<directoryPath>`,
     );
   }
-  const [, vaultName, directoryPath] = secretPath.match(secretPathRegex)!;
-  return [vaultName, directoryPath, undefined];
+  const [, vaultName, directoryPath, value] =
+    secretPath.match(secretPathRegex)!;
+  return [vaultName, directoryPath, value];
+}
+
+function parseEnvPath(secretPath: string): [string, string, string?] {
+  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+  //      If 'vault1:a/b/c=VARIABLE', ['vault1, 'a/b/c', 'VARIABLE'] is returned
+  // VARIABLE must be a valid ENV variable name
+  const secretPathRegex =
+    /^([\w-]+)(?::)([\w\-\\\/\.\$]+)(?:=)?([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
+  // /^([\w-]+)(?::)([\w\-\\\/\.\$]+)(?:=)?([a-zA-Z_][\w]+)?$/;
+  if (!secretPathRegex.test(secretPath)) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>`,
+    );
+  }
+  const [, vaultName, directoryPath, value] =
+    secretPath.match(secretPathRegex)!;
+  return [vaultName, directoryPath, value];
 }
 
 const parseInteger: (data: string) => number = validateParserToArgParser(
@@ -131,6 +149,7 @@ export {
   validateParserToArgListParser,
   parseCoreCount,
   parseSecretPath,
+  parseEnvPath,
   parseInteger,
   parseNumber,
   parseNodeId,
