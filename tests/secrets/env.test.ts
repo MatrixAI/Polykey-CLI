@@ -292,7 +292,7 @@ describe('commandEnv', () => {
     expect(jsonOut['SECRET3']).toBeUndefined();
     expect(jsonOut['SECRET4']).toBe('this is the secret4');
   });
-  test('should output .env format', async () => {
+  test('should output human format', async () => {
     const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
 
     await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
@@ -310,7 +310,36 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--env-format',
+      '--format',
+      'human',
+    ];
+
+    const result = await testUtils.pkExec([...command]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('SECRET1="this is the secret1"');
+    expect(result.stdout).toContain('SECRET2="this is the secret2"');
+    expect(result.stdout).toContain('SECRET3="this is the secret3"');
+    expect(result.stdout).toContain('SECRET4="this is the secret4"');
+  });
+  test('should output dotenv format', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, 'SECRET1', 'this is the secret1');
+      await vaultOps.addSecret(vault, 'SECRET2', 'this is the secret2');
+      await vaultOps.mkdir(vault, 'dir1');
+      await vaultOps.addSecret(vault, 'dir1/SECRET3', 'this is the secret3');
+      await vaultOps.addSecret(vault, 'dir1/SECRET4', 'this is the secret4');
+    });
+
+    command = [
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-e',
+      `${vaultName}:.`,
+      '--format',
       'dotenv',
     ];
 
@@ -339,7 +368,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--env-format',
+      '--format',
       'json',
     ];
 
@@ -370,7 +399,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--env-format',
+      '--format',
       'prepend',
     ];
 
