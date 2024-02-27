@@ -1,7 +1,7 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import path from 'path';
+import os from 'os';
 import * as utils from 'polykey/dist/utils';
-import { exec } from '@matrixai/exec';
 import * as binProcessors from '../utils/processors';
 import * as binUtils from '../utils';
 import * as binErrors from '../errors';
@@ -156,8 +156,31 @@ class CommandEnv extends CommandPolykey {
 
         // Here we want to switch between the different usages
         if (cmd != null) {
-          // If a cmd is provided then we default to exec it
-          exec.execvp(cmd, argv, envp);
+          // If a cmd is| provided then we default to exec it
+          const platform = os.platform();
+          switch (platform) {
+            case 'linux':
+            // Fallthrough
+            case 'darwin':
+              {
+                const { exec } = await import('@matrixai/exec');
+                exec.execvp(cmd, argv, envp);
+              }
+              break;
+            default: {
+              const { spawnSync } = await import('child_process');
+              const result = spawnSync(cmd, argv, {
+                env: {
+                  ...process.env,
+                  ...envp,
+                },
+                shell: false,
+                windowsHide: true,
+                stdio: 'inherit',
+              });
+              process.exit(result.status ?? 255);
+            }
+          }
         } else {
           // Otherwise we switch between output formats
           switch (envFormat) {
