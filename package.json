@@ -72,7 +72,13 @@
       "node_modules/@matrixai/quic-win32-x64/node.napi.node",
       "node_modules/@matrixai/quic-win32-x64/package.json",
       "node_modules/@matrixai/mdns-linux-x64/node.napi.node",
-      "node_modules/@matrixai/mdns-linux-x64/package.json"
+      "node_modules/@matrixai/mdns-linux-x64/package.json",
+      "node_modules/@matrixai/exec-linux-x64/node.napi.node",
+      "node_modules/@matrixai/exec-linux-x64/package.json",
+      "node_modules/@matrixai/exec-darwin-x64/node.napi.node",
+      "node_modules/@matrixai/exec-darwin-x64/package.json",
+      "node_modules/@matrixai/exec-darwin-arm64/node.napi.node",
+      "node_modules/@matrixai/exec-darwin-arm64/package.json"
     ],
     "scripts": [
       "dist/polykeyWorker.js"
@@ -102,6 +108,9 @@
     "@matrixai/quic-darwin-x64": "*",
     "@matrixai/quic-linux-x64": "*",
     "@matrixai/quic-win32-x64": "*",
+    "@matrixai/exec-darwin-arm64": "*",
+    "@matrixai/exec-darwin-x64": "*",
+    "@matrixai/exec-linux-x64": "*",
     "fd-lock": "*",
     "sodium-native": "*",
     "threads": "*"
