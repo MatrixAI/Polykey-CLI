@@ -11,15 +11,6 @@ import * as binOptions from '../utils/options';
 class CommandEnv extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-
-    // Modify the --format choices to include `dotenv` and `prepend`
-    // @ts-ignore: missing type for `options`
-    const formatOption = this.options.filter((v) => v.short === '-f')[0];
-    if (formatOption == null) {
-      utils.never('The -f --format option should exist');
-    }
-    formatOption.argChoices.push('dotenv', 'prepend');
-
     this.name('env');
     this.description(
       `Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.\n\nWhen selecting secrets with --env secrets with invalid names can be selected. By default when these are encountered then the command will throw an error. This behaviour can be modified with '--env-invalid'. the invalid name can be silently dropped with 'ignore' or logged out with 'warn'\n\nDuplicate secret names can be specified, by default with 'overwrite' the env variable will be overwritten with the latest found secret of that name. It can be specified to 'keep' the first found secret of that name, 'error' to throw if there is a duplicate and 'warn' to log a warning while overwriting.`,
@@ -28,6 +19,7 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
     this.addOption(binOptions.envVariables);
+    this.addOption(binOptions.envFormat);
     this.addOption(binOptions.envInvalid);
     this.addOption(binOptions.envDuplicate);
     this.argument('[cmd] [argv...]', 'command and arguments');
@@ -37,12 +29,12 @@ class CommandEnv extends CommandPolykey {
         env: envVariables,
         envInvalid,
         envDuplicate,
-        format,
+        envFormat,
       }: {
         env: Array<[string, string, string?]>;
         envInvalid: 'error' | 'warn' | 'ignore';
         envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
-        format: 'human' | 'dotenv' | 'json' | 'prepend';
+        envFormat: 'human' | 'dotenv' | 'json' | 'prepend';
       } = options;
 
       // There are a few stages here
@@ -191,7 +183,7 @@ class CommandEnv extends CommandPolykey {
           }
         } else {
           // Otherwise we switch between output formats
-          switch (format) {
+          switch (envFormat) {
             case 'human':
             // Fallthrough
             case 'dotenv':

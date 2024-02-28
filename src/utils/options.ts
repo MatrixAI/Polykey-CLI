@@ -207,6 +207,13 @@ const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
     },
   );
 
+const envFormat = new commander.Option(
+  '-ef --env-format <envFormat>',
+  'Select how the env variables are formatted on stdout if no command is specified',
+)
+  .choices(['human', 'json', 'dotenv', 'prepend'])
+  .default('human');
+
 const envInvalid = new commander.Option(
   '-ei --env-invalid <envInvalid>',
   'How invalid env variable names are handled when retrieving secrets. `error` will throw, `warn` will log a warning and drop and `ignore` will silently drop.',
@@ -250,6 +257,7 @@ export {
   depth,
   commitId,
   envVariables,
+  envFormat,
   envInvalid,
   envDuplicate,
 };

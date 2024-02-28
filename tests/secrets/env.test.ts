@@ -310,7 +310,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--format',
+      '--env-format',
       'human',
     ];
 
@@ -339,7 +339,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--format',
+      '--env-format',
       'dotenv',
     ];
 
@@ -368,7 +368,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--format',
+      '--env-format',
       'json',
     ];
 
@@ -399,7 +399,7 @@ describe('commandEnv', () => {
       dataDir,
       '-e',
       `${vaultName}:.`,
-      '--format',
+      '--env-format',
       'prepend',
     ];
 
