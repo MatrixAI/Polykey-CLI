@@ -8,13 +8,37 @@ import * as binErrors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 
+const description = `
+Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.
+
+When selecting secrets with --env secrets with invalid names can be selected. By default when these are encountered then the command will throw an error. This behaviour can be modified with '--env-invalid'. the invalid name can be silently dropped with 'ignore' or logged out with 'warn'
+
+Duplicate secret names can be specified, by default with 'overwrite' the env variable will be overwritten with the latest found secret of that name. It can be specified to 'keep' the first found secret of that name, 'error' to throw if there is a duplicate and 'warn' to log a warning while overwriting.
+`;
+
+const helpText = `
+This command has two main ways of functioning. Executing a provided command or outputting formatted env variables to] stdout.
+
+Running the command with 'polykey secrets env --env vault:secret -- some command' will do process replacement to run 'some command' while providing environment variables selected by '-e' to that process. Note that process replacement is only supported on unix systems such as linux or macos. When running on windows a child process will be used.
+
+Running the command with 'polykey secrets env --env vault:secret --env-format <format>' will output the environment variables to stdout with the given <format>. The following formats are supported, 'platform', 'json', 'unix', 'cmd' and 'powershell'.
+
+'platform' will automatically detect the current platform and select the appropriate format. This is 'unix' for unix based systems and 'cmd' for windows.
+
+'json' Will format the environment variables as a json object in the form {'key': 'value'}.
+
+'unix' Will format the environment variables as a '.env' file for use on unix systems. It will include comments before each variable showing the secret path used for that variable.
+
+'cmd' Will format the environment variables as a '.bat' file for use on windows cmd. It will include comments before each variable showing the secret path used for that variable.
+
+'powershell' Will format the environment variables as a '.ps1' file for use on windows Powershell. It will include comments before each variable showing the secret path used for that variable.
+`;
+
 class CommandEnv extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('env');
-    this.description(
-      `Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.\n\nWhen selecting secrets with --env secrets with invalid names can be selected. By default when these are encountered then the command will throw an error. This behaviour can be modified with '--env-invalid'. the invalid name can be silently dropped with 'ignore' or logged out with 'warn'\n\nDuplicate secret names can be specified, by default with 'overwrite' the env variable will be overwritten with the latest found secret of that name. It can be specified to 'keep' the first found secret of that name, 'error' to throw if there is a duplicate and 'warn' to log a warning while overwriting.`,
-    );
+    this.description(description);
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
@@ -23,6 +47,7 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.envInvalid);
     this.addOption(binOptions.envDuplicate);
     this.argument('[cmd] [argv...]', 'command and arguments');
+    this.addHelpText('after', helpText);
     this.action(async (args: Array<string>, options) => {
       const [cmd, ...argv] = args;
       const {
@@ -34,15 +59,7 @@ class CommandEnv extends CommandPolykey {
         env: Array<[string, string, string?]>;
         envInvalid: 'error' | 'warn' | 'ignore';
         envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
-        envFormat:
-          | 'platform'
-          | 'human'
-          | 'dotenv'
-          | 'dotbat'
-          | 'dotps'
-          | 'json'
-          | 'prepend'
-          | 'prependCmd';
+        envFormat: 'platform' | 'unix' | 'cmd' | 'powershell' | 'json';
       } = options;
 
       // There are a few stages here
@@ -208,17 +225,15 @@ class CommandEnv extends CommandPolykey {
           // If set to platform then we need to infer the format
           let format = envFormat;
           if (envFormat === 'platform') {
-            const platformFormatMap = {
-              darwin: 'dotenv',
-              linux: 'dotenv',
-              win32: 'dotbat',
-            };
-            format = platformFormatMap[platform] ?? 'dotenv';
+            format =
+              {
+                darwin: 'unix',
+                linux: 'unix',
+                win32: 'cmd',
+              }[platform] ?? 'unix';
           }
           switch (format) {
-            case 'human':
-            // Fallthrough
-            case 'dotenv':
+            case 'unix':
               {
                 // Formatting as a .env file
                 let data = '';
@@ -234,7 +249,7 @@ class CommandEnv extends CommandPolykey {
                 );
               }
               break;
-            case 'dotbat':
+            case 'cmd':
               {
                 // Formatting as a .bat file for windows cmd
                 let data = '';
@@ -250,47 +265,13 @@ class CommandEnv extends CommandPolykey {
                 );
               }
               break;
-            case 'dotps':
+            case 'powershell':
               {
                 // Formatting as a .bat file for windows cmd
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
                   data += `# ${envpPath[key].nameOrId}:${envpPath[key].secretName}\n`;
                   data += `\$env:${key} = '${value}'\n`;
-                }
-                process.stdout.write(
-                  binUtils.outputFormatter({
-                    type: 'raw',
-                    data,
-                  }),
-                );
-              }
-              break;
-            case 'prepend':
-              {
-                // Formatting as a command input
-                let first = true;
-                let data = '';
-                for (const [key, value] of Object.entries(envp)) {
-                  data += `${first ? '' : ' '}${key}="${value}"`;
-                  first = false;
-                }
-                process.stdout.write(
-                  binUtils.outputFormatter({
-                    type: 'raw',
-                    data,
-                  }),
-                );
-              }
-              break;
-            case 'prependCmd':
-              {
-                // Formatting as a command input
-                let first = true;
-                let data = '';
-                for (const [key, value] of Object.entries(envp)) {
-                  data += `${first ? '' : ' & '}set "${key}=${value}"`;
-                  first = false;
                 }
                 process.stdout.write(
                   binUtils.outputFormatter({

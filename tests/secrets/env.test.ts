@@ -69,7 +69,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:SECRET`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -98,7 +98,7 @@ describe('commandEnv', () => {
       `${vaultName}:SECRET1`,
       `${vaultName}:SECRET2`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -129,7 +129,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:dir1`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -158,7 +158,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:SECRET=SECRET_NEW`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -188,7 +188,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:dir1=SECRET_NEW`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -223,7 +223,7 @@ describe('commandEnv', () => {
       `${vaultName}:SECRET2`,
       `${vaultName}:dir1`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -253,7 +253,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:SECRET1`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -292,7 +292,7 @@ describe('commandEnv', () => {
       `${vaultName}:SECRET3=SECRET4`,
       `${vaultName}:dir1`,
       '--env-format',
-      'human',
+      'unix',
       '--',
       'node',
       '-e',
@@ -327,7 +327,7 @@ describe('commandEnv', () => {
       '-e',
       `${vaultName}:.`,
       '--env-format',
-      'human',
+      'unix',
     ];
 
     const result = await testUtils.pkExec([...command]);
@@ -337,7 +337,7 @@ describe('commandEnv', () => {
     expect(result.stdout).toContain('SECRET3="this is the secret3"');
     expect(result.stdout).toContain('SECRET4="this is the secret4"');
   });
-  test('should output dotenv format', async () => {
+  test('should output unix format', async () => {
     const vaultId1 = await polykeyAgent.vaultManager.createVault(
       `${vaultName}1`,
     );
@@ -366,7 +366,7 @@ describe('commandEnv', () => {
       `${vaultName}1:.`,
       `${vaultName}2:.`,
       '--env-format',
-      'dotenv',
+      'unix',
     ];
 
     const result = await testUtils.pkExec([...command]);
@@ -380,7 +380,7 @@ describe('commandEnv', () => {
     expect(result.stdout).toContain('# vault2:dir1/SECRET4');
     expect(result.stdout).toContain('SECRET4="this is the secret4"');
   });
-  test('should output dotbat format', async () => {
+  test('should output cmd format', async () => {
     const vaultId1 = await polykeyAgent.vaultManager.createVault(
       `${vaultName}1`,
     );
@@ -409,7 +409,7 @@ describe('commandEnv', () => {
       `${vaultName}1:.`,
       `${vaultName}2:.`,
       '--env-format',
-      'dotbat',
+      'cmd',
     ];
 
     const result = await testUtils.pkExec([...command]);
@@ -423,7 +423,7 @@ describe('commandEnv', () => {
     expect(result.stdout).toContain('REM vault2:dir1/SECRET4');
     expect(result.stdout).toContain('set "SECRET4=this is the secret4"');
   });
-  test('should output dotps format', async () => {
+  test('should output powershell format', async () => {
     const vaultId1 = await polykeyAgent.vaultManager.createVault(
       `${vaultName}1`,
     );
@@ -452,7 +452,7 @@ describe('commandEnv', () => {
       `${vaultName}1:.`,
       `${vaultName}2:.`,
       '--env-format',
-      'dotps',
+      'powershell',
     ];
 
     const result = await testUtils.pkExec([...command]);
@@ -497,62 +497,6 @@ describe('commandEnv', () => {
       SECRET4: 'this is the secret4',
     });
   });
-  test('should output prepend format', async () => {
-    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
-
-    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
-      await vaultOps.addSecret(vault, 'SECRET1', 'this is the secret1');
-      await vaultOps.addSecret(vault, 'SECRET2', 'this is the secret2');
-      await vaultOps.mkdir(vault, 'dir1');
-      await vaultOps.addSecret(vault, 'dir1/SECRET3', 'this is the secret3');
-      await vaultOps.addSecret(vault, 'dir1/SECRET4', 'this is the secret4');
-    });
-
-    command = [
-      'secrets',
-      'env',
-      '-np',
-      dataDir,
-      '-e',
-      `${vaultName}:.`,
-      '--env-format',
-      'prepend',
-    ];
-
-    const result = await testUtils.pkExec([...command]);
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(
-      'SECRET1="this is the secret1" SECRET2="this is the secret2" SECRET3="this is the secret3" SECRET4="this is the secret4"',
-    );
-  });
-  test('should output prependCmd format', async () => {
-    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
-
-    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
-      await vaultOps.addSecret(vault, 'SECRET1', 'this is the secret1');
-      await vaultOps.addSecret(vault, 'SECRET2', 'this is the secret2');
-      await vaultOps.mkdir(vault, 'dir1');
-      await vaultOps.addSecret(vault, 'dir1/SECRET3', 'this is the secret3');
-      await vaultOps.addSecret(vault, 'dir1/SECRET4', 'this is the secret4');
-    });
-
-    command = [
-      'secrets',
-      'env',
-      '-np',
-      dataDir,
-      '-e',
-      `${vaultName}:.`,
-      '--env-format',
-      'prependCmd',
-    ];
-
-    const result = await testUtils.pkExec([...command]);
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(
-      'set "SECRET1=this is the secret1" & set "SECRET2=this is the secret2" & set "SECRET3=this is the secret3" & set "SECRET4=this is the secret4"',
-    );
-  });
   test('testing valid and invalid rename inputs', async () => {
     const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
 
@@ -580,7 +524,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-e',
       ...valid.map((v) => `${vaultName}:SECRET=${v}`),
     ]);
@@ -594,7 +538,7 @@ describe('commandEnv', () => {
         '-np',
         dataDir,
         '--env-format',
-        'human',
+        'unix',
         '-e',
         `${vaultName}:SECRET=${nameNew}`,
       ]);
@@ -615,7 +559,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ei',
       'error',
       '-e',
@@ -637,7 +581,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ei',
       'warn',
       '-e',
@@ -663,7 +607,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ei',
       'ignore',
       '-e',
@@ -691,7 +635,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ed',
       'error',
       '-e',
@@ -716,7 +660,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ed',
       'warn',
       '-e',
@@ -743,7 +687,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ed',
       'keep',
       '-e',
@@ -768,7 +712,7 @@ describe('commandEnv', () => {
       '-np',
       dataDir,
       '--env-format',
-      'human',
+      'unix',
       '-ed',
       'overwrite',
       '-e',
