@@ -49,17 +49,12 @@ class CommandCert extends CommandPolykey {
             }),
           auth,
         );
-        const result = {
-          cert: response.cert,
-        };
-        let output: any = result;
-        if (options.format === 'human') {
-          output = ['Root certificate:', result.cert];
-        }
         process.stdout.write(
           binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: output,
+            type: options.format === 'json' ? 'json' : 'dict',
+            data: {
+              cert: response.cert,
+            },
           }),
         );
       } finally {
