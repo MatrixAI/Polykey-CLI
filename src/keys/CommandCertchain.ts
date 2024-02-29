@@ -52,19 +52,23 @@ class CommandsCertchain extends CommandPolykey {
           }
           return data;
         }, auth);
-        const result = {
-          certchain: data,
-        };
-        let output: any = result;
-        if (options.format === 'human') {
-          output = ['Root Certificate Chain:', ...result.certchain];
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                certchain: data,
+              },
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'list',
+              data,
+            }),
+          );
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: output,
-          }),
-        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
