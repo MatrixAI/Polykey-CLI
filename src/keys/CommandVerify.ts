@@ -107,17 +107,12 @@ class CommandVerify extends CommandPolykey {
             }),
           auth,
         );
-        const result = {
-          signatureVerified: response.success,
-        };
-        let output: any = result;
-        if (options.format === 'human') {
-          output = { 'Signature verified:': result.signatureVerified };
-        }
         process.stdout.write(
           binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
-            data: output,
+            data: {
+              signatureVerified: response.success,
+            },
           }),
         );
       } finally {
