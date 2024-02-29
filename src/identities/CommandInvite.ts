@@ -59,19 +59,11 @@ class CommandClaim extends CommandPolykey {
             }),
           auth,
         );
-        const message = `Successfully sent Gestalt Invite notification to Keynode with ID ${nodesUtils.encodeNodeId(
-          nodeId,
-        )}`;
-        let output: string | Uint8Array;
-        if (options.format === 'json') {
-          output = binUtils.outputFormatter({
-            type: 'json',
-            data: { message },
-          });
-        } else {
-          output = `${message}\n`;
-        }
-        process.stdout.write(output);
+        this.logger.info(
+          `Successfully sent Gestalt Invite notification to Keynode with ID ${nodesUtils.encodeNodeId(
+            nodeId,
+          )}`,
+        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
