@@ -71,17 +71,12 @@ class CommandSign extends CommandPolykey {
             }),
           auth,
         );
-        const result = {
-          signature: response.signature,
-        };
-        let output: any = result;
-        if (options.format === 'human') {
-          output = { 'Signature:': result.signature };
-        }
         process.stdout.write(
           binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
-            data: output,
+            data: {
+              signature: response.signature,
+            },
           }),
         );
       } finally {
