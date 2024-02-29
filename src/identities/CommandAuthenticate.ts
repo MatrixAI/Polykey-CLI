@@ -83,7 +83,9 @@ class CommandAuthenticate extends CommandPolykey {
                   type: options.format === 'json' ? 'json' : 'dict',
                   data: {
                     url: message.request.url,
-                    ...message.request.dataMap,
+                    ...(options.format === 'json'
+                      ? { dataMap: message.request.dataMap }
+                      : message.request.dataMap),
                   },
                 }),
               );
@@ -91,16 +93,12 @@ class CommandAuthenticate extends CommandPolykey {
               this.logger.info(
                 `Authenticated digital identity provider ${providerId}`,
               );
-              let output: string | Uint8Array;
-              if (options.format === 'json') {
-                output = binUtils.outputFormatter({
-                  type: 'json',
+              process.stdout.write(
+                binUtils.outputFormatter({
+                  type: options.format === 'json' ? 'json' : 'dict',
                   data: { identityId: message.response.identityId },
-                });
-              } else {
-                output = `${message.response.identityId}\n`;
-              }
-              process.stdout.write(output);
+                }),
+              );
             } else {
               never();
             }
