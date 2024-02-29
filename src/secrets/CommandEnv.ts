@@ -35,6 +35,7 @@ class CommandEnv extends CommandPolykey {
         envInvalid: 'error' | 'warn' | 'ignore';
         envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
         envFormat:
+          | 'platform'
           | 'human'
           | 'dotenv'
           | 'dotbat'
@@ -176,9 +177,9 @@ class CommandEnv extends CommandPolykey {
         await pkClient.stop();
 
         // Here we want to switch between the different usages
+        const platform = os.platform();
         if (cmd != null) {
           // If a cmd is| provided then we default to exec it
-          const platform = os.platform();
           switch (platform) {
             case 'linux':
             // Fallthrough
@@ -204,7 +205,17 @@ class CommandEnv extends CommandPolykey {
           }
         } else {
           // Otherwise we switch between output formats
-          switch (envFormat) {
+          // If set to platform then we need to infer the format
+          let format = envFormat;
+          if (envFormat === 'platform') {
+            const platformFormatMap = {
+              darwin: 'dotenv',
+              linux: 'dotenv',
+              win32: 'dotbat',
+            };
+            format = platformFormatMap[platform] ?? 'dotenv';
+          }
+          switch (format) {
             case 'human':
             // Fallthrough
             case 'dotenv':
