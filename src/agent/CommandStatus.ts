@@ -87,7 +87,9 @@ class CommandStatus extends CommandPolykey {
               sourceVersion: response.sourceVersion,
               stateVersion: response.stateVersion,
               networkVersion: response.networkVersion,
-              ...response.versionMetadata,
+              ...(options.format === 'json'
+                ? { versionMetadata: response.versionMetadata }
+                : response.versionMetadata),
             },
           }),
         );
