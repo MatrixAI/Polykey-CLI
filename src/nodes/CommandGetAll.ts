@@ -57,25 +57,41 @@ class CommandGetAll extends CommandPolykey {
           },
           auth,
         );
-        let output: Array<any> = [];
-        if (options.format === 'human') {
+        if (options.format === 'json') {
+          process.stdout.write(binUtils.outputFormatter({
+            type: 'json',
+            data: resultOutput,
+          }));
+        }
+        else {
+          let output: Array<{
+            nodeId: string;
+            address: string;
+            bucketIndex: number;
+          }> = [];
           for (const nodesGetMessage of resultOutput) {
             const nodeIdEncoded = nodesGetMessage.nodeIdEncoded;
             const bucketIndex = nodesGetMessage.bucketIndex;
             for (const address of Object.keys(nodesGetMessage.nodeContact)) {
-              output.push(
-                `NodeId ${nodeIdEncoded}, Address ${address}, bucketIndex ${bucketIndex}`,
-              );
+              output.push({
+                nodeId: nodeIdEncoded,
+                address,
+                bucketIndex,
+              });
             }
           }
-        } else {
-          output = resultOutput;
+          process.stdout.write(binUtils.outputFormatter({
+            type: 'table',
+            options: {
+              columns: [
+                "nodeId",
+                "address",
+                "bucketIndex",
+              ]
+            },
+            data: output,
+          }));
         }
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: output,
-        });
-        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
