@@ -220,7 +220,7 @@ describe('stop', () => {
         },
       );
       testUtils.expectProcessError(exitCode, stderr, [
-        new binErrors.ErrorPolykeyCLIAgentStatus('agent is starting'),
+        new binErrors.ErrorPolykeyCLIAgentStatus('Agent is starting'),
       ]);
       await status.waitFor('LIVE');
       await testUtils.pkStdio(['agent', 'stop'], {
