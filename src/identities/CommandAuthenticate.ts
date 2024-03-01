@@ -72,7 +72,12 @@ class CommandAuthenticate extends CommandPolykey {
               this.logger.info(
                 'Use any additional additional properties to complete authentication',
               );
-              identitiesUtils.browser(message.request.url);
+              try {
+                await identitiesUtils.browser(message.request.url);
+              } catch (e) {
+                if (e.code !== 'ENOENT') throw e;
+                // Otherwise we ignore `ENOENT` as a failure to spawn a browser
+              }
               process.stdout.write(
                 binUtils.outputFormatter({
                   type: options.format === 'json' ? 'json' : 'dict',
