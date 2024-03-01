@@ -98,7 +98,7 @@ describe('find', () => {
     });
   });
   test('finds an online node', async () => {
-    const { exitCode, stdout } = await testUtils.pkStdio(
+    const { exitCode, stdout, stderr } = await testUtils.pkStdio(
       [
         'nodes',
         'find',
@@ -117,14 +117,11 @@ describe('find', () => {
     expect(exitCode).toBe(0);
     const output = JSON.parse(stdout);
     expect(output).toMatchObject({
-      success: true,
-      id: nodesUtils.encodeNodeId(remoteOnlineNodeId),
+      nodeAddress: expect.any(Object),
+      nodeContactAddressData: expect.any(Object),
     });
-    expect(output.address).toMatchObject({
-      host: remoteOnlineHost,
-      port: remoteOnlinePort,
-    });
-    expect(output.message).toMatch(
+    expect(output.nodeAddress).toEqual([remoteOnlineHost, remoteOnlinePort]);
+    expect(stderr).toMatch(
       new RegExp(`Found node at .*?${remoteOnlineHost}:${remoteOnlinePort}.*?`),
     );
   });
@@ -135,7 +132,7 @@ describe('find', () => {
       const unknownNodeId = nodesUtils.decodeNodeId(
         'vrcacp9vsb4ht25hds6s4lpp2abfaso0mptcfnh499n35vfcn2gkg',
       );
-      const { exitCode, stdout } = await testUtils.pkStdio(
+      const { exitCode, stderr } = await testUtils.pkExec(
         [
           'nodes',
           'find',
@@ -152,13 +149,7 @@ describe('find', () => {
         },
       );
       expect(exitCode).toBe(sysexits.GENERAL);
-      expect(JSON.parse(stdout)).toEqual({
-        success: false,
-        message: `Failed to find node ${nodesUtils.encodeNodeId(
-          unknownNodeId!,
-        )}`,
-        id: nodesUtils.encodeNodeId(unknownNodeId!),
-      });
+      expect(JSON.parse(stderr).type).toBe('ErrorPolykeyCLINodeFindFailed');
     },
     globalThis.failedConnectionTimeout,
   );

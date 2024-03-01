@@ -61,12 +61,6 @@ class CommandFind extends CommandPolykey {
           message: '',
           id: '',
         };
-        let foundAddress:
-          | {
-              host: Host | Hostname;
-              port: Port;
-            }
-          | undefined;
         try {
           const response = await binUtils.retryAuthentication(
             (auth) =>
@@ -79,42 +73,41 @@ class CommandFind extends CommandPolykey {
           result.success = true;
           result.id = nodesUtils.encodeNodeId(nodeId);
           const [host, port] = response.nodeAddress;
-          foundAddress = {
-            host,
-            port,
-          };
-          result.address = foundAddress;
-          result.message = `Found node at ${networkUtils.buildAddress(
+          const formattedNodeAddress = networkUtils.buildAddress(
             host as Host,
             port as Port,
-          )}`;
+          );
+          process.stderr.write(`Found node at ${formattedNodeAddress}\n`);
+          if (options.format === 'json') {
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'json',
+                data: {
+                  nodeAddress: response.nodeAddress,
+                  nodeContactAddressData: response.nodeContactAddressData,
+                },
+              }),
+            );
+          } else {
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'dict',
+                data: {
+                  nodeAddress: formattedNodeAddress,
+                  ...response.nodeContactAddressData,
+                },
+              }),
+            );
+          }
         } catch (err) {
           if (
             !(err.cause instanceof nodesErrors.ErrorNodeGraphNodeIdNotFound)
           ) {
             throw err;
           }
-          // Else failed to find the node.
-          result.success = false;
-          result.id = nodesUtils.encodeNodeId(nodeId);
-          result.message = `Failed to find node ${result.id}`;
-        }
-        let outputFormatted: string | Uint8Array;
-        if (options.format === 'json') {
-          outputFormatted = binUtils.outputFormatter({
-            type: 'json',
-            data: result,
-          });
-        } else {
-          outputFormatted = binUtils.outputFormatter({
-            type: 'list',
-            data: [`Found node at ${foundAddress}`],
-          });
-        }
-        process.stdout.write(outputFormatted);
-        // Like ping, it should error when failing to find node for automation reasons.
-        if (!result.success) {
-          throw new errors.ErrorPolykeyCLINodeFindFailed(result.message);
+          throw new errors.ErrorPolykeyCLINodeFindFailed(
+            `Failed to find node ${nodesUtils.encodeNodeId(nodeId)}`,
+          );
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();
