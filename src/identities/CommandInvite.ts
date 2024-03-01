@@ -59,10 +59,10 @@ class CommandClaim extends CommandPolykey {
             }),
           auth,
         );
-        this.logger.info(
+        process.stderr.write(
           `Successfully sent Gestalt Invite notification to Keynode with ID ${nodesUtils.encodeNodeId(
             nodeId,
-          )}`,
+          )}\n`,
         );
       } finally {
         if (pkClient! != null) await pkClient.stop();

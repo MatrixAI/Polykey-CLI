@@ -68,9 +68,11 @@ class CommandAuthenticate extends CommandPolykey {
           );
           for await (const message of genReadable) {
             if (message.request != null) {
-              this.logger.info(`Navigate to the URL in order to authenticate`);
-              this.logger.info(
-                'Use any additional additional properties to complete authentication',
+              process.stderr.write(
+                `Navigate to the URL in order to authenticate\n`,
+              );
+              process.stderr.write(
+                'Use any additional additional properties to complete authentication\n',
               );
               try {
                 await identitiesUtils.browser(message.request.url);
@@ -90,8 +92,8 @@ class CommandAuthenticate extends CommandPolykey {
                 }),
               );
             } else if (message.response != null) {
-              this.logger.info(
-                `Authenticated digital identity provider ${providerId}`,
+              process.stderr.write(
+                `Authenticated digital identity provider ${providerId}\n`,
               );
               process.stdout.write(
                 binUtils.outputFormatter({
