@@ -106,7 +106,6 @@ describe('ping', () => {
       expect(stderr).toContain('No response received');
       expect(JSON.parse(stdout)).toEqual({
         success: false,
-        message: 'No response received',
       });
     },
     globalThis.failedConnectionTimeout,
@@ -136,13 +135,12 @@ describe('ping', () => {
       expect(exitCode).not.toBe(0); // Should fail if node doesn't exist.
       expect(JSON.parse(stdout)).toEqual({
         success: false,
-        message: `No response received`,
       });
     },
     globalThis.failedConnectionTimeout,
   );
   test('succeed when pinging a live node', async () => {
-    const { exitCode, stdout } = await testUtils.pkStdio(
+    const { exitCode, stdout, stderr } = await testUtils.pkStdio(
       [
         'nodes',
         'ping',
@@ -161,7 +159,7 @@ describe('ping', () => {
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
       success: true,
-      message: 'Node is Active.',
     });
+    expect(stderr).toContain('Node is Active');
   });
 });

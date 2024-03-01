@@ -58,13 +58,14 @@ class CommandGetAll extends CommandPolykey {
           auth,
         );
         if (options.format === 'json') {
-          process.stdout.write(binUtils.outputFormatter({
-            type: 'json',
-            data: resultOutput,
-          }));
-        }
-        else {
-          let output: Array<{
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: resultOutput,
+            }),
+          );
+        } else {
+          const output: Array<{
             nodeId: string;
             address: string;
             bucketIndex: number;
@@ -80,17 +81,15 @@ class CommandGetAll extends CommandPolykey {
               });
             }
           }
-          process.stdout.write(binUtils.outputFormatter({
-            type: 'table',
-            options: {
-              columns: [
-                "nodeId",
-                "address",
-                "bucketIndex",
-              ]
-            },
-            data: output,
-          }));
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'table',
+              options: {
+                columns: ['nodeId', 'address', 'bucketIndex'],
+              },
+              data: output,
+            }),
+          );
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

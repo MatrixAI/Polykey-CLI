@@ -57,23 +57,19 @@ class CommandPing extends CommandPolykey {
             }),
           auth,
         );
-        const status = { success: false, message: '' };
-        status.success = statusMessage ? statusMessage.success : false;
-        if (!status.success && !error) {
+        if (!statusMessage.success) {
           error = new errors.ErrorPolykeyCLINodePingFailed(
             'No response received',
           );
         }
-        if (status.success) status.message = 'Node is Active.';
-        else status.message = error.message;
-        const output: any =
-          options.format === 'json' ? status : [status.message];
+        if (statusMessage.success) process.stderr.write('Node is Active\n');
         const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: output,
+          type: options.format === 'json' ? 'json' : 'dict',
+          data: {
+            success: statusMessage.success,
+          },
         });
         process.stdout.write(outputFormatted);
-
         if (error != null) throw error;
       } finally {
         if (pkClient! != null) await pkClient.stop();
