@@ -57,7 +57,14 @@ class CommandAdd extends CommandPolykey {
           }
           return connectionEntries;
         }, auth);
-        if (options.format === 'human') {
+        if (options.format === 'json') {
+          // Wait for outputFormatter to complete and then write to stdout
+          const outputFormatted = binUtils.outputFormatter({
+            type: 'json',
+            data: connections,
+          });
+          process.stdout.write(outputFormatted);
+        } else {
           // Wait for outputFormatter to complete and then write to stdout
           const outputFormatted = binUtils.outputFormatter({
             type: 'table',
@@ -73,13 +80,6 @@ class CommandAdd extends CommandPolykey {
               ],
               includeHeaders: true,
             },
-          });
-          process.stdout.write(outputFormatted);
-        } else {
-          // Wait for outputFormatter to complete and then write to stdout
-          const outputFormatted = binUtils.outputFormatter({
-            type: 'json',
-            data: connections,
           });
           process.stdout.write(outputFormatted);
         }
