@@ -81,8 +81,8 @@ describe('claim', () => {
     });
   });
   test('sends a gestalt invite', async () => {
-    const { exitCode, stdout } = await testUtils.pkStdio(
-      ['nodes', 'claim', remoteIdEncoded],
+    const { exitCode, stdout, stderr } = await testUtils.pkStdio(
+      ['nodes', 'claim', remoteIdEncoded, '--format', 'json'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -92,15 +92,15 @@ describe('claim', () => {
       },
     );
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('Successfully generated a cryptolink claim');
-    expect(stdout).toContain(remoteIdEncoded);
+    expect(JSON.parse(stdout)).toMatchObject({ success: true });
+    expect(stderr).toContain(remoteIdEncoded);
   });
   test('sends a gestalt invite (force invite)', async () => {
     await remoteNode.notificationsManager.sendNotification(localId, {
       type: 'GestaltInvite',
     });
-    const { exitCode, stdout } = await testUtils.pkStdio(
-      ['nodes', 'claim', remoteIdEncoded, '--force-invite'],
+    const { exitCode, stdout, stderr } = await testUtils.pkStdio(
+      ['nodes', 'claim', remoteIdEncoded, '--force-invite', '--format', 'json'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -110,15 +110,15 @@ describe('claim', () => {
       },
     );
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('Successfully generated a cryptolink');
-    expect(stdout).toContain(nodesUtils.encodeNodeId(remoteId));
+    expect(JSON.parse(stdout)).toMatchObject({ success: true });
+    expect(stderr).toContain(nodesUtils.encodeNodeId(remoteId));
   });
   test('claims a node', async () => {
     await remoteNode.notificationsManager.sendNotification(localId, {
       type: 'GestaltInvite',
     });
-    const { exitCode, stdout } = await testUtils.pkStdio(
-      ['nodes', 'claim', remoteIdEncoded],
+    const { exitCode, stdout, stderr } = await testUtils.pkStdio(
+      ['nodes', 'claim', remoteIdEncoded, '--format', 'json'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -128,7 +128,7 @@ describe('claim', () => {
       },
     );
     expect(exitCode).toBe(0);
-    expect(stdout).toContain('cryptolink claim');
-    expect(stdout).toContain(remoteIdEncoded);
+    expect(JSON.parse(stdout)).toMatchObject({ success: true });
+    expect(stderr).toContain(remoteIdEncoded);
   });
 });
