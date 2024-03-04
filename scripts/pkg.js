@@ -103,6 +103,7 @@ async function main(argv = process.argv) {
     ['ls', '--all', '--omit=dev', '--parseable'],
     {
       windowsHide: true,
+      shell: process.platform === 'win32',
       encoding: 'utf-8',
     },
   );
@@ -149,6 +150,7 @@ async function main(argv = process.argv) {
   childProcess.execFileSync('pkg', pkgArgs, {
     stdio: ['inherit', 'inherit', 'inherit'],
     windowsHide: true,
+    shell: process.platform === 'win32',
     encoding: 'utf-8',
   });
   await fs.promises.rm(pkgConfigPath);
