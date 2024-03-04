@@ -42,7 +42,6 @@ class CommandList extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        let output: any;
         const gestalts = await binUtils.retryAuthentication(async (auth) => {
           const gestalts: Array<any> = [];
           const stream = await pkClient.rpcClient.methods.gestaltsGestaltList({
@@ -82,32 +81,41 @@ class CommandList extends CommandPolykey {
           }
           return gestalts;
         }, auth);
-        output = gestalts;
-        if (options.format !== 'json') {
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: options.format === 'json' ? 'json' : 'list',
+              data: gestalts,
+            }),
+          );
+        } else {
           // Convert to a human-readable list.
-          output = [];
           let count = 1;
           for (const gestalt of gestalts) {
-            output.push(`gestalt ${count}`);
-            output.push(`permissions: ${gestalt.permissions ?? 'None'}`);
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'dict',
+                data: {
+                  gestalt: count,
+                  permissions: gestalt.permissions,
+                },
+              }),
+            );
             // Listing nodes
-            for (const node of gestalt.nodes) {
-              output.push(`${node.nodeId}`);
-            }
+            const nodeIds = gestalt.nodes.map((node) => node.nodeId);
             // Listing identities
-            for (const identity of gestalt.identities) {
-              output.push(`${identity.providerId}:${identity.identityId}`);
-            }
-            output.push('');
+            const identities = gestalt.identities.map(
+              (identity) => `${identity.providerId}:${identity.identityId}`,
+            );
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'list',
+                data: nodeIds.concat(identities),
+              }) + '\n',
+            );
             count++;
           }
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: output,
-          }),
-        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
