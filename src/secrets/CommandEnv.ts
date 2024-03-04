@@ -21,9 +21,9 @@ This command has two main ways of functioning. Executing a provided command or o
 
 Running the command with 'polykey secrets env --env vault:secret -- some command' will do process replacement to run 'some command' while providing environment variables selected by '-e' to that process. Note that process replacement is only supported on unix systems such as linux or macos. When running on windows a child process will be used.
 
-Running the command with 'polykey secrets env --env vault:secret --env-format <format>' will output the environment variables to stdout with the given <format>. The following formats are supported, 'platform', 'json', 'unix', 'cmd' and 'powershell'.
+Running the command with 'polykey secrets env --env vault:secret --env-format <format>' will output the environment variables to stdout with the given <format>. The following formats are supported, 'auto', 'json', 'unix', 'cmd' and 'powershell'.
 
-'platform' will automatically detect the current platform and select the appropriate format. This is 'unix' for unix based systems and 'cmd' for windows.
+'auto' will automatically detect the current platform and select the appropriate format. This is 'unix' for unix based systems and 'cmd' for windows.
 
 'json' Will format the environment variables as a json object in the form {'key': 'value'}.
 
@@ -59,7 +59,7 @@ class CommandEnv extends CommandPolykey {
         env: Array<[string, string, string?]>;
         envInvalid: 'error' | 'warn' | 'ignore';
         envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
-        envFormat: 'platform' | 'unix' | 'cmd' | 'powershell' | 'json';
+        envFormat: 'auto' | 'unix' | 'cmd' | 'powershell' | 'json';
       } = options;
 
       // There are a few stages here
@@ -222,9 +222,9 @@ class CommandEnv extends CommandPolykey {
           }
         } else {
           // Otherwise we switch between output formats
-          // If set to platform then we need to infer the format
+          // If set to `auto` then we need to infer the format
           let format = envFormat;
-          if (envFormat === 'platform') {
+          if (envFormat === 'auto') {
             format =
               {
                 darwin: 'unix',

@@ -211,8 +211,8 @@ const envFormat = new commander.Option(
   '-ef --env-format <envFormat>',
   'Select how the env variables are formatted on stdout if no command is specified',
 )
-  .choices(['platform', 'json', 'unix', 'cmd', 'powershell'])
-  .default('platform');
+  .choices(['auto', 'json', 'unix', 'cmd', 'powershell'])
+  .default('auto');
 
 const envInvalid = new commander.Option(
   '-ei --env-invalid <envInvalid>',
