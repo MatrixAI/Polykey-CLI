@@ -38,7 +38,6 @@
           src = utils.src;
           COMMIT_HASH = commitHash;
           GIT_DIR = if commitHash != null then null else utils.dotGit;
-          npmInstallFlags = [ "--force" ];
           postInstall = ''
             mv "$packageOut"/build/build.json "$out"/build.json;
             rm -rf \
@@ -63,7 +62,6 @@
           PKG_IGNORE_TAG = 1;
           COMMIT_HASH = commitHash;
           GIT_DIR = if commitHash != null then null else utils.dotGit;
-          npmInstallFlags = [ "--force" ];
           postBuild = ''
             npm run pkg -- \
               --output=out \
@@ -126,7 +124,7 @@
 
             export PATH="$(pwd)/dist/bin:$(npm root)/.bin:$PATH"
 
-            npm install --ignore-scripts --force
+            npm install --ignore-scripts
 
             set +v
           '';
