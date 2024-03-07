@@ -246,15 +246,15 @@ integration:builds:
         --print-out-paths \
         .# \
         .#docker \
-        .#packages.x86_64-linux.executable \
-        .#packages.x86_64-windows.executable \
-        .#packages.x86_64-darwin.executable \
-        .#packages.aarch64-darwin.executable \
       )";
       cp -r $(echo $builds | tr '\n' ' ') ./builds/;
+      nix develop .#ci --command bash -c $'
+        npm run build
+      '
   artifacts:
     paths:
       - ./builds/
+      - ./dist/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -361,12 +361,26 @@ integration:linux:
       optional: true
   image: ubuntu:latest
   script:
+    - >
+      nix develop .#ci --command bash -c $'
+        version=$(node -p "require('./package.json').version");
+        npm run pkg -- \
+          --output=polykey-cli-$version-linux-x64 \
+          --bin=dist/polykey.js \
+          --node-version=20 \
+          --platform=linux \
+          --arch=x64
+      '
     - for f in ./builds/*-linux-*; do "$f"; done
+  artifacts:
+    paths:
+      - ./dist/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
     # Runs on tag pipeline where the tag is a prerelease or release version
     - if: $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
+    - when: always
 
 integration:windows:
   inherit:
