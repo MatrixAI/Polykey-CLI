@@ -390,7 +390,8 @@ integration:windows:
     - npm install --ignore-scripts
     - $env:Path = "$(npm root)\.bin;" + $env:Path
     - >
-      version=$(node -p "require('./package.json').version");
+      $env:version = $(node -p "require('./package.json').version");
+      npm ci;
       npm run pkg -- `
         --output=builds\polykey-cli-$version-linux-x64 `
         --bin=dist\polykey.js `
@@ -420,6 +421,7 @@ integration:macos:
   script:
     - >
       version=$(node -p "require('./package.json').version");
+      npm ci;
       npm run pkg -- \
         --output=polykey-cli-$version-linux-x64 \
         --bin=dist/polykey.js \
