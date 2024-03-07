@@ -423,7 +423,7 @@ integration:macos:
       version=$(node -p "require('./package.json').version");
       npm ci;
       npm run pkg -- \
-        --output=polykey-cli-$version-darwin-x64 \
+        --output=builds/polykey-cli-$version-darwin-x64 \
         --bin=dist/polykey.js \
         --node-version=20 \
         --platform=darwin \
