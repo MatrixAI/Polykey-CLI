@@ -246,6 +246,7 @@ integration:builds:
         --print-out-paths \
         .# \
         .#docker \
+        .#packages.x86_64-linux.executable \
       )";
       cp -r $(echo $builds | tr '\n' ' ') ./builds/;
       nix develop .#ci --command bash -c $'
@@ -361,20 +362,7 @@ integration:linux:
       optional: true
   image: ubuntu:latest
   script:
-    - >
-      nix develop .#ci --command bash -c $'
-        version=$(node -p "require('./package.json').version");
-        npm run pkg -- \
-          --output=polykey-cli-$version-linux-x64 \
-          --bin=dist/polykey.js \
-          --node-version=20 \
-          --platform=linux \
-          --arch=x64
-      '
     - for f in ./builds/*-linux-*; do "$f"; done
-  artifacts:
-    paths:
-      - ./dist/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -397,7 +385,22 @@ integration:windows:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
+    - .\scripts\choco-install.ps1
+    - refreshenv
+    - npm install --ignore-scripts
+    - $env:Path = "$(npm root)\.bin;" + $env:Path
+    - >
+      version=$(node -p "require('./package.json').version");
+      npm run pkg -- `
+        --output=builds\polykey-cli-$version-linux-x64 `
+        --bin=dist\polykey.js `
+        --node-version=20 `
+        --platform=linux `
+        --arch=x64
     - Get-ChildItem -File ./builds/*-win32-* | ForEach {& $_.FullName}
+  artifacts:
+    paths:
+      - ./builds/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -415,7 +418,18 @@ integration:macos:
     - saas-macos-medium-m1
   image: macos-12-xcode-14
   script:
+    - >
+      version=$(node -p "require('./package.json').version");
+      npm run pkg -- \
+        --output=polykey-cli-$version-linux-x64 \
+        --bin=dist/polykey.js \
+        --node-version=20 \
+        --platform=linux \
+        --arch=x64
     - for f in ./builds/*-darwin-x64*; do "$f"; done
+  artifacts:
+    paths:
+      - ./builds/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
