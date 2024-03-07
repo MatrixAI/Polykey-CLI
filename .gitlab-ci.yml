@@ -393,10 +393,10 @@ integration:windows:
       $env:version = $(node -p "require('./package.json').version");
       npm ci;
       npm run pkg -- `
-        --output=builds\polykey-cli-$version-linux-x64 `
+        --output=builds\polykey-cli-$version-win32-x64 `
         --bin=dist\polykey.js `
         --node-version=20 `
-        --platform=linux `
+        --platform=win32 `
         --arch=x64
     - Get-ChildItem -File ./builds/*-win32-* | ForEach {& $_.FullName}
   artifacts:
@@ -423,10 +423,10 @@ integration:macos:
       version=$(node -p "require('./package.json').version");
       npm ci;
       npm run pkg -- \
-        --output=polykey-cli-$version-linux-x64 \
+        --output=polykey-cli-$version-darwin-x64 \
         --bin=dist/polykey.js \
         --node-version=20 \
-        --platform=linux \
+        --platform=darwin \
         --arch=x64
     - for f in ./builds/*-darwin-x64*; do "$f"; done
   artifacts:
