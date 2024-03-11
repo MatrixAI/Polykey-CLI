@@ -420,7 +420,6 @@ integration:macos:
     - >
       version=$(node -p "require('./package.json').version");
       npm ci;
-      ls node_modules/@matrixai
       npm run pkg -- \
         --output=builds/polykey-cli-$version-darwin-x64 \
         --bin=dist/polykey.js \
