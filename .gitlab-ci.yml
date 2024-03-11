@@ -387,10 +387,10 @@ integration:windows:
     - refreshenv
     - npm install --ignore-scripts
     - $env:Path = "$(npm root)\.bin;" + $env:Path
+    - node -v;
     - >
       $env:version = $(node -p "require('./package.json').version");
       npm ci;
-      node -v;
       npm run pkg -- `
         --output=builds\polykey-cli-$version-win32-x64 `
         --bin=dist\polykey.js `
