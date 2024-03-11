@@ -390,6 +390,7 @@ integration:windows:
     - >
       $env:version = $(node -p "require('./package.json').version");
       npm ci;
+      node -v;
       npm run pkg -- `
         --output=builds\polykey-cli-$version-win32-x64 `
         --bin=dist\polykey.js `
@@ -425,7 +426,7 @@ integration:macos:
         --bin=dist/polykey.js \
         --node-version=20 \
         --platform=darwin \
-        --arch=x64
+        --arch=arm64
     - for f in ./builds/*-darwin-x64*; do "$f"; done
   artifacts:
     paths:
