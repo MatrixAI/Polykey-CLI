@@ -383,6 +383,7 @@ integration:windows:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
+    - choco upgrade nodejs --version=20.9.0
     - .\scripts\choco-install.ps1
     - refreshenv
     - npm install --ignore-scripts
@@ -422,12 +423,12 @@ integration:macos:
       version=$(node -p "require('./package.json').version");
       npm ci;
       npm run pkg -- \
-        --output=builds/polykey-cli-$version-darwin-x64 \
+        --output=builds/polykey-cli-$version-darwin-arm64 \
         --bin=dist/polykey.js \
         --node-version=20 \
         --platform=darwin \
         --arch=arm64
-    - for f in ./builds/*-darwin-x64*; do "$f"; done
+    - for f in ./builds/*-darwin-arm64*; do "$f"; done
   artifacts:
     paths:
       - ./builds/
