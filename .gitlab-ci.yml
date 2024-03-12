@@ -383,7 +383,6 @@ integration:windows:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
-    - choco upgrade nodejs --version=20.9.0
     - .\scripts\choco-install.ps1
     - refreshenv
     - npm install --ignore-scripts
@@ -428,6 +427,7 @@ integration:macos:
         --node-version=20 \
         --platform=darwin \
         --arch=arm64
+    - ls builds
     - for f in ./builds/*-darwin-arm64*; do "$f"; done
   artifacts:
     paths:
