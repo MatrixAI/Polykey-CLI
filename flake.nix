@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?rev=ea5234e7073d5f44728c499192544a84244bf35a";
+    nixpkgs.url = "github:NixOS/nixpkgs?rev=9a9a7552431c4f1a3b2eee9398641babf7c30d0e";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -39,7 +39,16 @@
           COMMIT_HASH = commitHash;
           GIT_DIR = if commitHash != null then null else utils.dotGit;
           postInstall = ''
+            echo ------
+            ls
+            echo ------
+            ls "$packageOut"
+            echo ------
+            ls "$out"
+            echo ------
             mv "$packageOut"/build/build.json "$out"/build.json;
+            mv package-lock.json "$out"/package-lock.json;
+            mv package.json "$out"/package.json;
             rm -rf \
               "$packageOut"/build \
               "$packageOut"/src \
@@ -51,18 +60,42 @@
               "$packageOut"/LICENSE \
               "$packageOut"/ADDITIONAL_TERMS \
               "$packageOut"/README.md;
+            echo ------
+            ls "$out"
+            echo ------
           '';
         };
 
-        polykey-cli-executable = pkgs.buildNpmPackage {
+        # This builds and bundles the source code in prep for packaging
+        polykey-cli-build = pkgs.buildNpmPackage {
+          inherit npmDepsHash;
+          pname = utils.packageName;
+          version = utils.packageVersion;
+          src = utils.src;
+          COMMIT_HASH = commitHash;
+          GIT_DIR = if commitHash != null then null else utils.dotGit;
+          postInstall = ''
+            mv ./* "$out"
+          '';
+        };
+
+        # Override buildNpmPackage to use `pkgs.nodejs_21` to allow for the use of `cpu` and `os` flags
+        buildNpmPackageNode21 = pkgs.buildNpmPackage.override {
+          nodejs = pkgs.nodejs_21;
+        };
+
+        polykey-cli-executable = buildNpmPackageNode21 {
           inherit npmDepsHash;
           name = "${utils.packageName}-${utils.packageVersion}-${platform}-${arch}";
-          src = utils.src;
+          src = polykey-cli-build;
           PKG_CACHE_PATH = utils.pkgCachePath;
           PKG_IGNORE_TAG = 1;
           COMMIT_HASH = commitHash;
           GIT_DIR = if commitHash != null then null else utils.dotGit;
-          postBuild = ''
+          # Will download optional dependencies for the target `platform` and `arch`
+          npmInstallFlags = [ "--os=${platform}" "--cpu=${arch}" "-w buildWorkspace" "--ignore-scripts" ];
+          dontNpmBuild = true;
+          buildPhase = ''
             npm run pkg -- \
               --output=out \
               --bin=dist/polykey.js \

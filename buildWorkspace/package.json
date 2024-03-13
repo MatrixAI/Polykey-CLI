@@ -1,0 +1,27 @@
+{
+  "name": "buildworkspace",
+  "version": "1.0.0",
+  "description": "this defines ",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brian Botha",
+  "license": "ISC",
+  "optionalDependencies": {
+    "@matrixai/db": "*",
+    "@matrixai/mdns-linux-x64": "*",
+    "@matrixai/quic-darwin-arm64": "*",
+    "@matrixai/quic-darwin-x64": "*",
+    "@matrixai/quic-linux-x64": "*",
+    "@matrixai/quic-win32-x64": "*",
+    "@matrixai/exec-darwin-arm64": "*",
+    "@matrixai/exec-darwin-x64": "*",
+    "@matrixai/exec-linux-x64": "*",
+    "fd-lock": "*",
+    "sodium-native": "*",
+    "threads": "*"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^5.11.4"
+  }
+}

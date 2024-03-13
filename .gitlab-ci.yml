@@ -247,6 +247,9 @@ integration:builds:
         .# \
         .#docker \
         .#packages.x86_64-linux.executable \
+        .#packages.aarch64-darwin.executable \
+        .#packages.x86_64-darwin.executable \
+        .#packages.x86_64-windows.executable \
       )";
       cp -r $(echo $builds | tr '\n' ' ') ./builds/;
       nix develop .#ci --command bash -c $'
@@ -255,7 +258,6 @@ integration:builds:
   artifacts:
     paths:
       - ./builds/
-      - ./dist/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -383,24 +385,7 @@ integration:windows:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   script:
-    - .\scripts\choco-install.ps1
-    - refreshenv
-    - node -v;
-    - npm -v;
-    - npm install --ignore-scripts
-    - $env:Path = "$(npm root)\.bin;" + $env:Path
-    - >
-      $env:version = $(node -p "require('./package.json').version");
-      npm run pkg -- `
-        --output=builds\polykey-cli-$version-win32-x64 `
-        --bin=dist\polykey.js `
-        --node-version=20 `
-        --platform=win32 `
-        --arch=x64
     - Get-ChildItem -File ./builds/*-win32-* | ForEach {& $_.FullName}
-  artifacts:
-    paths:
-      - ./builds/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
@@ -418,20 +403,7 @@ integration:macos:
     - saas-macos-medium-m1
   image: macos-12-xcode-14
   script:
-    - >
-      version=$(node -p "require('./package.json').version");
-      npm ci;
-      npm run pkg -- \
-        --output=builds/polykey-cli-$version-darwin-arm64 \
-        --bin=dist/polykey.js \
-        --node-version=20 \
-        --platform=darwin \
-        --arch=arm64
-    - ls builds
     - for f in ./builds/*-darwin-arm64*; do "$f"; done
-  artifacts:
-    paths:
-      - ./builds/
   rules:
     # Runs on staging commits and ignores version commits
     - if: $CI_COMMIT_BRANCH == 'staging' && $CI_COMMIT_TITLE !~ /^[0-9]+\.[0-9]+\.[0-9]+(?:-.*[0-9]+)?$/
