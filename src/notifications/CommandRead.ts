@@ -82,12 +82,25 @@ class CommandRead extends CommandPolykey {
           },
           meta,
         );
-        for (const notification of notifications) {
-          const outputFormatted = binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: notification,
-          });
-          process.stdout.write(outputFormatted);
+        if (notifications.length === 0) {
+          process.stderr.write('No notifications received\n');
+        }
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: notifications,
+            }),
+          );
+        } else {
+          for (const notification of notifications) {
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'dict',
+                data: notification,
+              }),
+            );
+          }
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();
