@@ -45,7 +45,11 @@ class CommandPermissions extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const data: Array<string> = [];
+        const data: Array<{
+          vaultIdEncoded: string;
+          nodeIdEncoded: string;
+          vaultPermissionList: Array<string>;
+        }> = [];
         await binUtils.retryAuthentication(async (auth) => {
           const permissionStream =
             await pkClient.rpcClient.methods.vaultsPermissionGet({
@@ -53,19 +57,38 @@ class CommandPermissions extends CommandPolykey {
               nameOrId: vaultName,
             });
           for await (const permission of permissionStream) {
-            const nodeId = permission.nodeIdEncoded;
-            const actions = permission.vaultPermissionList.join(', ');
-            data.push(`${nodeId}: ${actions}`);
+            data.push({
+              vaultIdEncoded: permission.vaultIdEncoded,
+              nodeIdEncoded: permission.nodeIdEncoded,
+              vaultPermissionList: permission.vaultPermissionList,
+            });
           }
           return true;
         }, meta);
 
-        if (data.length === 0) data.push('No permissions were found');
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: data,
-        });
-        process.stdout.write(outputFormatted);
+        if (data.length === 0) {
+          process.stderr.write('No permissions were found\n');
+        }
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: data,
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'dict',
+              data: data.map((permission: any) => {
+                delete permission.vaultIdEncoded;
+                permission.actions = permission.vaultPermissionList.join(',');
+                delete permission.vaultPermissionList;
+                return permission;
+              }),
+            }),
+          );
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

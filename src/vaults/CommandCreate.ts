@@ -55,7 +55,7 @@ class CommandCreate extends CommandPolykey {
           meta,
         );
         process.stderr.write(
-          `Vault ${response.vaultIdEncoded} created successfully`,
+          `Vault ${response.vaultIdEncoded} created successfully\n`,
         );
       } finally {
         if (pkClient! != null) await pkClient.stop();
