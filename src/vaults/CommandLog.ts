@@ -48,7 +48,12 @@ class CommandLog extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const data = await binUtils.retryAuthentication(async (auth) => {
-          const data: Array<string> = [];
+          const data: Array<{
+            commitId: string;
+            committer: string;
+            timestamp: string;
+            message: string;
+          }> = [];
           const logStream = await pkClient.rpcClient.methods.vaultsLog({
             metadata: auth,
             nameOrId: vault,
@@ -56,18 +61,26 @@ class CommandLog extends CommandPolykey {
             commitId: options.commitId,
           });
           for await (const logEntryMessage of logStream) {
-            data.push(`commit ${logEntryMessage.commitId}`);
-            data.push(`committer ${logEntryMessage.committer}`);
-            data.push(`Date: ${logEntryMessage.timestamp}`);
-            data.push(`${logEntryMessage.message}`);
+            data.push({
+              commitId: logEntryMessage.commitId,
+              committer: logEntryMessage.committer,
+              timestamp: logEntryMessage.timestamp,
+              message: logEntryMessage.message,
+            });
           }
           return data;
         }, meta);
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: data,
-        });
-        process.stdout.write(outputFormatted);
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({ type: 'json', data }),
+          );
+        } else {
+          for (const entry of data) {
+            process.stdout.write(
+              binUtils.outputFormatter({ type: 'dict', data: entry }),
+            );
+          }
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
