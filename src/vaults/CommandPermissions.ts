@@ -80,10 +80,8 @@ class CommandPermissions extends CommandPolykey {
           process.stdout.write(
             binUtils.outputFormatter({
               type: 'dict',
-              data: data.map((permission: any) => {
-                delete permission.vaultIdEncoded;
-                permission.actions = permission.vaultPermissionList.join(',');
-                delete permission.vaultPermissionList;
+              data: data.map((permission) => {
+                permission.vaultPermissionList = permission.vaultPermissionList.join(',') as any;
                 return permission;
               }),
             }),
