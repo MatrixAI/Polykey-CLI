@@ -86,14 +86,25 @@ class CommandPermissions extends CommandPolykey {
           default:
             utils.never();
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: {
-              actionsList,
-            },
-          }),
-        );
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                actionsList,
+              },
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'dict',
+              data: {
+                actionsList: actionsList.join(','),
+              },
+            }),
+          );
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
