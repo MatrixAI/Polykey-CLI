@@ -80,17 +80,27 @@ class CommandAuthenticate extends CommandPolykey {
                 if (e.code !== 'ENOENT') throw e;
                 // Otherwise we ignore `ENOENT` as a failure to spawn a browser
               }
-              process.stdout.write(
-                binUtils.outputFormatter({
-                  type: options.format === 'json' ? 'json' : 'dict',
-                  data: {
-                    url: message.request.url,
-                    ...(options.format === 'json'
-                      ? { dataMap: message.request.dataMap }
-                      : message.request.dataMap),
-                  },
-                }),
-              );
+              if (options.format === 'json') {
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'json',
+                    data: {
+                      url: message.request.url,
+                      dataMap: message.request.dataMap,
+                    },
+                  }),
+                );
+              } else {
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'dict',
+                    data: {
+                      url: message.request.url,
+                      ...message.request.dataMap,
+                    },
+                  }),
+                );
+              }
             } else if (message.response != null) {
               process.stderr.write(
                 `Authenticated digital identity provider ${providerId}\n`,
