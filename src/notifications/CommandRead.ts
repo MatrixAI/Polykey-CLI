@@ -61,7 +61,7 @@ class CommandRead extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const notifications = await binUtils.retryAuthentication(
+        const notificationReadMessages = await binUtils.retryAuthentication(
           async (auth) => {
             const response = await pkClient.rpcClient.methods.notificationsRead(
               {
@@ -71,33 +71,35 @@ class CommandRead extends CommandPolykey {
                 order: options.order,
               },
             );
-            const notifications: Array<Notification> = [];
+            const notificationReadMessages: Array<{
+              notification: Notification;
+            }> = [];
             for await (const notificationMessage of response) {
               const notification = notificationsUtils.parseNotification(
                 notificationMessage.notification,
               );
-              notifications.push(notification);
+              notificationReadMessages.push({ notification });
             }
-            return notifications;
+            return notificationReadMessages;
           },
           meta,
         );
-        if (notifications.length === 0) {
+        if (notificationReadMessages.length === 0) {
           process.stderr.write('No notifications received\n');
         }
         if (options.format === 'json') {
           process.stdout.write(
             binUtils.outputFormatter({
               type: 'json',
-              data: notifications,
+              data: notificationReadMessages,
             }),
           );
         } else {
-          for (const notification of notifications) {
+          for (const notificationReadMessage of notificationReadMessages) {
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',
-                data: notification,
+                data: notificationReadMessage.notification,
               }),
             );
           }

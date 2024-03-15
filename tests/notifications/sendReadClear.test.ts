@@ -63,7 +63,7 @@ describe('send/read/claim', () => {
     'sends, receives, and clears notifications',
     async () => {
       let exitCode: number, stdout: string;
-      let readNotifications: Array<Notification>;
+      let readNotificationMessages: Array<{ notification: Notification }>;
       // Add receiver to sender's node graph, so it can be contacted
       ({ exitCode } = await testUtils.pkExec(
         [
@@ -173,9 +173,9 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = JSON.parse(stdout);
-      expect(readNotifications).toHaveLength(3);
-      expect(readNotifications[0]).toMatchObject({
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(3);
+      expect(readNotificationMessages[0].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 3',
@@ -184,7 +184,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      expect(readNotifications[1]).toMatchObject({
+      expect(readNotificationMessages[1].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 2',
@@ -193,7 +193,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      expect(readNotifications[2]).toMatchObject({
+      expect(readNotificationMessages[2].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 1',
@@ -214,8 +214,8 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = JSON.parse(stdout);
-      expect(readNotifications).toHaveLength(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(0);
       // Read notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['notifications', 'read', '--order=oldest', '--format', 'json'],
@@ -228,9 +228,9 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = JSON.parse(stdout);
-      expect(readNotifications).toHaveLength(3);
-      expect(readNotifications[0]).toMatchObject({
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(3);
+      expect(readNotificationMessages[0].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 1',
@@ -239,7 +239,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      expect(readNotifications[1]).toMatchObject({
+      expect(readNotificationMessages[1].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 2',
@@ -248,7 +248,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      expect(readNotifications[2]).toMatchObject({
+      expect(readNotificationMessages[2].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 3',
@@ -269,9 +269,9 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = JSON.parse(stdout);
-      expect(readNotifications).toHaveLength(1);
-      expect(readNotifications[0]).toMatchObject({
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(1);
+      expect(readNotificationMessages[0].notification).toMatchObject({
         data: {
           type: 'General',
           message: 'test message 3',
@@ -300,8 +300,8 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = JSON.parse(stdout);
-      expect(readNotifications).toHaveLength(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(0);
     },
     globalThis.defaultTimeout * 3,
   );
