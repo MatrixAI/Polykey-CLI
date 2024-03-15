@@ -111,7 +111,7 @@ class CommandVerify extends CommandPolykey {
           binUtils.outputFormatter({
             type: options.format === 'json' ? 'json' : 'dict',
             data: {
-              signatureVerified: response.success,
+              success: response.success,
             },
           }),
         );
