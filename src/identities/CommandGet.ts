@@ -88,10 +88,17 @@ class CommandGet extends CommandPolykey {
             utils.never();
         }
         const gestalt = res!.gestalt;
-        let output: any = gestalt;
-        if (options.format !== 'json') {
-          // Creating a list.
-          output = [];
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                gestalt,
+              },
+            }),
+          );
+        } else {
+          const output: Array<string> = [];
           // Listing nodes.
           for (const nodeKey of Object.keys(gestalt.nodes)) {
             const node = gestalt.nodes[nodeKey];
@@ -102,13 +109,13 @@ class CommandGet extends CommandPolykey {
             const identity = gestalt.identities[identityKey];
             output.push(`${identity.providerId}:${identity.identityId}`);
           }
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'list',
+              data: output,
+            }),
+          );
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'list',
-            data: output,
-          }),
-        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
