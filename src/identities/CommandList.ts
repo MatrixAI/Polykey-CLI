@@ -107,11 +107,12 @@ class CommandList extends CommandPolykey {
             const identities = gestalt.identities.map(
               (identity) => `${identity.providerId}:${identity.identityId}`,
             );
+            if (count !== 1) process.stdout.write('\n');
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'list',
                 data: nodeIds.concat(identities),
-              }) + '\n',
+              }),
             );
             count++;
           }
