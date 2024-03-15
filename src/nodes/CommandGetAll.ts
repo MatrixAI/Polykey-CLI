@@ -70,12 +70,12 @@ class CommandGetAll extends CommandPolykey {
             binUtils.outputFormatter({
               type: 'table',
               options: {
-                columns: ['nodeIdEncoded', 'address', 'bucketIndex'],
+                columns: ['nodeIdEncoded', 'nodeAddress', 'bucketIndex'],
               },
               data: result.flatMap((nodesGetMessage) =>
-                Object.keys(nodesGetMessage.nodeContact).map((address) => ({
+                Object.keys(nodesGetMessage.nodeContact).map((nodeAddress) => ({
                   nodeIdEncoded: nodesGetMessage.nodeIdEncoded,
-                  address,
+                  nodeAddress,
                   bucketIndex: nodesGetMessage.bucketIndex,
                 })),
               ),
