@@ -173,10 +173,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = stdout
-        .split('\n')
-        .slice(undefined, -1)
-        .map((v) => JSON.parse(v));
+      readNotifications = JSON.parse(stdout);
       expect(readNotifications).toHaveLength(3);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -217,10 +214,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = stdout
-        .split('\n')
-        .slice(undefined, -1)
-        .map((v) => JSON.parse(v));
+      readNotifications = JSON.parse(stdout);
       expect(readNotifications).toHaveLength(0);
       // Read notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
@@ -234,10 +228,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = stdout
-        .split('\n')
-        .slice(undefined, -1)
-        .map((v) => JSON.parse(v));
+      readNotifications = JSON.parse(stdout);
       expect(readNotifications).toHaveLength(3);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -278,10 +269,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = stdout
-        .split('\n')
-        .slice(undefined, -1)
-        .map((v) => JSON.parse(v));
+      readNotifications = JSON.parse(stdout);
       expect(readNotifications).toHaveLength(1);
       expect(readNotifications[0]).toMatchObject({
         data: {
@@ -312,10 +300,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      readNotifications = stdout
-        .split('\n')
-        .slice(undefined, -1)
-        .map((v) => JSON.parse(v));
+      readNotifications = JSON.parse(stdout);
       expect(readNotifications).toHaveLength(0);
     },
     globalThis.defaultTimeout * 3,
