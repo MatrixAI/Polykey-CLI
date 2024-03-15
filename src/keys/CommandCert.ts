@@ -49,14 +49,23 @@ class CommandCert extends CommandPolykey {
             }),
           auth,
         );
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: {
-              cert: response.cert,
-            },
-          }),
-        );
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                cert: response.cert,
+              },
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'raw',
+              data: response.cert,
+            }),
+          );
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
