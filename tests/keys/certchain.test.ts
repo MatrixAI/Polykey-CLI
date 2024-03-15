@@ -27,8 +27,6 @@ describe('certchain', () => {
       },
     );
     expect(exitCode).toBe(0);
-    expect(JSON.parse(stdout)).toEqual({
-      certchain: expect.any(Array),
-    });
+    expect(JSON.parse(stdout)).toEqual(expect.any(Array));
   });
 });

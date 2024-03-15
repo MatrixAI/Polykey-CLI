@@ -52,23 +52,12 @@ class CommandsCertchain extends CommandPolykey {
           }
           return data;
         }, auth);
-        if (options.format === 'json') {
-          process.stdout.write(
-            binUtils.outputFormatter({
-              type: 'json',
-              data: {
-                certchain: data,
-              },
-            }),
-          );
-        } else {
-          process.stdout.write(
-            binUtils.outputFormatter({
-              type: 'list',
-              data,
-            }),
-          );
-        }
+        process.stdout.write(
+          binUtils.outputFormatter({
+            type: options.format === 'json' ? 'json' : 'list',
+            data: data,
+          }),
+        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
