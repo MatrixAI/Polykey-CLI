@@ -418,12 +418,12 @@ integration:macos:
       version=$(node -p "require('./package.json').version");
       npm ci;
       npm run pkg -- \
-        --output=builds/polykey-cli-$version-darwin-arm64 \
+        --output=builds/polykey-cli-$version-darwin-universal \
         --bin=dist/polykey.js \
         --node-version=20 \
         --platform=darwin \
         --arch=arm64
-    - for f in ./builds/*-darwin-arm64*; do "$f"; done
+    - for f in ./builds/*-darwin-universal*; do "$f"; done
   artifacts:
     paths:
       - ./builds/
