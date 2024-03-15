@@ -95,6 +95,7 @@ class CommandFind extends CommandPolykey {
                 data: {
                   nodeAddress: formattedNodeAddress,
                   ...response.nodeContactAddressData,
+                  scopes: response.nodeContactAddressData.scopes.join(','),
                 },
               }),
             );
