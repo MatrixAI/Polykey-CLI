@@ -29,7 +29,7 @@ describe('keypair', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      publicKey: {
+      publicKeyJwk: {
         alg: expect.any(String),
         crv: expect.any(String),
         ext: expect.any(Boolean),
@@ -37,7 +37,7 @@ describe('keypair', () => {
         kty: expect.any(String),
         x: expect.any(String),
       },
-      privateKey: {
+      privateKeyJwe: {
         ciphertext: expect.any(String),
         iv: expect.any(String),
         protected: expect.any(String),

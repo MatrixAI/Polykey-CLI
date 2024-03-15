@@ -59,8 +59,8 @@ class CommandKeypair extends CommandPolykey {
           auth,
         );
         const pair = {
-          publicKey: keyPairJWK.publicKeyJwk,
-          privateKey: keyPairJWK.privateKeyJwe,
+          publicKeyJwk: keyPairJWK.publicKeyJwk,
+          privateKeyJwe: keyPairJWK.privateKeyJwe,
         };
         process.stdout.write(
           binUtils.outputFormatter({

@@ -55,8 +55,8 @@ describe('renew', () => {
       },
     );
     expect(exitCode).toBe(0);
-    const prevPublicKey = JSON.parse(stdout).publicKey;
-    const prevPrivateKey = JSON.parse(stdout).privateKey;
+    const prevPublicKey = JSON.parse(stdout).publicKeyJwk;
+    const prevPrivateKey = JSON.parse(stdout).privateKeyJwe;
     ({ exitCode, stdout } = await testUtils.pkStdio(
       ['agent', 'status', '--format', 'json'],
       {
@@ -103,8 +103,8 @@ describe('renew', () => {
       },
     ));
     expect(exitCode).toBe(0);
-    const newPublicKey = JSON.parse(stdout).publicKey;
-    const newPrivateKey = JSON.parse(stdout).privateKey;
+    const newPublicKey = JSON.parse(stdout).publicKeyJwk;
+    const newPrivateKey = JSON.parse(stdout).privateKeyJwe;
     ({ exitCode, stdout } = await testUtils.pkStdio(
       ['agent', 'status', '--format', 'json'],
       {
