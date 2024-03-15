@@ -81,7 +81,8 @@ class CommandPermissions extends CommandPolykey {
             binUtils.outputFormatter({
               type: 'dict',
               data: data.map((permission) => {
-                permission.vaultPermissionList = permission.vaultPermissionList.join(',') as any;
+                permission.vaultPermissionList =
+                  permission.vaultPermissionList.join(',') as any;
                 return permission;
               }),
             }),
