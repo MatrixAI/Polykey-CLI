@@ -77,16 +77,16 @@ class CommandPermissions extends CommandPolykey {
             }),
           );
         } else {
-          process.stdout.write(
-            binUtils.outputFormatter({
-              type: 'dict',
-              data: data.map((permission) => {
-                permission.vaultPermissionList =
-                  permission.vaultPermissionList.join(',') as any;
-                return permission;
+          for (const permission of data) {
+            permission.vaultPermissionList =
+              permission.vaultPermissionList.join(',') as any;
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'dict',
+                data: permission,
               }),
-            }),
-          );
+            );
+          }
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();
