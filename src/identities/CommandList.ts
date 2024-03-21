@@ -86,7 +86,6 @@ class CommandList extends CommandPolykey {
           );
         } else {
           // Convert to a human-readable list.
-          let count = 1;
           for (const gestaltMessage of gestaltMessages) {
             const gestalt = gestaltMessage.gestalt;
             const nodeIds = Object.values(gestalt.nodes).map(
@@ -99,14 +98,14 @@ class CommandList extends CommandPolykey {
               binUtils.outputFormatter({
                 type: 'dict',
                 data: {
-                  gestalt: count,
-                  actionsList: gestalt.actionsList.join(','),
-                  identities,
-                  nodeIds,
+                  gestalt: {
+                    actionsList: gestalt.actionsList.join(','),
+                    identities,
+                    nodeIds,
+                  },
                 },
               }),
             );
-            count++;
           }
         }
       } finally {
