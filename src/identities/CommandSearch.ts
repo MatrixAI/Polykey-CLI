@@ -125,20 +125,13 @@ class CommandSearch extends CommandPolykey {
               );
             }
           } else {
-            let firstElement = true;
             for await (const output of readableStream) {
-              if (!firstElement) {
-                process.stdout.write('\n');
-              }
               process.stdout.write(
                 binUtils.outputFormatter({
                   type: 'dict',
                   data: output,
                 }),
               );
-              if (firstElement) {
-                firstElement = false;
-              }
             }
           }
         }, auth);

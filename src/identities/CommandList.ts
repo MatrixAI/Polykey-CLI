@@ -89,7 +89,6 @@ class CommandList extends CommandPolykey {
           let count = 1;
           for (const gestaltMessage of gestaltMessages) {
             const gestalt = gestaltMessage.gestalt;
-            if (count !== 1) process.stdout.write('\n');
             const nodeIds = Object.values(gestalt.nodes).map(
               (node) => node.nodeId as string,
             );
