@@ -119,6 +119,51 @@ describe('bin/utils', () => {
       }),
     ).toBe('{"key1":"value1","key2":"value2"}\n');
   });
+  test('dict nesting in human format', () => {
+    // Dict
+    expect(
+      binUtils.outputFormatter({
+        type: 'dict',
+        data: { key1: {}, key2: {} },
+      }),
+    ).toBe('key1\t\nkey2\t\n');
+    expect(
+      binUtils.outputFormatter({
+        type: 'dict',
+        data: { key1: ['value1', 'value2', 'value3'] },
+      }),
+    ).toBe('key1\t\n  value1\t\n  value2\t\n  value3\t\n');
+    expect(
+      binUtils.outputFormatter({
+        type: 'dict',
+        data: {
+          key1: {
+            key2: null,
+            key3: undefined,
+            key4: 'value',
+          },
+          key5: 'value',
+          key6: {
+            key7: {
+              key8: {
+                key9: 'value',
+              },
+            },
+          },
+        },
+      }),
+    ).toBe(
+      'key1\t\n' +
+        '  key2\t\n' +
+        '  key3\t\n' +
+        '  key4\tvalue\n' +
+        'key5\tvalue\n' +
+        'key6\t\n' +
+        '  key7\t\n' +
+        '    key8\t\n' +
+        '      key9\tvalue\n',
+    );
+  });
   test('outputFormatter should encode non-printable characters within a dict', () => {
     fc.assert(
       fc.property(

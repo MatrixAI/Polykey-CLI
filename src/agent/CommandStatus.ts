@@ -81,15 +81,14 @@ class CommandStatus extends CommandPolykey {
               agentHost: response.agentHost,
               agentPort: response.agentPort,
               upTime: getUnixtime() - response.startTime,
+              startTime: response.startTime,
               connectionsActive: response.connectionsActive,
               nodesTotal: response.nodesTotal,
               version: response.version,
               sourceVersion: response.sourceVersion,
               stateVersion: response.stateVersion,
               networkVersion: response.networkVersion,
-              ...(options.format === 'json'
-                ? { versionMetadata: response.versionMetadata }
-                : response.versionMetadata),
+              versionMetadata: response.versionMetadata,
             },
           }),
         );
