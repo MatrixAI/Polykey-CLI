@@ -90,27 +90,21 @@ class CommandList extends CommandPolykey {
           for (const gestaltMessage of gestaltMessages) {
             const gestalt = gestaltMessage.gestalt;
             if (count !== 1) process.stdout.write('\n');
+            const nodeIds = Object.values(gestalt.nodes).map(
+              (node) => node.nodeId as string,
+            );
+            const identities = Object.values(gestalt.identities).map(
+              (identity) => `${identity.providerId}:${identity.identityId}`,
+            );
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',
                 data: {
                   gestalt: count,
                   actionsList: gestalt.actionsList.join(','),
+                  identities,
+                  nodeIds,
                 },
-              }),
-            );
-            // Listing nodes
-            const nodeIds = Object.values(gestalt.nodes).map(
-              (node) => node.nodeId as string,
-            );
-            // Listing identities
-            const identities = Object.values(gestalt.identities).map(
-              (identity) => `${identity.providerId}:${identity.identityId}`,
-            );
-            process.stdout.write(
-              binUtils.outputFormatter({
-                type: 'list',
-                data: nodeIds.concat(identities),
               }),
             );
             count++;
