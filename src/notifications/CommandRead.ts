@@ -99,7 +99,9 @@ class CommandRead extends CommandPolykey {
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',
-                data: notificationReadMessage.notification,
+                data: {
+                  notificiation: notificationReadMessage.notification,
+                },
               }),
             );
           }
