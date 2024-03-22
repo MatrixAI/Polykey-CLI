@@ -60,14 +60,16 @@ class CommandClaim extends CommandPolykey {
               }),
             auth,
           );
-          const output = [`Claim Id: ${claimMessage.claimId}`];
+          const data: { claimId: string; url?: string } = {
+            claimId: claimMessage.claimId,
+          };
           if (claimMessage.url) {
-            output.push(`Url: ${claimMessage.url}`);
+            data.url = claimMessage.url;
           }
           process.stdout.write(
             binUtils.outputFormatter({
-              type: options.format === 'json' ? 'json' : 'list',
-              data: output,
+              type: options.format === 'json' ? 'json' : 'dict',
+              data,
             }),
           );
         } finally {

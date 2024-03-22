@@ -52,7 +52,7 @@ class CommandPermissions extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
         const [type, id] = gestaltId;
-        let actions: Array<string> = [];
+        let actionsList: Array<string> = [];
         switch (type) {
           case 'node':
             {
@@ -65,7 +65,7 @@ class CommandPermissions extends CommandPolykey {
                   }),
                 auth,
               );
-              actions = res.actionsList;
+              actionsList = res.actionsList;
             }
             break;
           case 'identity':
@@ -80,20 +80,31 @@ class CommandPermissions extends CommandPolykey {
                   }),
                 auth,
               );
-              actions = res.actionsList;
+              actionsList = res.actionsList;
             }
             break;
           default:
             utils.never();
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: {
-              permissions: actions,
-            },
-          }),
-        );
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                actionsList,
+              },
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'dict',
+              data: {
+                actionsList: actionsList.join(','),
+              },
+            }),
+          );
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

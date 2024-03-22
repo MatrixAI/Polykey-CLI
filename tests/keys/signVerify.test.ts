@@ -88,7 +88,7 @@ describe('sign-verify', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      signatureVerified: true,
+      success: true,
     });
   });
   test('verifies a signature with JWK', async () => {
@@ -122,7 +122,7 @@ describe('sign-verify', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      signatureVerified: true,
+      success: true,
     });
   });
   test('verifies a signature fails with invalid JWK', async () => {

@@ -44,7 +44,7 @@ describe('encrypt-decrypt', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      decryptedData: 'abc',
+      data: 'abc',
     });
   });
   test('encrypts data using NodeId', async () => {
@@ -74,9 +74,9 @@ describe('encrypt-decrypt', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      encryptedData: expect.any(String),
+      data: expect.any(String),
     });
-    const encrypted = JSON.parse(stdout).encryptedData;
+    const encrypted = JSON.parse(stdout).data;
     const decrypted = keysUtils.decryptWithPrivateKey(
       targetKeyPair,
       Buffer.from(encrypted, 'binary'),
@@ -105,9 +105,9 @@ describe('encrypt-decrypt', () => {
     );
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      encryptedData: expect.any(String),
+      data: expect.any(String),
     });
-    const encrypted = JSON.parse(stdout).encryptedData;
+    const encrypted = JSON.parse(stdout).data;
     const decrypted = keysUtils.decryptWithPrivateKey(
       targetKeyPair,
       Buffer.from(encrypted, 'binary'),

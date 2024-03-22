@@ -1,5 +1,6 @@
 import process from 'process';
 import CommandPolykey from '../CommandPolykey';
+import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
 
@@ -36,7 +37,14 @@ class CommandBootstrap extends CommandPolykey {
         logger: this.logger,
       });
       this.logger.info(`Bootstrapped ${options.nodePath}`);
-      if (recoveryCodeOut != null) process.stdout.write(recoveryCodeOut + '\n');
+      process.stdout.write(
+        binUtils.outputFormatter({
+          type: options.format === 'json' ? 'json' : 'dict',
+          data: {
+            recoveryCode: recoveryCodeOut,
+          },
+        }),
+      );
     });
   }
 }

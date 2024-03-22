@@ -61,7 +61,7 @@ class CommandRead extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const notifications = await binUtils.retryAuthentication(
+        const notificationReadMessages = await binUtils.retryAuthentication(
           async (auth) => {
             const response = await pkClient.rpcClient.methods.notificationsRead(
               {
@@ -71,23 +71,40 @@ class CommandRead extends CommandPolykey {
                 order: options.order,
               },
             );
-            const notifications: Array<Notification> = [];
+            const notificationReadMessages: Array<{
+              notification: Notification;
+            }> = [];
             for await (const notificationMessage of response) {
               const notification = notificationsUtils.parseNotification(
                 notificationMessage.notification,
               );
-              notifications.push(notification);
+              notificationReadMessages.push({ notification });
             }
-            return notifications;
+            return notificationReadMessages;
           },
           meta,
         );
-        for (const notification of notifications) {
-          const outputFormatted = binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: notification,
-          });
-          process.stdout.write(outputFormatted);
+        if (notificationReadMessages.length === 0) {
+          process.stderr.write('No notifications received\n');
+        }
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: notificationReadMessages,
+            }),
+          );
+        } else {
+          for (const notificationReadMessage of notificationReadMessages) {
+            process.stdout.write(
+              binUtils.outputFormatter({
+                type: 'dict',
+                data: {
+                  notificiation: notificationReadMessage.notification,
+                },
+              }),
+            );
+          }
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

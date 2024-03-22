@@ -2,6 +2,7 @@ import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { IdentityInfoMessage } from 'polykey/dist/client/types';
 import type { ReadableStream } from 'stream/web';
 import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
+import { TransformStream } from 'stream/web';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -101,20 +102,37 @@ class CommandSearch extends CommandPolykey {
                 limit: options.limit,
               });
           }
-          for await (const identityInfoMessage of readableStream) {
-            const output = {
-              providerId: identityInfoMessage.providerId,
-              identityId: identityInfoMessage.identityId,
-              name: identityInfoMessage.name,
-              email: identityInfoMessage.email,
-              url: identityInfoMessage.url,
-            };
-            process.stdout.write(
-              binUtils.outputFormatter({
-                type: options.format === 'json' ? 'json' : 'dict',
-                data: output,
-              }),
-            );
+          readableStream = readableStream.pipeThrough(
+            new TransformStream({
+              transform: (chunk, controller) => {
+                controller.enqueue({
+                  providerId: chunk.providerId,
+                  identityId: chunk.identityId,
+                  name: chunk.name,
+                  email: chunk.email,
+                  url: chunk.url,
+                });
+              },
+            }),
+          );
+          if (options.format === 'json') {
+            for await (const output of readableStream) {
+              process.stdout.write(
+                binUtils.outputFormatter({
+                  type: options.format === 'json' ? 'json' : 'dict',
+                  data: output,
+                }),
+              );
+            }
+          } else {
+            for await (const output of readableStream) {
+              process.stdout.write(
+                binUtils.outputFormatter({
+                  type: 'dict',
+                  data: output,
+                }),
+              );
+            }
           }
         }, auth);
       } finally {

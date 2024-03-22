@@ -44,38 +44,44 @@ class CommandGetAll extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const resultOutput = await binUtils.retryAuthentication(
-          async (auth) => {
-            const result = await pkClient.rpcClient.methods.nodesGetAll({
-              metadata: auth,
-            });
-            const output: Array<NodesGetMessage> = [];
-            for await (const nodesGetMessage of result) {
-              output.push(nodesGetMessage);
-            }
-            return output;
-          },
-          auth,
-        );
-        let output: Array<any> = [];
-        if (options.format === 'human') {
-          for (const nodesGetMessage of resultOutput) {
-            const nodeIdEncoded = nodesGetMessage.nodeIdEncoded;
-            const bucketIndex = nodesGetMessage.bucketIndex;
-            for (const address of Object.keys(nodesGetMessage.nodeContact)) {
-              output.push(
-                `NodeId ${nodeIdEncoded}, Address ${address}, bucketIndex ${bucketIndex}`,
-              );
-            }
+        const result = await binUtils.retryAuthentication(async (auth) => {
+          const result = await pkClient.rpcClient.methods.nodesGetAll({
+            metadata: auth,
+          });
+          const output: Array<NodesGetMessage> = [];
+          for await (const nodesGetMessage of result) {
+            output.push(nodesGetMessage);
           }
+          return output;
+        }, auth);
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: result.map((nodesGetMessage) => ({
+                nodeIdEncoded: nodesGetMessage.nodeIdEncoded,
+                nodeContact: nodesGetMessage.nodeContact,
+                bucketIndex: nodesGetMessage.bucketIndex,
+              })),
+            }),
+          );
         } else {
-          output = resultOutput;
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'table',
+              options: {
+                columns: ['nodeIdEncoded', 'nodeAddress', 'bucketIndex'],
+              },
+              data: result.flatMap((nodesGetMessage) =>
+                Object.keys(nodesGetMessage.nodeContact).map((nodeAddress) => ({
+                  nodeIdEncoded: nodesGetMessage.nodeIdEncoded,
+                  nodeAddress,
+                  bucketIndex: nodesGetMessage.bucketIndex,
+                })),
+              ),
+            }),
+          );
         }
-        const outputFormatted = binUtils.outputFormatter({
-          type: options.format === 'json' ? 'json' : 'list',
-          data: output,
-        });
-        process.stdout.write(outputFormatted);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

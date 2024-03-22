@@ -59,16 +59,28 @@ describe('commandStat', () => {
       await vaultOps.addSecret(vault, 'MySecret', 'this is the secret');
     });
 
-    command = ['secrets', 'stat', '-np', dataDir, `${vaultName}:MySecret`];
+    command = [
+      'secrets',
+      'stat',
+      '-np',
+      dataDir,
+      `${vaultName}:MySecret`,
+      '--format',
+      'json',
+    ];
 
     const result = await testUtils.pkStdio([...command], {
       env: {},
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('nlink: 1');
-    expect(result.stdout).toContain('blocks: 1');
-    expect(result.stdout).toContain('blksize: 4096');
-    expect(result.stdout).toContain('size: 18');
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      stat: {
+        nlink: 1,
+        blocks: 1,
+        blksize: 4096,
+        size: 18,
+      },
+    });
   });
 });

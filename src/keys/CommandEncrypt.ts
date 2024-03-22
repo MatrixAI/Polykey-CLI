@@ -98,19 +98,23 @@ class CommandEncypt extends CommandPolykey {
             }),
           auth,
         );
-        const result = {
-          encryptedData: response.data,
-        };
-        let output: any = result;
-        if (options.format === 'human') {
-          output = { 'Encrypted data:': result.encryptedData };
+        if (options.format === 'json') {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'json',
+              data: {
+                data: response.data,
+              },
+            }),
+          );
+        } else {
+          process.stdout.write(
+            binUtils.outputFormatter({
+              type: 'raw',
+              data: response.data,
+            }),
+          );
         }
-        process.stdout.write(
-          binUtils.outputFormatter({
-            type: options.format === 'json' ? 'json' : 'dict',
-            data: output,
-          }),
-        );
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

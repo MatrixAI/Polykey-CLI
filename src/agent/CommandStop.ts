@@ -27,13 +27,13 @@ class CommandStop extends CommandPolykey {
       );
       const statusInfo = clientStatus.statusInfo;
       if (statusInfo?.status === 'DEAD') {
-        this.logger.info('Agent is already dead');
+        process.stderr.write('Agent is already dead\n');
         return;
       } else if (statusInfo?.status === 'STOPPING') {
-        this.logger.info('Agent is already stopping');
+        process.stderr.write('Agent is already stopping\n');
         return;
       } else if (statusInfo?.status === 'STARTING') {
-        throw new errors.ErrorPolykeyCLIAgentStatus('agent is starting');
+        throw new errors.ErrorPolykeyCLIAgentStatus('Agent is starting');
       }
       const auth = await binProcessors.processAuthentication(
         options.passwordFile,
@@ -62,7 +62,7 @@ class CommandStop extends CommandPolykey {
             }),
           auth,
         );
-        this.logger.info('Stopping Agent');
+        process.stderr.write('Stopping Agent\n');
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

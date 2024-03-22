@@ -172,15 +172,21 @@ describe('trust/untrust/list', () => {
       ));
       expect(exitCode).toBe(0);
       expect(JSON.parse(stdout)).toHaveLength(2);
-      expect(JSON.parse(stdout)[0]).toEqual({
-        permissions: ['notify'],
-        nodes: [{ nodeId: nodesUtils.encodeNodeId(nodeId) }],
-        identities: [
-          {
-            providerId: provider.id,
-            identityId: identity,
+      expect(JSON.parse(stdout)[0]).toMatchObject({
+        gestalt: {
+          actionsList: ['notify'],
+          nodes: {
+            ['node-' + nodesUtils.encodeNodeId(nodeId)]: {
+              nodeId: nodesUtils.encodeNodeId(nodeId),
+            },
           },
-        ],
+          identities: {
+            ['identity-' + JSON.stringify([provider.id, identity])]: {
+              providerId: provider.id,
+              identityId: identity,
+            },
+          },
+        },
       });
       // Untrust the gestalt by node
       // This should remove the permission, but not the gestalt (from the gestalt
@@ -209,15 +215,21 @@ describe('trust/untrust/list', () => {
       ));
       expect(exitCode).toBe(0);
       expect(JSON.parse(stdout)).toHaveLength(2);
-      expect(JSON.parse(stdout)[0]).toEqual({
-        permissions: null,
-        nodes: [{ nodeId: nodesUtils.encodeNodeId(nodeId) }],
-        identities: [
-          {
-            providerId: provider.id,
-            identityId: identity,
+      expect(JSON.parse(stdout)[0]).toMatchObject({
+        gestalt: {
+          actionsList: [],
+          nodes: {
+            ['node-' + nodesUtils.encodeNodeId(nodeId)]: {
+              nodeId: nodesUtils.encodeNodeId(nodeId),
+            },
           },
-        ],
+          identities: {
+            ['identity-' + JSON.stringify([provider.id, identity])]: {
+              providerId: provider.id,
+              identityId: identity,
+            },
+          },
+        },
       });
       // Revert side-effects
       await pkAgent.gestaltGraph.unsetNode(nodeId);
@@ -316,15 +328,21 @@ describe('trust/untrust/list', () => {
       ));
       expect(exitCode).toBe(0);
       expect(JSON.parse(stdout)).toHaveLength(2);
-      expect(JSON.parse(stdout)[0]).toEqual({
-        permissions: ['notify'],
-        nodes: [{ nodeId: nodesUtils.encodeNodeId(nodeId) }],
-        identities: [
-          {
-            providerId: provider.id,
-            identityId: identity,
+      expect(JSON.parse(stdout)[0]).toMatchObject({
+        gestalt: {
+          actionsList: ['notify'],
+          nodes: {
+            ['node-' + nodesUtils.encodeNodeId(nodeId)]: {
+              nodeId: nodesUtils.encodeNodeId(nodeId),
+            },
           },
-        ],
+          identities: {
+            ['identity-' + JSON.stringify([provider.id, identity])]: {
+              providerId: provider.id,
+              identityId: identity,
+            },
+          },
+        },
       });
       // Untrust the gestalt by node
       // This should remove the permission, but not the gestalt (from the gestalt
@@ -353,15 +371,21 @@ describe('trust/untrust/list', () => {
       ));
       expect(exitCode).toBe(0);
       expect(JSON.parse(stdout)).toHaveLength(2);
-      expect(JSON.parse(stdout)[0]).toEqual({
-        permissions: null,
-        nodes: [{ nodeId: nodesUtils.encodeNodeId(nodeId) }],
-        identities: [
-          {
-            providerId: provider.id,
-            identityId: identity,
+      expect(JSON.parse(stdout)[0]).toMatchObject({
+        gestalt: {
+          actionsList: [],
+          nodes: {
+            ['node-' + nodesUtils.encodeNodeId(nodeId)]: {
+              nodeId: nodesUtils.encodeNodeId(nodeId),
+            },
           },
-        ],
+          identities: {
+            ['identity-' + JSON.stringify([provider.id, identity])]: {
+              providerId: provider.id,
+              identityId: identity,
+            },
+          },
+        },
       });
       // Revert side-effects
       await pkAgent.gestaltGraph.unsetNode(nodeId);

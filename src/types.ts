@@ -13,6 +13,10 @@ interface TableOptions {
   includeRowCount?: boolean;
 }
 
+interface DictOptions {
+  padding?: number;
+}
+
 type AgentStatusLiveData = Omit<StatusLive['data'], 'nodeId'> & {
   nodeId: NodeIdEncoded;
 };
@@ -51,6 +55,7 @@ type AgentChildProcessOutput =
 export type {
   TableRow,
   TableOptions,
+  DictOptions,
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,

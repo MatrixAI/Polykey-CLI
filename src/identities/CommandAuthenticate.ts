@@ -68,9 +68,11 @@ class CommandAuthenticate extends CommandPolykey {
           );
           for await (const message of genReadable) {
             if (message.request != null) {
-              this.logger.info(`Navigate to the URL in order to authenticate`);
-              this.logger.info(
-                'Use any additional additional properties to complete authentication',
+              process.stderr.write(
+                `Navigate to the URL in order to authenticate\n`,
+              );
+              process.stderr.write(
+                'Use any additional additional properties to complete authentication\n',
               );
               try {
                 await identitiesUtils.browser(message.request.url);
@@ -78,23 +80,35 @@ class CommandAuthenticate extends CommandPolykey {
                 if (e.code !== 'ENOENT') throw e;
                 // Otherwise we ignore `ENOENT` as a failure to spawn a browser
               }
+              if (options.format === 'json') {
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'json',
+                    data: {
+                      url: message.request.url,
+                      dataMap: message.request.dataMap,
+                    },
+                  }),
+                );
+              } else {
+                process.stdout.write(
+                  binUtils.outputFormatter({
+                    type: 'dict',
+                    data: {
+                      url: message.request.url,
+                      ...message.request.dataMap,
+                    },
+                  }),
+                );
+              }
+            } else if (message.response != null) {
+              process.stderr.write(
+                `Authenticated digital identity provider ${providerId}\n`,
+              );
               process.stdout.write(
                 binUtils.outputFormatter({
                   type: options.format === 'json' ? 'json' : 'dict',
-                  data: {
-                    url: message.request.url,
-                    ...message.request.dataMap,
-                  },
-                }),
-              );
-            } else if (message.response != null) {
-              this.logger.info(
-                `Authenticated digital identity provider ${providerId}`,
-              );
-              process.stdout.write(
-                binUtils.outputFormatter({
-                  type: options.format === 'json' ? 'json' : 'list',
-                  data: [message.response.identityId],
+                  data: { identityId: message.response.identityId },
                 }),
               );
             } else {

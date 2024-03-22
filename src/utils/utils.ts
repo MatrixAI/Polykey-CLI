@@ -1,5 +1,5 @@
 import type { POJO } from 'polykey/dist/types';
-import type { TableRow, TableOptions } from '../types';
+import type { TableRow, TableOptions, DictOptions } from '../types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
@@ -40,6 +40,7 @@ type OutputObject =
   | {
       type: 'dict';
       data: POJO;
+      options?: DictOptions;
     }
   | {
       type: 'json';
@@ -219,7 +220,7 @@ function outputFormatter(msg: OutputObject): string | Uint8Array {
     case 'table':
       return outputFormatterTable(msg.data, msg.options);
     case 'dict':
-      return outputFormatterDict(msg.data);
+      return outputFormatterDict(msg.data, msg.options);
     case 'json':
       return outputFormatterJson(msg.data);
     case 'error':
@@ -351,35 +352,62 @@ function outputFormatterTable(
   return output;
 }
 
-function outputFormatterDict(data: POJO): string {
+function outputFormatterDict(
+  data: POJO,
+  {
+    padding = 0,
+  }: {
+    padding?: number;
+  } = {},
+): string {
   let output = '';
   let maxKeyLength = 0;
+  const leftPadding = ' '.repeat(padding);
   // Array<[originalKey, encodedKey]>
   const keypairs: Array<[string, string]> = [];
-  for (const key in data) {
-    const encodedKey = encodeEscapedWrapped(key);
-    keypairs.push([key, encodedKey]);
-    if (encodedKey.length > maxKeyLength) {
-      maxKeyLength = encodedKey.length;
+  const dataIsArray = Array.isArray(data);
+  if (!dataIsArray) {
+    for (const key in data) {
+      const encodedKey = encodeEscapedWrapped(key);
+      keypairs.push([key, encodedKey]);
+      if (encodedKey.length > maxKeyLength) {
+        maxKeyLength = encodedKey.length;
+      }
+    }
+  } else {
+    for (const key of data) {
+      const encodedKey = encodeEscapedWrapped(key);
+      keypairs.push([key, encodedKey]);
+      if (encodedKey.length > maxKeyLength) {
+        maxKeyLength = encodedKey.length;
+      }
     }
   }
   for (const [originalKey, encodedKey] of keypairs) {
+    const rightPadding = ' '.repeat(maxKeyLength - encodedKey.length);
+    output += `${leftPadding}${encodedKey}${rightPadding}\t`;
+
+    if (dataIsArray) {
+      output += '\n';
+      continue;
+    }
+
     let value = data[originalKey];
     if (value == null) {
       value = '';
-    }
-
-    if (typeof value === 'string') {
+    } else if (typeof value == 'object') {
+      output += `\n${outputFormatterDict(value, {
+        padding: padding + 2,
+      })}`;
+      continue;
+    } else if (typeof value === 'string') {
       value = encodeEscapedWrapped(value);
     } else {
       value = JSON.stringify(value, encodeEscapedReplacer);
     }
-
     value = value.replace(/(?:\r\n|\n)$/, '');
     value = value.replace(/(\r\n|\n)/g, '$1\t');
-
-    const padding = ' '.repeat(maxKeyLength - encodedKey.length);
-    output += `${encodedKey}${padding}\t${value}\n`;
+    output += `${value}\n`;
   }
   return output;
 }

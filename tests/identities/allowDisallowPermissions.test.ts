@@ -164,7 +164,7 @@ describe('allow/disallow/permissions', () => {
     ));
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      permissions: ['notify', 'scan'],
+      actionsList: ['notify', 'scan'],
     });
     // Disallow both permissions
     ({ exitCode } = await testUtils.pkStdio(
@@ -208,7 +208,7 @@ describe('allow/disallow/permissions', () => {
     ));
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      permissions: [],
+      actionsList: [],
     });
   });
   test('allows/disallows/gets gestalt permissions by identity', async () => {
@@ -299,7 +299,7 @@ describe('allow/disallow/permissions', () => {
     ));
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      permissions: ['notify', 'scan'],
+      actionsList: ['notify', 'scan'],
     });
     // Disallow both permissions
     ({ exitCode } = await testUtils.pkStdio(
@@ -337,7 +337,7 @@ describe('allow/disallow/permissions', () => {
     ));
     expect(exitCode).toBe(0);
     expect(JSON.parse(stdout)).toEqual({
-      permissions: [],
+      actionsList: [],
     });
   });
   test('should fail on invalid inputs', async () => {
