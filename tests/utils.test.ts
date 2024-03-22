@@ -126,13 +126,13 @@ describe('bin/utils', () => {
         type: 'dict',
         data: { key1: {}, key2: {} },
       }),
-    ).toBe('key1\t\nkey2\t\n');
+    ).toBe('key1\nkey2\n');
     expect(
       binUtils.outputFormatter({
         type: 'dict',
         data: { key1: ['value1', 'value2', 'value3'] },
       }),
-    ).toBe('key1\t\n  value1\t\n  value2\t\n  value3\t\n');
+    ).toBe('key1\n  - value1\n  - value2\n  - value3\n');
     expect(
       binUtils.outputFormatter({
         type: 'dict',
@@ -153,14 +153,14 @@ describe('bin/utils', () => {
         },
       }),
     ).toBe(
-      'key1\t\n' +
+      'key1\n' +
         '  key2\t\n' +
         '  key3\t\n' +
         '  key4\tvalue\n' +
         'key5\tvalue\n' +
-        'key6\t\n' +
-        '  key7\t\n' +
-        '    key8\t\n' +
+        'key6\n' +
+        '  key7\n' +
+        '    key8\n' +
         '      key9\tvalue\n',
     );
   });

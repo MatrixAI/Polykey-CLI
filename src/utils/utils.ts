@@ -363,51 +363,61 @@ function outputFormatterDict(
   let output = '';
   let maxKeyLength = 0;
   const leftPadding = ' '.repeat(padding);
-  // Array<[originalKey, encodedKey]>
-  const keypairs: Array<[string, string]> = [];
+  // Array<[encodedKey, value]>
+  const encodedKeyEntries: Array<[string, any]> = [];
   const dataIsArray = Array.isArray(data);
-  if (!dataIsArray) {
-    for (const key in data) {
-      const encodedKey = encodeEscapedWrapped(key);
-      keypairs.push([key, encodedKey]);
-      if (encodedKey.length > maxKeyLength) {
-        maxKeyLength = encodedKey.length;
-      }
-    }
-  } else {
-    for (const key of data) {
-      const encodedKey = encodeEscapedWrapped(key);
-      keypairs.push([key, encodedKey]);
-      if (encodedKey.length > maxKeyLength) {
-        maxKeyLength = encodedKey.length;
-      }
+  for (const key in data) {
+    const encodedKey = encodeEscapedWrapped(key);
+    encodedKeyEntries.push([encodedKey, data[key]]);
+    if (encodedKey.length > maxKeyLength) {
+      maxKeyLength = encodedKey.length;
     }
   }
-  for (const [originalKey, encodedKey] of keypairs) {
-    const rightPadding = ' '.repeat(maxKeyLength - encodedKey.length);
-    output += `${leftPadding}${encodedKey}${rightPadding}\t`;
-
-    if (dataIsArray) {
-      output += '\n';
+  for (const [encodedKey, value] of encodedKeyEntries) {
+    let encodedValue = value;
+    if (encodedValue == null) {
+      encodedValue = '';
+    } else if (typeof encodedValue == 'object') {
+      if (!dataIsArray) {
+        output += `${leftPadding}${encodedKey}\n`;
+        output += `${outputFormatterDict(encodedValue, {
+          padding: padding + 2,
+        })}`;
+      } else {
+        const entries = Object.entries(encodedValue);
+        const initialEntry = entries.shift();
+        if (initialEntry != null) {
+          const [dataKey, dataValue] = initialEntry;
+          delete encodedValue[dataKey];
+          encodedValue[`- ${dataKey}`] = dataValue;
+        }
+        for (const [dataKey, dataValue] of entries) {
+          delete encodedValue[dataKey];
+          encodedValue[`  ${dataKey}`] = dataValue;
+        }
+        output += `${outputFormatterDict(encodedValue, {
+          padding,
+        })}`;
+      }
       continue;
-    }
-
-    let value = data[originalKey];
-    if (value == null) {
-      value = '';
-    } else if (typeof value == 'object') {
-      output += `\n${outputFormatterDict(value, {
-        padding: padding + 2,
-      })}`;
-      continue;
-    } else if (typeof value === 'string') {
-      value = encodeEscapedWrapped(value);
+    } else if (typeof encodedValue === 'string') {
+      encodedValue = encodeEscapedWrapped(encodedValue);
     } else {
-      value = JSON.stringify(value, encodeEscapedReplacer);
+      encodedValue = JSON.stringify(encodedValue, encodeEscapedReplacer);
     }
-    value = value.replace(/(?:\r\n|\n)$/, '');
-    value = value.replace(/(\r\n|\n)/g, '$1\t');
-    output += `${value}\n`;
+    encodedValue = encodedValue.replace(/(?:\r\n|\n)$/, '');
+    encodedValue = encodedValue.replace(/(\r\n|\n)/g, '$1\t');
+
+    output += leftPadding;
+    if (!dataIsArray) {
+      output += `${encodedKey}${' '.repeat(
+        maxKeyLength - encodedKey.length,
+      )}\t`;
+    } else {
+      output += `- `;
+    }
+    ``;
+    output += `${encodedValue}\n`;
   }
   return output;
 }
