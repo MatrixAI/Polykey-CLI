@@ -105,6 +105,11 @@ const recoveryCodeFile = new commander.Option(
   'Path to Recovery Code',
 );
 
+const recoveryCodeOutFile = new commander.Option(
+  '-rcof, --recovery-code-out-file <path>',
+  'Path to output recovery code. Only used if a `RecoveryCode` is generated.',
+);
+
 const background = new commander.Option(
   '-b, --background',
   'Starts the agent as a background process',
@@ -240,6 +245,7 @@ export {
   agentPort,
   connConnectTime,
   recoveryCodeFile,
+  recoveryCodeOutFile,
   passwordFile,
   passwordNewFile,
   background,
