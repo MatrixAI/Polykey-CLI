@@ -24,7 +24,6 @@
 
             passwordFilePath = mkOption {
               type = with types; uniq str;
-              default = "/this/path/will/cause/a/failure/if/not/set";
               description = ''
               The path to the Polykey password file. This is required to be set for the module to work, otherwise this module will fail.
               '';
@@ -56,7 +55,6 @@
 
             passwordFilePath = mkOption {
               type = with types; uniq str;
-              default = "/this/path/will/cause/a/failure/if/not/set";
               description = ''
               The path to the Polykey password file. This is required to be set for the module to work, otherwise this module will fail.
               '';
