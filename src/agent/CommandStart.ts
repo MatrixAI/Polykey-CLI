@@ -14,6 +14,7 @@ import childProcess from 'child_process';
 import process from 'process';
 import config from 'polykey/dist/config';
 import * as keysErrors from 'polykey/dist/keys/errors';
+import * as polykeyEvents from 'polykey/dist/events';
 import * as polykeyUtils from 'polykey/dist/utils';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -242,6 +243,13 @@ class CommandStart extends CommandPolykey {
           }
           throw e;
         }
+        pkAgent.addEventListener(
+          polykeyEvents.EventPolykeyAgentStop.name,
+          () => {
+            process.stderr.write('Stopping Agent\n');
+          },
+          { once: true },
+        );
         recoveryCodeOut = pkAgent.keyRing.recoveryCode;
         statusLiveData = {
           pid: process.pid,
