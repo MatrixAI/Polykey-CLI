@@ -200,8 +200,6 @@ describe('discover/get', () => {
         testToken.providerId,
         testToken.identityId,
       );
-      // @ts-ignore - get protected property
-      pkAgent.discovery.visitedVertices.clear();
     },
     globalThis.defaultTimeout * 3,
   );
@@ -279,8 +277,6 @@ describe('discover/get', () => {
       testToken.providerId,
       testToken.identityId,
     );
-    // @ts-ignore - get protected property
-    pkAgent.discovery.visitedVertices.clear();
   });
   test('should fail on invalid inputs', async () => {
     // Discover

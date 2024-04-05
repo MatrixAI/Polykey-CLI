@@ -239,8 +239,6 @@ describe('trust/untrust/list', () => {
         testToken.providerId,
         testToken.identityId,
       );
-      // @ts-ignore - get protected property
-      pkAgent.discovery.visitedVertices.clear();
     },
     globalThis.defaultTimeout * 2,
   );
@@ -395,8 +393,6 @@ describe('trust/untrust/list', () => {
         testToken.providerId,
         testToken.identityId,
       );
-      // @ts-ignore - get protected property
-      pkAgent.discovery.visitedVertices.clear();
     },
     globalThis.defaultTimeout * 2,
   );
