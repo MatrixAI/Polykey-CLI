@@ -12,7 +12,7 @@ import type { DeepPartial } from 'polykey/dist/types';
 import type { RecoveryCode } from 'polykey/dist/keys/types';
 import childProcess from 'child_process';
 import process from 'process';
-import * as fs from 'fs';
+import fs from 'fs';
 import config from 'polykey/dist/config';
 import * as keysErrors from 'polykey/dist/keys/errors';
 import * as polykeyEvents from 'polykey/dist/events';

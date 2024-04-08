@@ -1,5 +1,5 @@
 import process from 'process';
-import * as fs from 'fs';
+import fs from 'fs';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -53,7 +53,7 @@ class CommandBootstrap extends CommandPolykey {
         await fs.promises.writeFile(
           options.recoveryCodeOutFile,
           recoveryCodeOut,
-        );      
+        );
       }
     });
   }

@@ -102,12 +102,12 @@ const passwordNewFile = new commander.Option(
 
 const recoveryCodeFile = new commander.Option(
   '-rcf, --recovery-code-file <path>',
-  'Path to Recovery Code',
+  'Path to a file used to load the Recovery Code from',
 );
 
 const recoveryCodeOutFile = new commander.Option(
   '-rcof, --recovery-code-out-file <path>',
-  'Path to output recovery code. Only used if a `RecoveryCode` is generated.',
+  'Path used to write the Recovery Code if one was generated, if none was generated then this is ignored',
 );
 
 const background = new commander.Option(
