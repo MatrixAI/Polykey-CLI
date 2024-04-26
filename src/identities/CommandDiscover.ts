@@ -1,5 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { GestaltId } from 'polykey/dist/gestalts/types';
+import type { GestaltId, GestaltIdEncoded } from 'polykey/dist/gestalts/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -19,12 +19,14 @@ class CommandDiscover extends CommandPolykey {
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
+    this.addOption(binOptions.discoveryMonitor);
     this.action(async (gestaltId: GestaltId, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
       const utils = await import('polykey/dist/utils');
       const nodesUtils = await import('polykey/dist/nodes/utils');
+      const gestaltUtils = await import('polykey/dist/gestalts/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -51,6 +53,86 @@ class CommandDiscover extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
+        const parentSet: Set<GestaltIdEncoded> = new Set();
+        parentSet.add(gestaltUtils.encodeGestaltId(gestaltId));
+        let eventsP: Promise<void> | undefined;
+        if (options.monitor === true) {
+          // Creating an infinite timer to hold the process open
+          const holdOpenTimer = setTimeout(() => {}, Infinity);
+          // We set up the readable stream watching the discovery events here
+          eventsP = binUtils
+            .retryAuthentication(async (auth) => {
+              const readableStream =
+                await pkClient.rpcClient.methods.auditEventsGet({
+                  awaitFutureEvents: true,
+                  path: ['discovery', 'vertex'],
+                  seek: Date.now(),
+                  metadata: auth,
+                });
+              // Tracks vertices that are relevant to our current search
+              const relevantSet: Set<string> = new Set();
+              // Tracks vertices that are currently queued and waiting processing, when exhausted then the search is done
+              const queuedSet: Set<string> = new Set();
+              // Adding the initial vertex
+              relevantSet.add(gestaltUtils.encodeGestaltId(gestaltId));
+              for await (const result of readableStream) {
+                const event = result.path[2];
+                const { vertex, parent } = result.data;
+                // Skip if the vertex and parent are not relevant
+                if (
+                  !relevantSet.has(vertex) &&
+                  parent != null &&
+                  !relevantSet.has(parent)
+                ) {
+                  continue;
+                }
+                relevantSet.add(vertex);
+                if (parent != null) relevantSet.add(parent);
+                switch (event) {
+                  case 'queued':
+                    queuedSet.add(vertex);
+                    break;
+                  case 'processed':
+                  case 'cancelled':
+                  case 'failed':
+                    queuedSet.delete(vertex);
+                    break;
+                }
+                const [type, id] = gestaltUtils.decodeGestaltId(vertex)!;
+                const formattedVertex: string =
+                  type === 'identity'
+                    ? `${id[0]}:${id[1]}`
+                    : nodesUtils.encodeNodeId(id);
+                const data = {
+                  event,
+                  vertex: formattedVertex,
+                };
+                if (options.format === 'json') {
+                  process.stdout.write(
+                    binUtils.outputFormatter({
+                      type: 'json',
+                      data,
+                    }),
+                  );
+                } else {
+                  process.stdout.write(
+                    binUtils.outputFormatter({
+                      type: 'list',
+                      data: [
+                        `${data.event}${' '.repeat(15 - data.event.length)}${
+                          data.vertex
+                        }`,
+                      ],
+                    }),
+                  );
+                }
+                if (queuedSet.size === 0) break;
+              }
+            }, auth)
+            .finally(() => {
+              clearTimeout(holdOpenTimer);
+            });
+        }
         const [type, id] = gestaltId;
         switch (type) {
           case 'node':
@@ -83,6 +165,7 @@ class CommandDiscover extends CommandPolykey {
           default:
             utils.never();
         }
+        await eventsP;
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

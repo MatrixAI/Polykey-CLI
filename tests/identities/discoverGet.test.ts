@@ -300,4 +300,57 @@ describe('discover/get', () => {
       cwd: dataDir,
     });
   });
+  test('should do discovery with monitor', async () => {
+    await testUtils.pkStdio(
+      [
+        'identities',
+        'authenticate',
+        testToken.providerId,
+        testToken.identityId,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    );
+    // Add one of the nodes to our gestalt graph so that we'll be able to
+    // contact the gestalt during discovery
+    await testUtils.pkStdio(
+      [
+        'nodes',
+        'add',
+        nodesUtils.encodeNodeId(nodeAId),
+        nodeAHost,
+        `${nodeAPort}`,
+      ],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    );
+    // Discover gestalt by node
+    const discoverResponse = await testUtils.pkExec(
+      ['identities', 'discover', providerString, '--monitor'],
+      {
+        env: {
+          PK_NODE_PATH: nodePath,
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      },
+    );
+    expect(discoverResponse.stdout).toIncludeMultiple([
+      'queued',
+      'processed',
+      `${testToken.providerId}:${identityId}`,
+      nodesUtils.encodeNodeId(nodeA.keyRing.getNodeId()),
+      nodesUtils.encodeNodeId(nodeB.keyRing.getNodeId()),
+    ]);
+  });
 });
