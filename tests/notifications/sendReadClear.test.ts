@@ -163,7 +163,7 @@ describe('send/read/claim', () => {
       expect(exitCode).toBe(0);
       // Read notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -204,7 +204,7 @@ describe('send/read/claim', () => {
       });
       // Read only unread (none)
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--unread', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--unread', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -218,7 +218,14 @@ describe('send/read/claim', () => {
       expect(readNotificationMessages).toHaveLength(0);
       // Read notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--order=oldest', '--format', 'json'],
+        [
+          'notifications',
+          'inbox',
+          'read',
+          '--order=oldest',
+          '--format',
+          'json',
+        ],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -259,7 +266,7 @@ describe('send/read/claim', () => {
       });
       // Read only one notification
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--number=1', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--limit=1', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -281,7 +288,7 @@ describe('send/read/claim', () => {
         isRead: true,
       });
       // Clear notifications
-      await testUtils.pkExec(['notifications', 'clear'], {
+      await testUtils.pkExec(['notifications', 'inbox', 'clear'], {
         env: {
           PK_NODE_PATH: receiverAgentDir,
           PK_PASSWORD: receiverAgentPassword,
@@ -290,7 +297,7 @@ describe('send/read/claim', () => {
       });
       // Check there are no more notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -302,6 +309,53 @@ describe('send/read/claim', () => {
       expect(exitCode).toBe(0);
       readNotificationMessages = JSON.parse(stdout);
       expect(readNotificationMessages).toHaveLength(0);
+      // Sending notifications to invalid nodeIds for outbox
+      const invalidNodeId = 'v53jhuvmfkc4tnngvor2op7c12jmohqa704pg3pcvrdui9j5kh900';
+      ({ exitCode } = await testUtils.pkExec(
+        [
+          'notifications',
+          'send',
+          invalidNodeId,
+          'test message 1',
+          '--retries',
+          '0'
+        ],
+        {
+          env: {
+            PK_NODE_PATH: senderAgentDir,
+            PK_PASSWORD: senderAgentPassword,
+          },
+          cwd: senderAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      // Read outbox
+      ({ exitCode, stdout } = await testUtils.pkExec(
+        ['notifications', 'outbox', 'read', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: senderAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: senderAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      let sentNotificationMessages = JSON.parse(stdout);
+      expect(sentNotificationMessages).toHaveLength(1);
+      expect(sentNotificationMessages[0]).toMatchObject({
+        notification: {
+          data: {
+            type: 'General',
+            message: 'test message 1',
+          },
+          iss: nodesUtils.encodeNodeId(senderId),
+          sub: invalidNodeId,
+        },
+        taskMetadata: {
+          remainingRetries: 0
+        }
+      });
     },
     globalThis.defaultTimeout * 3,
   );

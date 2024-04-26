@@ -96,8 +96,11 @@ describe('claim', () => {
     expect(stderr).toContain(remoteIdEncoded);
   });
   test('sends a gestalt invite (force invite)', async () => {
-    await remoteNode.notificationsManager.sendNotification(localId, {
-      type: 'GestaltInvite',
+    await remoteNode.notificationsManager.sendNotification({
+      nodeId: localId,
+      data: {
+        type: 'GestaltInvite',
+      },
     });
     const { exitCode, stdout, stderr } = await testUtils.pkStdio(
       ['nodes', 'claim', remoteIdEncoded, '--force-invite', '--format', 'json'],
@@ -114,8 +117,11 @@ describe('claim', () => {
     expect(stderr).toContain(nodesUtils.encodeNodeId(remoteId));
   });
   test('claims a node', async () => {
-    await remoteNode.notificationsManager.sendNotification(localId, {
-      type: 'GestaltInvite',
+    await remoteNode.notificationsManager.sendNotification({
+      nodeId: localId,
+      data: {
+        type: 'GestaltInvite',
+      },
     });
     const { exitCode, stdout, stderr } = await testUtils.pkStdio(
       ['nodes', 'claim', remoteIdEncoded, '--format', 'json'],

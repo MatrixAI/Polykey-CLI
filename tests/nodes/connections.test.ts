@@ -87,8 +87,11 @@ describe('connections', () => {
     });
   });
   test('Correctly list connection information, and not list auth data', async () => {
-    await remoteNode.notificationsManager.sendNotification(localId, {
-      type: 'GestaltInvite',
+    await remoteNode.notificationsManager.sendNotification({
+      nodeId: localId,
+      data: {
+        type: 'GestaltInvite',
+      },
     });
     const { exitCode } = await testUtils.pkStdio(
       ['nodes', 'claim', remoteIdEncoded, '--force-invite'],

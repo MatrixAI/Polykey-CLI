@@ -1,5 +1,5 @@
-import CommandClear from './CommandClear';
-import CommandRead from './CommandRead';
+import CommandInbox from './inbox';
+import CommandOutbox from './outbox';
 import CommandSend from './CommandSend';
 import CommandPolykey from '../CommandPolykey';
 
@@ -8,8 +8,8 @@ class CommandNotifications extends CommandPolykey {
     super(...args);
     this.name('notifications');
     this.description('Notifications Operations');
-    this.addCommand(new CommandClear(...args));
-    this.addCommand(new CommandRead(...args));
+    this.addCommand(new CommandInbox(...args));
+    this.addCommand(new CommandOutbox(...args));
     this.addCommand(new CommandSend(...args));
   }
 }
