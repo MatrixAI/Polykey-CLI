@@ -143,6 +143,7 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
   const { default: config } = await import('polykey/dist/config');
   const { default: CommandBootstrap } = await import('./bootstrap');
   const { default: CommandAgent } = await import('./agent');
+  const { default: CommandAudit } = await import('./audit');
   const { default: CommandVaults } = await import('./vaults');
   const { default: CommandSecrets } = await import('./secrets');
   const { default: CommandKeys } = await import('./keys');
@@ -164,6 +165,7 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
   rootCommand.description('Polykey CLI');
   rootCommand.addCommand(new CommandBootstrap({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandAgent({ exitHandlers, fs }));
+  rootCommand.addCommand(new CommandAudit({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandNodes({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandSecrets({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandKeys({ exitHandlers, fs }));
