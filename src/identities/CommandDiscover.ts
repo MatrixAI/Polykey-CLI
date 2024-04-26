@@ -1,5 +1,9 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
 import type { GestaltId } from 'polykey/dist/gestalts/types';
+import type {
+  AuditEventDiscoveryVertex,
+  AuditEventToAuditEventSerialized,
+} from 'polykey/dist/audit/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -63,7 +67,7 @@ class CommandDiscover extends CommandPolykey {
               const readableStream =
                 await pkClient.rpcClient.methods.auditEventsGet({
                   awaitFutureEvents: true,
-                  path: ['discovery', 'vertex'],
+                  paths: [['discovery', 'vertex']],
                   seek: Date.now(),
                   metadata: auth,
                 });
@@ -74,8 +78,17 @@ class CommandDiscover extends CommandPolykey {
               // Adding the initial vertex
               relevantSet.add(gestaltUtils.encodeGestaltId(gestaltId));
               for await (const result of readableStream) {
-                const event = result.path[2];
-                const { vertex, parent } = result.data;
+                if (
+                  result.path[0] !== 'discovery' ||
+                  result.path[1] !== 'vertex'
+                ) {
+                  utils.never('Should be a discovery vertex event');
+                }
+                // We're only requesting discovery vertex events, so we need to re-cast the type here
+                const resultTyped =
+                  result as AuditEventToAuditEventSerialized<AuditEventDiscoveryVertex>;
+                const event = resultTyped.path[2];
+                const { vertex, parent } = resultTyped.data;
                 // Skip if the vertex and parent are not relevant
                 if (
                   !relevantSet.has(vertex) &&

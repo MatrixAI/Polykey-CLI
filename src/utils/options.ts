@@ -238,6 +238,63 @@ const discoveryMonitor = new commander.Option(
   'Enabling monitoring will cause discover to output discovery events as they happen and will exit once all children are processed',
 ).default(false);
 
+const parseDate = (value: string): number => {
+  if (value.toLowerCase() === 'now') return Date.now();
+  const date = Date.parse(value);
+  if (isNaN(date)) throw Error('Invalid data');
+  return date;
+};
+
+const seekStart = new commander.Option(
+  '--seek-start [seekStart]',
+  `time to start seeking from`,
+)
+  .argParser(parseDate)
+  .default(0);
+
+const seekEnd = new commander.Option(
+  '--seek-end [seekEnd]',
+  `time to seek until`,
+)
+  .argParser(parseDate)
+  .default(undefined);
+
+const follow = new commander.Option(
+  '--follow',
+  'If enabled, future events will be outputted as they happen',
+).default(false);
+
+const events = new commander.Option(
+  '--events [events...]',
+  'Filter for specified event paths',
+)
+  .argParser(
+    (
+      value: string,
+      previous: Array<Array<string>> | undefined,
+    ): Array<Array<string>> => {
+      const parsedPath = value.split('.');
+      const out = previous ?? [];
+      out.push(parsedPath);
+      return out;
+    },
+  )
+  .default(undefined);
+
+const limit = new commander.Option(
+  '--limit [limit]',
+  'Limit the number of emitted events',
+)
+  .argParser(parseInt)
+  .default(undefined);
+
+const order = new commander.Option(
+  '--order [order]',
+  'Filter for specified events',
+)
+  .choices(['asc', 'desc'])
+  .default('asc');
+
 export {
   nodePath,
   format,
@@ -272,4 +329,10 @@ export {
   envInvalid,
   envDuplicate,
   discoveryMonitor,
+  seekStart,
+  seekEnd,
+  follow,
+  events,
+  limit,
+  order,
 };
