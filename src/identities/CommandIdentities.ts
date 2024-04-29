@@ -7,6 +7,7 @@ import CommandDiscover from './CommandDiscover';
 import CommandGet from './CommandGet';
 import CommandList from './CommandList';
 import CommandPermissions from './CommandPermissions';
+import CommandQueue from './CommandQueue';
 import CommandSearch from './CommandSearch';
 import CommandTrust from './CommandTrust';
 import CommandUntrust from './CommandUntrust';
@@ -27,6 +28,7 @@ class CommandIdentities extends CommandPolykey {
     this.addCommand(new CommandGet(...args));
     this.addCommand(new CommandList(...args));
     this.addCommand(new CommandPermissions(...args));
+    this.addCommand(new CommandQueue(...args));
     this.addCommand(new CommandSearch(...args));
     this.addCommand(new CommandTrust(...args));
     this.addCommand(new CommandUntrust(...args));

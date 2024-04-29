@@ -233,6 +233,11 @@ const envDuplicate = new commander.Option(
   .choices(['keep', 'overwrite', 'warn', 'error'])
   .default('overwrite');
 
+const discoveryMonitor = new commander.Option(
+  '--monitor',
+  'Enabling monitoring will cause discover to output discovery events as they happen and will exit once all children are processed',
+).default(false);
+
 export {
   nodePath,
   format,
@@ -266,4 +271,5 @@ export {
   envFormat,
   envInvalid,
   envDuplicate,
+  discoveryMonitor,
 };

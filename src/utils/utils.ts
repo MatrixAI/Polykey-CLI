@@ -376,8 +376,9 @@ function outputFormatterDict(
     }
   } else {
     for (const key of data) {
-      const encodedKey = encodeEscapedWrapped(key);
-      keypairs.push([key, encodedKey]);
+      const safeKey = key ?? 'null';
+      const encodedKey = encodeEscapedWrapped(safeKey);
+      keypairs.push([safeKey, encodedKey]);
       if (encodedKey.length > maxKeyLength) {
         maxKeyLength = encodedKey.length;
       }
@@ -394,7 +395,7 @@ function outputFormatterDict(
 
     let value = data[originalKey];
     if (value == null) {
-      value = '';
+      value = 'null';
     } else if (typeof value == 'object') {
       output += `\n${outputFormatterDict(value, {
         padding: padding + 2,
