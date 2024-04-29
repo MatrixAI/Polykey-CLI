@@ -1,5 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { GestaltId, GestaltIdEncoded } from 'polykey/dist/gestalts/types';
+import type { GestaltId } from 'polykey/dist/gestalts/types';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binUtils from '../utils';
@@ -53,12 +53,10 @@ class CommandDiscover extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const parentSet: Set<GestaltIdEncoded> = new Set();
-        parentSet.add(gestaltUtils.encodeGestaltId(gestaltId));
         let eventsP: Promise<void> | undefined;
         if (options.monitor === true) {
           // Creating an infinite timer to hold the process open
-          const holdOpenTimer = setTimeout(() => {}, Infinity);
+          const holdOpenTimer = setTimeout(() => {}, 2 ** 30);
           // We set up the readable stream watching the discovery events here
           eventsP = binUtils
             .retryAuthentication(async (auth) => {
