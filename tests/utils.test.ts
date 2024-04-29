@@ -110,7 +110,7 @@ describe('bin/utils', () => {
         type: 'dict',
         data: { key1: null, key2: undefined },
       }),
-    ).toBe('key1\t\nkey2\t\n');
+    ).toBe('key1\tnull\nkey2\tnull\n');
     // JSON
     expect(
       binUtils.outputFormatter({
@@ -154,8 +154,8 @@ describe('bin/utils', () => {
       }),
     ).toBe(
       'key1\t\n' +
-        '  key2\t\n' +
-        '  key3\t\n' +
+        '  key2\tnull\n' +
+        '  key3\tnull\n' +
         '  key4\tvalue\n' +
         'key5\tvalue\n' +
         'key6\t\n' +
