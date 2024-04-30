@@ -259,16 +259,16 @@ const seekEnd = new commander.Option(
   .argParser(parseDate)
   .default(undefined);
 
-const futureEvents = new commander.Option(
-  '--future-events',
+const follow = new commander.Option(
+  '--follow',
   'If enabled, future events will be outputted as they happen',
 ).default(false);
 
-const discoveryEvents = new commander.Option(
-  '--discovery-events [discoveryEvents...]',
+const events = new commander.Option(
+  '--events [vents...]',
   'Filter for specified events',
 )
-  .choices(['queued', 'processed', 'cancelled', 'failed'])
+  // TODO: need a parser for dot path formatting.
   .default(undefined);
 
 const limit = new commander.Option(
@@ -321,8 +321,8 @@ export {
   discoveryMonitor,
   seekStart,
   seekEnd,
-  futureEvents,
-  discoveryEvents,
+  follow,
+  events,
   limit,
   order,
 };

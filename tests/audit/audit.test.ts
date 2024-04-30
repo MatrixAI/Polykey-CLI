@@ -12,10 +12,8 @@ import * as testUtils from '../utils';
 // @ts-ignore: stub out method
 identitiesUtils.browser = () => {};
 
-describe('discover/get', () => {
-  const logger = new Logger('discover/get test', LogLevel.WARN, [
-    new StreamHandler(),
-  ]);
+describe('audit', () => {
+  const logger = new Logger('audit test', LogLevel.WARN, [new StreamHandler()]);
   const password = 'password';
   let dataDir: string;
   let nodePath: string;
@@ -86,7 +84,7 @@ describe('discover/get', () => {
       recursive: true,
     });
   });
-  test('should get all discovery events', async () => {
+  test('should get all events', async () => {
     // Start of with mocking some existing discovery events
     await processVertex(undefined, ['node-A']);
     await processVertex('node-A', ['node-B', 'node-C']);
@@ -94,7 +92,7 @@ describe('discover/get', () => {
     await processVertex('node-C', []);
     await processVertex('node-D', []);
     // Checking response
-    const discoverResponse = await testUtils.pkExec(['audit', 'discovery'], {
+    const discoverResponse = await testUtils.pkExec(['audit'], {
       env: {
         PK_NODE_PATH: nodePath,
         PK_PASSWORD: password,
@@ -111,7 +109,7 @@ describe('discover/get', () => {
     ]);
     expect(discoverResponse.exitCode).toBe(0);
   });
-  test('should get specific discovery events', async () => {
+  test('should get specific events', async () => {
     // Start of with mocking some existing discovery events
     await processVertex(undefined, ['node-A']);
     await processVertex('node-A', ['node-B', 'node-C']);
@@ -120,7 +118,7 @@ describe('discover/get', () => {
     await processVertex('node-D', []);
     // Checking response
     const discoverResponse1 = await testUtils.pkExec(
-      ['audit', 'discovery', '--discovery-events', 'queued'],
+      ['audit', '--events', 'queued'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -140,7 +138,7 @@ describe('discover/get', () => {
     expect(discoverResponse1.exitCode).toBe(0);
 
     const discoverResponse2 = await testUtils.pkExec(
-      ['audit', 'discovery', '--discovery-events', 'processed'],
+      ['audit', '--events', 'processed'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -160,7 +158,7 @@ describe('discover/get', () => {
     expect(discoverResponse2.exitCode).toBe(0);
 
     const discoverResponse3 = await testUtils.pkExec(
-      ['audit', 'discovery', '--discovery-events', 'processed', 'queued'],
+      ['audit', '--events', 'processed', 'queued'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -192,7 +190,7 @@ describe('discover/get', () => {
     await processVertex('node-G', ['node-GA']);
     // Checking response
     const discoverResponse1 = await testUtils.pkExec(
-      ['audit', 'discovery', '--seek-start', date.toISOString()],
+      ['audit', '--seek-start', date.toISOString()],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -232,7 +230,7 @@ describe('discover/get', () => {
     await processVertex('node-G', ['node-GA']);
     // Checking response
     const discoverResponse1 = await testUtils.pkExec(
-      ['audit', 'discovery', '--seek-end', date.toISOString()],
+      ['audit', '--seek-end', date.toISOString()],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -266,16 +264,13 @@ describe('discover/get', () => {
     await processVertex(undefined, ['node-A']);
     await processVertex(undefined, ['node-A']);
     // Checking response
-    const discoverResponse = await testUtils.pkExec(
-      ['audit', 'discovery', '--limit', '2'],
-      {
-        env: {
-          PK_NODE_PATH: nodePath,
-          PK_PASSWORD: password,
-        },
-        cwd: dataDir,
+    const discoverResponse = await testUtils.pkExec(['audit', '--limit', '2'], {
+      env: {
+        PK_NODE_PATH: nodePath,
+        PK_PASSWORD: password,
       },
-    );
+      cwd: dataDir,
+    });
     expect(discoverResponse.stdout).toIncludeRepeated('queued', 2);
     expect(discoverResponse.stdout).toIncludeRepeated('node-A', 2);
     expect(discoverResponse.exitCode).toBe(0);
@@ -287,7 +282,7 @@ describe('discover/get', () => {
     await processVertex('node-C', ['node-CA']);
     await sleep(100);
     const discoverResponseP = testUtils.pkExec(
-      ['audit', 'discovery', '--future-events', '--limit', '12'],
+      ['audit', '--follow', '--limit', '12'],
       {
         env: {
           PK_NODE_PATH: nodePath,
