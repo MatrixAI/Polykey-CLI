@@ -265,10 +265,15 @@ const follow = new commander.Option(
 ).default(false);
 
 const events = new commander.Option(
-  '--events [vents...]',
-  'Filter for specified events',
+  '--events [events...]',
+  'Filter for specified event paths',
 )
-  // TODO: need a parser for dot path formatting.
+  // .argParser((value: string, previous: Array<Array<string>> | undefined): Array<Array<string>> => {
+  //   const parsedPath = value.split('.');
+  //   const out = previous ?? [];
+  //   out.push(parsedPath);
+  //   return out;
+  // })
   .default(undefined);
 
 const limit = new commander.Option(

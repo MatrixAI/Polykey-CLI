@@ -57,10 +57,8 @@ class CommandIdentities extends CommandPolykey {
             const seekEnd: number | undefined = options.seekEnd;
             const order: 'asc' | 'desc' = options.order;
             const limit: number | undefined = options.limit;
-            const events: Array<
-              'queued' | 'processed' | 'cancelled' | 'failed'
-            > = options.events;
             const awaitFutureEvents = options.follow;
+            console.log(options.events)
             const readableStream =
               await pkClient.rpcClient.methods.auditEventsGet({
                 awaitFutureEvents,
@@ -73,32 +71,23 @@ class CommandIdentities extends CommandPolykey {
               });
             // Tracks vertices that are relevant to our current search
             for await (const result of readableStream) {
-              const event = result.path[2];
-              const { vertex } = result.data;
-              // Don't emit events we're not filtering for
-              if (events != null && !(<Array<string>>events).includes(event)) {
-                continue;
+              const sanitizedResult = {
+                id: result.id,
+                path: result.path.join('.'),
+                data: result.data,
               }
-              const data = {
-                event,
-                vertex,
-              };
               if (options.format === 'json') {
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'json',
-                    data,
+                    data: sanitizedResult,
                   }),
                 );
               } else {
                 process.stdout.write(
                   binUtils.outputFormatter({
-                    type: 'list',
-                    data: [
-                      `${data.event}${' '.repeat(15 - data.event.length)}${
-                        data.vertex
-                      }`,
-                    ],
+                    type: 'dict',
+                    data: { ">": sanitizedResult},
                   }),
                 );
               }

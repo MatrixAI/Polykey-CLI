@@ -1,12 +1,12 @@
-import type { GestaltIdEncoded } from 'polykey/dist/gestalts/types';
+import type {GestaltIdEncoded} from 'polykey/dist/gestalts/types';
 import path from 'path';
 import fs from 'fs';
-import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
+import Logger, {LogLevel, StreamHandler} from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import * as identitiesUtils from 'polykey/dist/identities/utils';
 import * as keysUtils from 'polykey/dist/keys/utils';
 import * as discoveryEvents from 'polykey/dist/discovery/events';
-import { sleep } from 'polykey/dist/utils';
+import {sleep} from 'polykey/dist/utils';
 import * as testUtils from '../utils';
 
 // @ts-ignore: stub out method
@@ -99,9 +99,10 @@ describe('audit', () => {
       },
       cwd: dataDir,
     });
+    console.log(discoverResponse.stdout);
     expect(discoverResponse.stdout).toIncludeMultiple([
-      'queued',
-      'processed',
+      'discovery.vertex.queued',
+      'discovery.vertex.processed',
       'node-A',
       'node-B',
       'node-C',
@@ -118,7 +119,7 @@ describe('audit', () => {
     await processVertex('node-D', []);
     // Checking response
     const discoverResponse1 = await testUtils.pkExec(
-      ['audit', '--events', 'queued'],
+      ['audit', '--events', 'a.b.c', 'b.c.d'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -127,6 +128,7 @@ describe('audit', () => {
         cwd: dataDir,
       },
     );
+    console.log(discoverResponse1.stdout)
     expect(discoverResponse1.stdout).toIncludeMultiple([
       'queued',
       'node-A',
@@ -299,4 +301,36 @@ describe('audit', () => {
     const discoverResponse = await discoverResponseP;
     expect(discoverResponse.exitCode).toBe(0);
   });
+
+  test('asd', async () => {
+    /**
+     * This will take an array of paths and remove duplicate and sub-paths from the array.
+     */
+    function filterSubPaths(paths: Array<string>): Array<string> {
+      let previous: string = '';
+      return paths
+        .sort()
+        .filter((value, index) => {
+          // Checking if the current value is included within the previous
+          if (index === 0 || !value.startsWith(previous)) {
+            previous = value;
+            return true;
+          }
+          return false;
+        }, {});
+    }
+
+    const data = [
+      'a.b.c',
+      'a.b.c',
+      'e.f',
+      'e.g',
+      'a.b',
+      'e',
+      'f',
+      'f',
+    ]
+    console.log(data);
+    console.log(filterSubPaths(data))
+  })
 });
