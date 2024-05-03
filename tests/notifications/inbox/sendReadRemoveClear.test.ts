@@ -8,9 +8,11 @@ import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as testUtils from '../../utils';
 
 describe('send/read/claim', () => {
-  const logger = new Logger('inbox send/read/clear test', LogLevel.WARN, [
-    new StreamHandler(),
-  ]);
+  const logger = new Logger(
+    'inbox send/read/remove/clear test',
+    LogLevel.WARN,
+    [new StreamHandler()],
+  );
   let dataDir: string;
   let senderId: NodeId;
   let senderHost: string;
@@ -287,6 +289,56 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
+      // Get a notificationId to remove
+      ({ exitCode, stdout } = await testUtils.pkExec(
+        ['notifications', 'inbox', 'read', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(3);
+      const deletedNotificationIdEncoded =
+        readNotificationMessages[0].notification.notificationIdEncoded;
+      // Remove inbox notificataions
+      await testUtils.pkExec(
+        ['notifications', 'inbox', 'remove', deletedNotificationIdEncoded],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      );
+      // Check that the notification no longer exists
+      ({ exitCode, stdout } = await testUtils.pkExec(
+        ['notifications', 'inbox', 'read', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(2);
+      expect(readNotificationMessages).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            notification: {
+              notificationIdEncoded: deletedNotificationIdEncoded,
+            },
+          }),
+        ]),
+      );
       // Clear inbox notifications
       await testUtils.pkExec(['notifications', 'inbox', 'clear'], {
         env: {
