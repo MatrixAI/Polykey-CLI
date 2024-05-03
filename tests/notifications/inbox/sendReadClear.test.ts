@@ -5,10 +5,10 @@ import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as testUtils from '../utils';
+import * as testUtils from '../../utils';
 
 describe('send/read/claim', () => {
-  const logger = new Logger('send/read/clear test', LogLevel.WARN, [
+  const logger = new Logger('inbox send/read/clear test', LogLevel.WARN, [
     new StreamHandler(),
   ]);
   let dataDir: string;
@@ -161,7 +161,7 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      // Read notifications
+      // Read inbox notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['notifications', 'inbox', 'read', '--format', 'json'],
         {
@@ -202,7 +202,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Read only unread (none)
+      // Read inbox only unread (none)
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['notifications', 'inbox', 'read', '--unread', '--format', 'json'],
         {
@@ -216,7 +216,7 @@ describe('send/read/claim', () => {
       expect(exitCode).toBe(0);
       readNotificationMessages = JSON.parse(stdout);
       expect(readNotificationMessages).toHaveLength(0);
-      // Read notifications on reverse order
+      // Read inbox notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
         [
           'notifications',
@@ -264,9 +264,9 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Read only one notification
+      // Read only one inbox notification
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'inbox', 'read', '--limit=1', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--limit', '1', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -287,7 +287,7 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Clear notifications
+      // Clear inbox notifications
       await testUtils.pkExec(['notifications', 'inbox', 'clear'], {
         env: {
           PK_NODE_PATH: receiverAgentDir,
@@ -295,7 +295,7 @@ describe('send/read/claim', () => {
         },
         cwd: receiverAgentDir,
       });
-      // Check there are no more notifications
+      // Check there are no more inbox notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
         ['notifications', 'inbox', 'read', '--format', 'json'],
         {
@@ -309,53 +309,6 @@ describe('send/read/claim', () => {
       expect(exitCode).toBe(0);
       readNotificationMessages = JSON.parse(stdout);
       expect(readNotificationMessages).toHaveLength(0);
-      // Sending notifications to invalid nodeIds for outbox
-      const invalidNodeId = 'v53jhuvmfkc4tnngvor2op7c12jmohqa704pg3pcvrdui9j5kh900';
-      ({ exitCode } = await testUtils.pkExec(
-        [
-          'notifications',
-          'send',
-          invalidNodeId,
-          'test message 1',
-          '--retries',
-          '0'
-        ],
-        {
-          env: {
-            PK_NODE_PATH: senderAgentDir,
-            PK_PASSWORD: senderAgentPassword,
-          },
-          cwd: senderAgentDir,
-        },
-      ));
-      expect(exitCode).toBe(0);
-      // Read outbox
-      ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'outbox', 'read', '--format', 'json'],
-        {
-          env: {
-            PK_NODE_PATH: senderAgentDir,
-            PK_PASSWORD: receiverAgentPassword,
-          },
-          cwd: senderAgentDir,
-        },
-      ));
-      expect(exitCode).toBe(0);
-      let sentNotificationMessages = JSON.parse(stdout);
-      expect(sentNotificationMessages).toHaveLength(1);
-      expect(sentNotificationMessages[0]).toMatchObject({
-        notification: {
-          data: {
-            type: 'General',
-            message: 'test message 1',
-          },
-          iss: nodesUtils.encodeNodeId(senderId),
-          sub: invalidNodeId,
-        },
-        taskMetadata: {
-          remainingRetries: 0
-        }
-      });
     },
     globalThis.defaultTimeout * 3,
   );
