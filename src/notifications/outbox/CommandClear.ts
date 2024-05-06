@@ -1,34 +1,21 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { NodeId } from 'polykey/dist/ids/types';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
-import * as binParsers from '../utils/parsers';
+import CommandPolykey from '../../CommandPolykey';
+import * as binUtils from '../../utils';
+import * as binOptions from '../../utils/options';
+import * as binProcessors from '../../utils/processors';
 
-class CommandSend extends CommandPolykey {
+class CommandClear extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-    this.name('send');
-    this.description('Send a Notification with a Message to another Node');
-    this.argument(
-      '<nodeId>',
-      'Id of the node to send a message to',
-      binParsers.parseNodeId,
-    );
-    this.argument('<message>', 'Message to send');
-    this.option(
-      '-r, --retries [number]',
-      '(optional) Number of retries that should be attempted before giving up',
-    );
+    this.name('clear');
+    this.description('Clear Outbox Notifications');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.action(async (nodeId: NodeId, message, options) => {
+    this.action(async (options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const nodesUtils = await import('polykey/dist/nodes/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -56,14 +43,10 @@ class CommandSend extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const retries = parseInt(options.retries);
         await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.notificationsSend({
+            pkClient.rpcClient.methods.notificationsOutboxClear({
               metadata: auth,
-              nodeIdEncoded: nodesUtils.encodeNodeId(nodeId),
-              message: message,
-              retries: Number.isNaN(retries) ? undefined : retries,
             }),
           auth,
         );
@@ -74,4 +57,4 @@ class CommandSend extends CommandPolykey {
   }
 }
 
-export default CommandSend;
+export default CommandClear;

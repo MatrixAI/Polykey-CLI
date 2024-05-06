@@ -1,23 +1,19 @@
 import type { Notification } from 'polykey/dist/notifications/types';
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
+import type { NotificationOutboxMessage } from 'polykey/dist/client/types';
+import CommandPolykey from '../../CommandPolykey';
+import * as binUtils from '../../utils';
+import * as binOptions from '../../utils/options';
+import * as binProcessors from '../../utils/processors';
 
 class CommandRead extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('read');
-    this.description('Display Notifications');
+    this.description('Display Outbox Notifications');
     this.option(
-      '-u, --unread',
-      '(optional) Flag to only display unread notifications',
-    );
-    this.option(
-      '-n, --number [number]',
+      '-l, --limit [number]',
       '(optional) Number of notifications to read',
-      'all',
     );
     this.option(
       '-o, --order [order]',
@@ -63,29 +59,31 @@ class CommandRead extends CommandPolykey {
         });
         const notificationReadMessages = await binUtils.retryAuthentication(
           async (auth) => {
-            const response = await pkClient.rpcClient.methods.notificationsRead(
-              {
+            const response =
+              await pkClient.rpcClient.methods.notificationsOutboxRead({
                 metadata: auth,
-                unread: options.unread,
-                number: options.number,
-                order: options.order,
-              },
-            );
+                limit: parseInt(options.limit),
+                order: options.order === 'newest' ? 'desc' : 'asc',
+              });
             const notificationReadMessages: Array<{
               notification: Notification;
+              taskMetadata: NotificationOutboxMessage['taskMetadata'];
             }> = [];
             for await (const notificationMessage of response) {
               const notification = notificationsUtils.parseNotification(
                 notificationMessage.notification,
               );
-              notificationReadMessages.push({ notification });
+              notificationReadMessages.push({
+                notification,
+                taskMetadata: notificationMessage.taskMetadata,
+              });
             }
             return notificationReadMessages;
           },
           meta,
         );
         if (notificationReadMessages.length === 0) {
-          process.stderr.write('No notifications received\n');
+          process.stderr.write('No notifications pending\n');
         }
         if (options.format === 'json') {
           process.stdout.write(
@@ -101,6 +99,7 @@ class CommandRead extends CommandPolykey {
                 type: 'dict',
                 data: {
                   notificiation: notificationReadMessage.notification,
+                  taskMetadata: notificationReadMessage.taskMetadata,
                 },
               }),
             );

@@ -90,7 +90,10 @@ describe('commandShare', () => {
     );
     try {
       // We don't want to actually send a notification
-      mockedSendNotification.mockImplementation(async (_) => {});
+      mockedSendNotification.mockResolvedValue({
+        notificationId: ids.generateNotificationIdFromTimestamp(Date.now()),
+        sendP: Promise.resolve(),
+      });
       const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
       const vaultIdEncoded = vaultsUtils.encodeVaultId(vaultId);
       const targetNodeId = nodeIdGenerator();

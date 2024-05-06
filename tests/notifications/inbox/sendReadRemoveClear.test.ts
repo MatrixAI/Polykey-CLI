@@ -5,12 +5,14 @@ import path from 'path';
 import fs from 'fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as testUtils from '../utils';
+import * as testUtils from '../../utils';
 
 describe('send/read/claim', () => {
-  const logger = new Logger('send/read/clear test', LogLevel.WARN, [
-    new StreamHandler(),
-  ]);
+  const logger = new Logger(
+    'inbox send/read/remove/clear test',
+    LogLevel.WARN,
+    [new StreamHandler()],
+  );
   let dataDir: string;
   let senderId: NodeId;
   let senderHost: string;
@@ -161,9 +163,9 @@ describe('send/read/claim', () => {
         },
       ));
       expect(exitCode).toBe(0);
-      // Read notifications
+      // Read inbox notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -202,9 +204,9 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Read only unread (none)
+      // Read inbox only unread (none)
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--unread', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--unread', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -216,9 +218,16 @@ describe('send/read/claim', () => {
       expect(exitCode).toBe(0);
       readNotificationMessages = JSON.parse(stdout);
       expect(readNotificationMessages).toHaveLength(0);
-      // Read notifications on reverse order
+      // Read inbox notifications on reverse order
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--order=oldest', '--format', 'json'],
+        [
+          'notifications',
+          'inbox',
+          'read',
+          '--order=oldest',
+          '--format',
+          'json',
+        ],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -257,9 +266,9 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Read only one notification
+      // Read only one inbox notification
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--number=1', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--limit', '1', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,
@@ -280,17 +289,67 @@ describe('send/read/claim', () => {
         sub: nodesUtils.encodeNodeId(receiverId),
         isRead: true,
       });
-      // Clear notifications
-      await testUtils.pkExec(['notifications', 'clear'], {
+      // Get a notificationId to remove
+      ({ exitCode, stdout } = await testUtils.pkExec(
+        ['notifications', 'inbox', 'read', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(3);
+      const deletedNotificationIdEncoded =
+        readNotificationMessages[0].notification.notificationIdEncoded;
+      // Remove inbox notificataions
+      await testUtils.pkExec(
+        ['notifications', 'inbox', 'remove', deletedNotificationIdEncoded],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      );
+      // Check that the notification no longer exists
+      ({ exitCode, stdout } = await testUtils.pkExec(
+        ['notifications', 'inbox', 'read', '--format', 'json'],
+        {
+          env: {
+            PK_NODE_PATH: receiverAgentDir,
+            PK_PASSWORD: receiverAgentPassword,
+          },
+          cwd: receiverAgentDir,
+        },
+      ));
+      expect(exitCode).toBe(0);
+      readNotificationMessages = JSON.parse(stdout);
+      expect(readNotificationMessages).toHaveLength(2);
+      expect(readNotificationMessages).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            notification: {
+              notificationIdEncoded: deletedNotificationIdEncoded,
+            },
+          }),
+        ]),
+      );
+      // Clear inbox notifications
+      await testUtils.pkExec(['notifications', 'inbox', 'clear'], {
         env: {
           PK_NODE_PATH: receiverAgentDir,
           PK_PASSWORD: receiverAgentPassword,
         },
         cwd: receiverAgentDir,
       });
-      // Check there are no more notifications
+      // Check there are no more inbox notifications
       ({ exitCode, stdout } = await testUtils.pkExec(
-        ['notifications', 'read', '--format', 'json'],
+        ['notifications', 'inbox', 'read', '--format', 'json'],
         {
           env: {
             PK_NODE_PATH: receiverAgentDir,

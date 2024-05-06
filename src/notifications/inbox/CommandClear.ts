@@ -1,14 +1,14 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
+import CommandPolykey from '../../CommandPolykey';
+import * as binUtils from '../../utils';
+import * as binOptions from '../../utils/options';
+import * as binProcessors from '../../utils/processors';
 
 class CommandClear extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('clear');
-    this.description('Clear all Notifications');
+    this.description('Clear Inbox Notifications');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
@@ -45,7 +45,7 @@ class CommandClear extends CommandPolykey {
         });
         await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.notificationsClear({
+            pkClient.rpcClient.methods.notificationsInboxClear({
               metadata: auth,
             }),
           auth,

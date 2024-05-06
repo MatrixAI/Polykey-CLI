@@ -105,6 +105,9 @@ const parseNodeId: (data: string) => ids.NodeId = validateParserToArgParser(
   ids.parseNodeId,
 );
 
+const parseNotificationId: (data: string) => ids.NotificationId =
+  validateParserToArgParser(ids.parseNotificationId);
+
 const parseGestaltId: (data: string) => ids.GestaltId =
   validateParserToArgParser(ids.parseGestaltId);
 
@@ -153,6 +156,7 @@ export {
   parseInteger,
   parseNumber,
   parseNodeId,
+  parseNotificationId,
   parseGestaltId,
   parseGestaltIdentityId,
   parseGestaltAction,
