@@ -377,7 +377,7 @@ integration:windows:
     - job: integration:deployment
       optional: true
   tags:
-    - windows
+    - saas-windows-medium-amd64
   before_script:
     - mkdir -Force "$CI_PROJECT_DIR/tmp"
     - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
