@@ -5,6 +5,7 @@ import type {
   ProviderToken,
   IdentityData,
   ProviderAuthenticateRequest,
+  ProviderPaginationToken,
 } from 'polykey/dist/identities/types';
 import type {
   IdentitySignedClaim,
@@ -19,6 +20,7 @@ import * as tokenUtils from 'polykey/dist/tokens/utils';
 
 class TestProvider extends Provider {
   public readonly id: ProviderId;
+  public readonly pageSize = 10;
 
   public linkIdCounter: number = 0;
   public users: Record<IdentityId, POJO>;
@@ -63,7 +65,8 @@ class TestProvider extends Provider {
   }
 
   public async refreshToken(): Promise<ProviderToken> {
-    throw new identitiesErrors.ErrorProviderUnimplemented();
+    // Always gives back the abc123 token
+    return { accessToken: 'abc123' };
   }
 
   public async getAuthIdentityIds(): Promise<Array<IdentityId>> {
@@ -154,7 +157,11 @@ class TestProvider extends Provider {
     this.linkIdCounter++;
     const identityClaimEncoded = tokenUtils.generateSignedToken(identityClaim);
     this.links[linkId] = JSON.stringify(identityClaimEncoded);
-    this.userLinks[authIdentityId] = this.userLinks[authIdentityId]
+    // Checking if the `authIdentityId` exists explicitly as an array, otherwise we could end up with
+    // `toString` identity causing us to insert a function into the `userLinks`
+    this.userLinks[authIdentityId] = Array.isArray(
+      this.userLinks[authIdentityId],
+    )
       ? this.userLinks[authIdentityId]
       : [];
     const links = this.userLinks[authIdentityId];
@@ -164,6 +171,43 @@ class TestProvider extends Provider {
       url: 'test.com',
       claim: identityClaim,
     };
+  }
+
+  public async *getClaimIdsPage(
+    authIdentityId: IdentityId,
+    identityId: IdentityId,
+    paginationToken?: ProviderPaginationToken | undefined,
+  ): AsyncGenerator<{
+    claimId: ProviderIdentityClaimId;
+    nextPaginationToken?: ProviderPaginationToken;
+  }> {
+    const providerToken = await this.getToken(authIdentityId);
+    let startIndex = paginationToken == null ? 0 : parseInt(paginationToken);
+    if (isNaN(startIndex)) {
+      startIndex = 0;
+    }
+    if (!providerToken) {
+      throw new identitiesErrors.ErrorProviderUnauthenticated(
+        `${authIdentityId} has not been authenticated`,
+      );
+    }
+    await this.checkToken(providerToken, authIdentityId);
+    const claimIds =
+      this.userLinks[identityId].slice(
+        startIndex,
+        this.pageSize + startIndex,
+      ) ?? [];
+    for (const [i, claimId] of claimIds.entries()) {
+      yield {
+        claimId,
+        nextPaginationToken:
+          i === claimIds.length - 1
+            ? ((
+                startIndex + this.pageSize
+              ).toString() as ProviderPaginationToken)
+            : undefined,
+      };
+    }
   }
 
   public async getClaim(
@@ -190,26 +234,6 @@ class TestProvider extends Provider {
       id: claimId,
       url: 'test.com',
     };
-  }
-
-  public async *getClaims(
-    authIdentityId: IdentityId,
-    identityId: IdentityId,
-  ): AsyncGenerator<IdentitySignedClaim> {
-    const providerToken = await this.getToken(authIdentityId);
-    if (!providerToken) {
-      throw new identitiesErrors.ErrorProviderUnauthenticated(
-        `${authIdentityId} has not been authenticated`,
-      );
-    }
-    await this.checkToken(providerToken, authIdentityId);
-    const claimIds = this.userLinks[identityId] ?? [];
-    for (const claimId of claimIds) {
-      const claimInfo = await this.getClaim(authIdentityId, claimId);
-      if (claimInfo != null) {
-        yield claimInfo;
-      }
-    }
   }
 }
 
