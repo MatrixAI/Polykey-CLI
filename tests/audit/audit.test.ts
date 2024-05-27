@@ -302,7 +302,7 @@ describe('audit', () => {
     expect(discoverResponse.exitCode).toBe(0);
   });
 
-  test('asd', async () => {
+  test('filterSubPaths', async () => {
     /**
      * This will take an array of paths and remove duplicate and sub-paths from the array.
      */
@@ -320,9 +320,11 @@ describe('audit', () => {
         }, {});
     }
 
+    // Out of theses only `a.b`, `e` and `f` are top level parents
     const data = [
       'a.b.c',
       'a.b.c',
+      'a.b.e',
       'e.f',
       'e.g',
       'a.b',
@@ -331,6 +333,16 @@ describe('audit', () => {
       'f',
     ]
     console.log(data);
-    console.log(filterSubPaths(data))
+    const filtered = filterSubPaths(data);
+    console.log(filtered)
+    expect(filtered).toHaveLength(3);
+    expect(filtered).toInclude('a.b');
+    expect(filtered).toInclude('e');
+    expect(filtered).toInclude('f');
+    expect(filtered).not.toInclude('a.b.c');
+    expect(filtered).not.toInclude('a.b.c');
+    expect(filtered).not.toInclude('a.b.e');
+    expect(filtered).not.toInclude('e.f');
+    expect(filtered).not.toInclude('e.g');
   })
 });
