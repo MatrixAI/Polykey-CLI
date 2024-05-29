@@ -44,24 +44,17 @@ async function promptNewPassword(): Promise<string | undefined> {
       type: 'password',
       message: 'Enter new password',
     }));
-    // If undefined, then SIGINT was sent
-    // Break the loop and return undefined password
-    if (password == null) {
-      break;
-    }
+    // If undefined, then SIGINT was sent, return undefined
+    if (password == null) return;
     const { passwordConfirm } = await prompts({
       name: 'passwordConfirm',
       type: 'password',
       message: 'Confirm new password',
     });
-    // If undefined, then SIGINT was sent
-    // Break the loop and return undefined password
-    if (passwordConfirm == null) {
-      break;
-    }
-    if (password === passwordConfirm) {
-      break;
-    }
+    // If undefined, then SIGINT was sent, return undefined
+    if (passwordConfirm == null) return;
+    // Compare the passwords are the same
+    if (password === passwordConfirm) break;
     // Interactive message
     process.stderr.write('Passwords do not match!\n');
   }
