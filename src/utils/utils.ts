@@ -10,6 +10,7 @@ import * as utils from 'polykey/dist/utils';
 import polykeyConfig from 'polykey/dist/config';
 import * as binProcessors from './processors';
 import * as errors from '../errors';
+// @ts-ignore package.json is outside rootDir
 import { version as versionCLI } from '../../package.json';
 
 /**
