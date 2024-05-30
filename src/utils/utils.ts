@@ -7,8 +7,10 @@ import * as clientUtils from 'polykey/dist/client/utils';
 import * as clientErrors from 'polykey/dist/client/errors';
 import * as networkErrors from 'polykey/dist/network/errors';
 import * as utils from 'polykey/dist/utils';
+import polykeyConfig from 'polykey/dist/config';
 import * as binProcessors from './processors';
 import * as errors from '../errors';
+import { version as versionCLI } from '../../package.json';
 
 /**
  * Convert verbosity to LogLevel
@@ -540,6 +542,19 @@ function remoteErrorCause(e: any): [any, number] {
 
 const validEnvRegex = /[a-zA-Z_]+[a-zA-Z0-9_]*/;
 
+/**
+ * Returns a formatted version string in the format of `[ APPVERSION, LIBRARYVERSION, NETWORKVERSION, STATEVERSION ]`
+ */
+function generateVersionString(): string {
+  const version = [
+    versionCLI,
+    polykeyConfig.sourceVersion,
+    `${polykeyConfig.networkVersion}`,
+    `${polykeyConfig.stateVersion}`,
+  ];
+  return JSON.stringify(version);
+}
+
 export {
   verboseToLogLevel,
   standardErrorReplacer,
@@ -559,6 +574,7 @@ export {
   decodeEscaped,
   decodeEscapedRegex,
   validEnvRegex,
+  generateVersionString,
 };
 
 export type { OutputObject };
