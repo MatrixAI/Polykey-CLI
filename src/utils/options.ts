@@ -268,12 +268,17 @@ const events = new commander.Option(
   '--events [events...]',
   'Filter for specified event paths',
 )
-  // .argParser((value: string, previous: Array<Array<string>> | undefined): Array<Array<string>> => {
-  //   const parsedPath = value.split('.');
-  //   const out = previous ?? [];
-  //   out.push(parsedPath);
-  //   return out;
-  // })
+  .argParser(
+    (
+      value: string,
+      previous: Array<Array<string>> | undefined,
+    ): Array<Array<string>> => {
+      const parsedPath = value.split('.');
+      const out = previous ?? [];
+      out.push(parsedPath);
+      return out;
+    },
+  )
   .default(undefined);
 
 const limit = new commander.Option(

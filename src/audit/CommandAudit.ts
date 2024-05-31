@@ -22,6 +22,7 @@ class CommandIdentities extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
+      const auditUtils = await import('polykey/dist/audit/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -58,11 +59,10 @@ class CommandIdentities extends CommandPolykey {
             const order: 'asc' | 'desc' = options.order;
             const limit: number | undefined = options.limit;
             const awaitFutureEvents = options.follow;
-            console.log(options.events)
             const readableStream =
               await pkClient.rpcClient.methods.auditEventsGet({
                 awaitFutureEvents,
-                path: ['discovery', 'vertex'],
+                paths: auditUtils.filterSubPaths(options.events ?? [[]]),
                 seek,
                 seekEnd,
                 order,
@@ -75,7 +75,7 @@ class CommandIdentities extends CommandPolykey {
                 id: result.id,
                 path: result.path.join('.'),
                 data: result.data,
-              }
+              };
               if (options.format === 'json') {
                 process.stdout.write(
                   binUtils.outputFormatter({
@@ -87,7 +87,7 @@ class CommandIdentities extends CommandPolykey {
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'dict',
-                    data: { ">": sanitizedResult},
+                    data: { '>': sanitizedResult },
                   }),
                 );
               }

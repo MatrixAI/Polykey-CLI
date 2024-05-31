@@ -1,12 +1,12 @@
-import type {GestaltIdEncoded} from 'polykey/dist/gestalts/types';
+import type { GestaltIdEncoded } from 'polykey/dist/gestalts/types';
 import path from 'path';
 import fs from 'fs';
-import Logger, {LogLevel, StreamHandler} from '@matrixai/logger';
+import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import * as identitiesUtils from 'polykey/dist/identities/utils';
 import * as keysUtils from 'polykey/dist/keys/utils';
 import * as discoveryEvents from 'polykey/dist/discovery/events';
-import {sleep} from 'polykey/dist/utils';
+import { sleep } from 'polykey/dist/utils';
 import * as testUtils from '../utils';
 
 // @ts-ignore: stub out method
@@ -99,7 +99,6 @@ describe('audit', () => {
       },
       cwd: dataDir,
     });
-    console.log(discoverResponse.stdout);
     expect(discoverResponse.stdout).toIncludeMultiple([
       'discovery.vertex.queued',
       'discovery.vertex.processed',
@@ -119,7 +118,7 @@ describe('audit', () => {
     await processVertex('node-D', []);
     // Checking response
     const discoverResponse1 = await testUtils.pkExec(
-      ['audit', '--events', 'a.b.c', 'b.c.d'],
+      ['audit', '--events', 'discovery.vertex.queued'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -128,9 +127,8 @@ describe('audit', () => {
         cwd: dataDir,
       },
     );
-    console.log(discoverResponse1.stdout)
     expect(discoverResponse1.stdout).toIncludeMultiple([
-      'queued',
+      'discovery.vertex.queued',
       'node-A',
       'node-B',
       'node-C',
@@ -140,7 +138,7 @@ describe('audit', () => {
     expect(discoverResponse1.exitCode).toBe(0);
 
     const discoverResponse2 = await testUtils.pkExec(
-      ['audit', '--events', 'processed'],
+      ['audit', '--events', 'discovery.vertex.processed'],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -150,17 +148,22 @@ describe('audit', () => {
       },
     );
     expect(discoverResponse2.stdout).toIncludeMultiple([
-      'processed',
+      'discovery.vertex.processed',
       'node-A',
       'node-B',
       'node-C',
       'node-D',
     ]);
-    expect(discoverResponse2.stdout).not.toInclude('queued');
+    expect(discoverResponse2.stdout).not.toInclude('discovery.vertex.queued');
     expect(discoverResponse2.exitCode).toBe(0);
 
     const discoverResponse3 = await testUtils.pkExec(
-      ['audit', '--events', 'processed', 'queued'],
+      [
+        'audit',
+        '--events',
+        'discovery.vertex.processed',
+        'discovery.vertex.queued',
+      ],
       {
         env: {
           PK_NODE_PATH: nodePath,
@@ -170,8 +173,8 @@ describe('audit', () => {
       },
     );
     expect(discoverResponse3.stdout).toIncludeMultiple([
-      'processed',
-      'queued',
+      'discovery.vertex.processed',
+      'discovery.vertex.queued',
       'node-A',
       'node-B',
       'node-C',
@@ -301,48 +304,4 @@ describe('audit', () => {
     const discoverResponse = await discoverResponseP;
     expect(discoverResponse.exitCode).toBe(0);
   });
-
-  test('filterSubPaths', async () => {
-    /**
-     * This will take an array of paths and remove duplicate and sub-paths from the array.
-     */
-    function filterSubPaths(paths: Array<string>): Array<string> {
-      let previous: string = '';
-      return paths
-        .sort()
-        .filter((value, index) => {
-          // Checking if the current value is included within the previous
-          if (index === 0 || !value.startsWith(previous)) {
-            previous = value;
-            return true;
-          }
-          return false;
-        }, {});
-    }
-
-    // Out of theses only `a.b`, `e` and `f` are top level parents
-    const data = [
-      'a.b.c',
-      'a.b.c',
-      'a.b.e',
-      'e.f',
-      'e.g',
-      'a.b',
-      'e',
-      'f',
-      'f',
-    ]
-    console.log(data);
-    const filtered = filterSubPaths(data);
-    console.log(filtered)
-    expect(filtered).toHaveLength(3);
-    expect(filtered).toInclude('a.b');
-    expect(filtered).toInclude('e');
-    expect(filtered).toInclude('f');
-    expect(filtered).not.toInclude('a.b.c');
-    expect(filtered).not.toInclude('a.b.c');
-    expect(filtered).not.toInclude('a.b.e');
-    expect(filtered).not.toInclude('e.f');
-    expect(filtered).not.toInclude('e.g');
-  })
 });
