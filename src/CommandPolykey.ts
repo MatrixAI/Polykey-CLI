@@ -46,12 +46,6 @@ class CommandPolykey extends commander.Command {
     this.addOption(binOptions.passwordFile);
     this.addOption(binOptions.format);
     this.addOption(binOptions.verbose);
-    // Set the version returned by the `--version` option
-    this.version(
-      binUtils.generateVersionString(),
-      undefined,
-      'Version information formatted in the form of [ applicationVersion, libraryVersion, networkVersion, stateVersion ]',
-    );
   }
 
   /**
