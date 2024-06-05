@@ -16,7 +16,6 @@ describe('commandScanNode', () => {
   const password = 'password';
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
-  let passwordFile: string;
   let polykeyAgent: PolykeyAgent;
   const nodeIdGenerator = ids.createNodeIdGenerator();
   const nodeId1 = nodeIdGenerator();
@@ -35,8 +34,6 @@ describe('commandScanNode', () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    passwordFile = path.join(dataDir, 'passwordFile');
-    await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
       options: {
@@ -54,15 +51,6 @@ describe('commandScanNode', () => {
     await polykeyAgent.gestaltGraph.setNode(node1);
     await polykeyAgent.gestaltGraph.setNode(node2);
     await polykeyAgent.gestaltGraph.setNode(node3);
-
-    // Authorize session
-    await testUtils.pkStdio(
-      ['agent', 'unlock', '-np', dataDir, '--password-file', passwordFile],
-      {
-        env: {},
-        cwd: dataDir,
-      },
-    );
   });
   afterEach(async () => {
     await polykeyAgent.stop();

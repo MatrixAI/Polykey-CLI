@@ -16,7 +16,6 @@ describe('pull and clone', () => {
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
   let dataDir2: string;
-  let passwordFile: string;
   let polykeyAgent: PolykeyAgent;
   let polykeyAgentTarget: PolykeyAgent;
   let command: Array<string>;
@@ -47,8 +46,6 @@ describe('pull and clone', () => {
     dataDir2 = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    passwordFile = path.join(dataDir, 'passwordFile');
-    await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
       options: {
@@ -83,15 +80,6 @@ describe('pull and clone', () => {
     });
 
     vaultNumber = 0;
-
-    // Authorize session
-    await testUtils.pkStdio(
-      ['agent', 'unlock', '-np', dataDir, '--password-file', passwordFile],
-      {
-        env: {},
-        cwd: dataDir,
-      },
-    );
     vaultName = genVaultName();
     command = [];
   });
@@ -173,7 +161,7 @@ describe('pull and clone', () => {
       ];
 
       let result = await testUtils.pkStdio([...command], {
-        env: {},
+        env: { PK_PASSWORD: password },
         cwd: dataDir,
       });
       expect(result.exitCode).toBe(0);
@@ -200,7 +188,10 @@ describe('pull and clone', () => {
         vaultName,
         nodesUtils.encodeNodeId(targetNodeId),
       ];
-      result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
+      result = await testUtils.pkStdio([...command], {
+        env: { PK_PASSWORD: password },
+        cwd: dataDir,
+      });
       expect(result.exitCode).toBe(0);
 
       const secondClonedVaultId =
@@ -225,7 +216,10 @@ describe('pull and clone', () => {
       );
 
       command = ['vaults', 'pull', '-np', dataDir, vaultName];
-      result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
+      result = await testUtils.pkStdio([...command], {
+        env: { PK_PASSWORD: password },
+        cwd: dataDir,
+      });
       expect(result.exitCode).toBe(0);
 
       await polykeyAgent.vaultManager.withVaults(
@@ -248,7 +242,10 @@ describe('pull and clone', () => {
         vaultsUtils.encodeVaultId(secondClonedVaultId),
         targetNodeIdEncoded,
       ];
-      result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
+      result = await testUtils.pkStdio([...command], {
+        env: { PK_PASSWORD: password },
+        cwd: dataDir,
+      });
       expect(result.exitCode).toBe(sysexits.USAGE);
       expect(result.stderr).toContain('ErrorVaultsVaultUndefined');
 
@@ -262,7 +259,10 @@ describe('pull and clone', () => {
         vaultsUtils.encodeVaultId(secondClonedVaultId),
         'InvalidNodeId',
       ];
-      result = await testUtils.pkStdio([...command], { env: {}, cwd: dataDir });
+      result = await testUtils.pkStdio([...command], {
+        env: { PK_PASSWORD: password },
+        cwd: dataDir,
+      });
       expect(result.exitCode).toBe(sysexits.USAGE);
     },
     globalThis.defaultTimeout * 3,
@@ -304,7 +304,7 @@ describe('pull and clone', () => {
         nodesUtils.encodeNodeId(nodeIdTarget),
       ],
       {
-        env: {},
+        env: { PK_PASSWORD: password },
         cwd: dataDir,
       },
     );
@@ -330,7 +330,7 @@ describe('pull and clone', () => {
         ),
       ],
       {
-        env: {},
+        env: { PK_PASSWORD: password },
         cwd: dataDir,
       },
     );
