@@ -87,7 +87,7 @@ class CommandIdentities extends CommandPolykey {
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'dict',
-                    data: { '>': sanitizedResult },
+                    data: sanitizedResult,
                   }),
                 );
               }
