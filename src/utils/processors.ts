@@ -17,17 +17,28 @@ import { arrayZip } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
 import * as errors from '../errors';
 
+// A one time promise that resolves when `stdin` closes
+const stdinEndP = new Promise<undefined>((resolve) => {
+  if (!process.stdin.readable) return resolve(undefined);
+  process.stdin.once('close', () => resolve(undefined));
+});
+
 /**
  * Prompts for existing password
  * This masks SIGINT handling
  * When SIGINT is received this will return undefined
  */
 async function promptPassword(): Promise<string | undefined> {
-  const { password } = await prompts({
-    name: 'password',
-    type: 'password',
-    message: 'Please enter the password',
-  });
+  const { password } = await Promise.race([
+    prompts({
+      name: 'password',
+      type: 'password',
+      message: 'Please enter the password',
+    }),
+    stdinEndP.then(() => {
+      return { password: undefined };
+    }),
+  ]);
   return password;
 }
 
@@ -37,28 +48,36 @@ async function promptPassword(): Promise<string | undefined> {
  * When SIGINT is received this will return undefined
  */
 async function promptNewPassword(): Promise<string | undefined> {
-  let password: string | undefined;
+  // Convert the output to a similar structure to the `prompts` output
+  const streamEndP = stdinEndP.then(() => {
+    return { password: undefined };
+  });
   while (true) {
-    ({ password } = await prompts({
-      name: 'password',
-      type: 'password',
-      message: 'Enter new password',
-    }));
+    const { password } = await Promise.race([
+      prompts({
+        name: 'password',
+        type: 'password',
+        message: 'Enter new password',
+      }),
+      streamEndP,
+    ]);
     // If undefined, then SIGINT was sent, return undefined
     if (password == null) return;
-    const { passwordConfirm } = await prompts({
-      name: 'passwordConfirm',
-      type: 'password',
-      message: 'Confirm new password',
-    });
+    const { passwordConfirm } = await Promise.race([
+      prompts({
+        name: 'passwordConfirm',
+        type: 'password',
+        message: 'Confirm new password',
+      }),
+      streamEndP,
+    ]);
     // If undefined, then SIGINT was sent, return undefined
     if (passwordConfirm == null) return;
     // Compare the passwords are the same
-    if (password === passwordConfirm) break;
+    if (password === passwordConfirm) return password;
     // Interactive message
     process.stderr.write('Passwords do not match!\n');
   }
-  return password;
 }
 
 /**
