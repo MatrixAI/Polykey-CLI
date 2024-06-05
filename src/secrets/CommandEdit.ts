@@ -1,4 +1,6 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import fs from 'fs';
+import path from 'path';
 import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -62,10 +64,10 @@ class CommandEdit extends CommandPolykey {
           meta,
         );
         const secretContent = response.secretContent;
-        // Linux
-        const tmpDir = `${os.tmpdir}/pksecret`;
-        await this.fs.promises.mkdir(tmpDir);
-        const tmpFile = `${tmpDir}/pkSecretFile`;
+        const tmpDir = await fs.promises.mkdtemp(
+          path.join(os.tmpdir(), 'polykey-'),
+        );
+        const tmpFile = path.join(tmpDir, 'pksecret');
         await this.fs.promises.writeFile(tmpFile, secretContent);
         execSync(`$EDITOR \"${tmpFile}\"`, { stdio: 'inherit' });
         let content: Buffer;
