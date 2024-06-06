@@ -11,7 +11,6 @@ import sysexits from 'polykey/dist/utils/sysexits';
 import * as keysUtils from 'polykey/dist/keys/utils';
 import * as testUtils from '../utils';
 
-// Fixme: temperamental problem with formatting the output. Fails sometimes due to an added space
 describe('commandScanNode', () => {
   const password = 'password';
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
@@ -176,17 +175,17 @@ describe('commandScanNode', () => {
         });
         expect(result3.exitCode).toBe(0);
         expect(result3.stdout).toMatch(/Vault1\t.*\tclone/);
-        expect(JSON.stringify(result3.stdout)).toContain(
-          JSON.stringify(
-            `Vault1\t${vaultsUtils.encodeVaultId(
-              vault1Id,
-            )}\tclone\nVault2\t${vaultsUtils.encodeVaultId(
-              vault2Id,
-            )}\tpull,clone\n`,
-          ),
-        );
-        expect(result3.stdout).not.toContain(
-          `Vault3\t${vaultsUtils.encodeVaultId(vault3Id)}`,
+        expect(result3.stdout).toIncludeMultiple([
+          'Vault1',
+          'Vault2',
+          vaultsUtils.encodeVaultId(vault1Id),
+          vaultsUtils.encodeVaultId(vault2Id),
+          'pull',
+          'clone',
+        ]);
+        expect(result3.stdout).not.toInclude('Vault3');
+        expect(result3.stdout).not.toInclude(
+          vaultsUtils.encodeVaultId(vault3Id),
         );
       } finally {
         await remoteOnline?.stop();
