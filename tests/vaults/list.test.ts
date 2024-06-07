@@ -12,7 +12,6 @@ describe('commandListVaults', () => {
   const password = 'password';
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
-  let passwordFile: string;
   let polykeyAgent: PolykeyAgent;
   let command: Array<string>;
   const nodeIdGenerator = ids.createNodeIdGenerator();
@@ -32,8 +31,6 @@ describe('commandListVaults', () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    passwordFile = path.join(dataDir, 'passwordFile');
-    await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
       options: {
@@ -52,14 +49,6 @@ describe('commandListVaults', () => {
     await polykeyAgent.gestaltGraph.setNode(node2);
     await polykeyAgent.gestaltGraph.setNode(node3);
 
-    // Authorize session
-    await testUtils.pkStdio(
-      ['agent', 'unlock', '-np', dataDir, '--password-file', passwordFile],
-      {
-        env: {},
-        cwd: dataDir,
-      },
-    );
     command = [];
   });
   afterEach(async () => {
@@ -76,7 +65,7 @@ describe('commandListVaults', () => {
     await polykeyAgent.vaultManager.createVault('Vault2' as VaultName);
 
     const result = await testUtils.pkStdio([...command], {
-      env: {},
+      env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);

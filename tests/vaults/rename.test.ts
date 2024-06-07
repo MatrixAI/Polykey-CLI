@@ -13,7 +13,6 @@ describe('commandRenameVault', () => {
   const password = 'password';
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
-  let passwordFile: string;
   let polykeyAgent: PolykeyAgent;
   let command: Array<string>;
   let vaultNumber: number;
@@ -40,8 +39,6 @@ describe('commandRenameVault', () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    passwordFile = path.join(dataDir, 'passwordFile');
-    await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
       options: {
@@ -61,15 +58,6 @@ describe('commandRenameVault', () => {
     await polykeyAgent.gestaltGraph.setNode(node3);
 
     vaultNumber = 0;
-
-    // Authorize session
-    await testUtils.pkStdio(
-      ['agent', 'unlock', '-np', dataDir, '--password-file', passwordFile],
-      {
-        env: {},
-        cwd: dataDir,
-      },
-    );
     vaultName = genVaultName();
     command = [];
   });
@@ -88,7 +76,7 @@ describe('commandRenameVault', () => {
     expect(id).toBeTruthy();
 
     const result = await testUtils.pkStdio([...command], {
-      env: {},
+      env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
@@ -114,7 +102,7 @@ describe('commandRenameVault', () => {
     expect(id).toBeTruthy();
 
     const result = await testUtils.pkStdio([...command], {
-      env: {},
+      env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
     // Exit code of the exception

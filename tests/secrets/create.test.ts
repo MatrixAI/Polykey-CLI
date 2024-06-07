@@ -12,15 +12,12 @@ describe('commandCreateSecret', () => {
   const logger = new Logger('CLI Test', LogLevel.WARN, [new StreamHandler()]);
   let dataDir: string;
   let polykeyAgent: PolykeyAgent;
-  let passwordFile: string;
   let command: Array<string>;
 
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    passwordFile = path.join(dataDir, 'passwordFile');
-    await fs.promises.writeFile(passwordFile, 'password');
     polykeyAgent = await PolykeyAgent.createPolykeyAgent({
       password,
       options: {
@@ -35,14 +32,6 @@ describe('commandCreateSecret', () => {
       },
       logger: logger,
     });
-    // Authorize session
-    await testUtils.pkStdio(
-      ['agent', 'unlock', '-np', dataDir, '--password-file', passwordFile],
-      {
-        env: {},
-        cwd: dataDir,
-      },
-    );
   });
   afterEach(async () => {
     await polykeyAgent.stop();
@@ -70,7 +59,9 @@ describe('commandCreateSecret', () => {
       ];
 
       const result = await testUtils.pkStdio([...command], {
-        env: {},
+        env: {
+          PK_PASSWORD: password,
+        },
         cwd: dataDir,
       });
       expect(result.exitCode).toBe(0);
