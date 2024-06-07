@@ -17,28 +17,29 @@ import { arrayZip } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
 import * as errors from '../errors';
 
-// A one time promise that resolves when `stdin` closes
-const stdinEndP = new Promise<undefined>((resolve) => {
-  if (!process.stdin.readable) return resolve(undefined);
-  process.stdin.once('close', () => resolve(undefined));
-});
-
 /**
  * Prompts for existing password
  * This masks SIGINT handling
  * When SIGINT is received this will return undefined
  */
 async function promptPassword(): Promise<string | undefined> {
-  const { password } = await Promise.race([
-    prompts({
+  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
+  if (process.stdin.setRawMode == null) return;
+  let cancelled = false;
+  const { password } = await prompts(
+    {
       name: 'password',
       type: 'password',
       message: 'Please enter the password',
-    }),
-    stdinEndP.then(() => {
-      return { password: undefined };
-    }),
-  ]);
+    },
+    {
+      onCancel: () => {
+        cancelled = true;
+      },
+    },
+  );
+  // If cancelled then we just return undefined
+  if (cancelled) return;
   return password;
 }
 
@@ -48,32 +49,33 @@ async function promptPassword(): Promise<string | undefined> {
  * When SIGINT is received this will return undefined
  */
 async function promptNewPassword(): Promise<string | undefined> {
-  // Convert the output to a similar structure to the `prompts` output
-  const streamEndP = stdinEndP.then(() => {
-    return { password: undefined };
-  });
+  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
+  if (process.stdin.setRawMode == null) return;
   while (true) {
-    const { password } = await Promise.race([
-      prompts({
-        name: 'password',
-        type: 'password',
-        message: 'Enter new password',
-      }),
-      streamEndP,
-    ]);
-    // If undefined, then SIGINT was sent, return undefined
-    if (password == null) return;
-    const { passwordConfirm } = await Promise.race([
-      prompts({
-        name: 'passwordConfirm',
-        type: 'password',
-        message: 'Confirm new password',
-      }),
-      streamEndP,
-    ]);
-    // If undefined, then SIGINT was sent, return undefined
-    if (passwordConfirm == null) return;
-    // Compare the passwords are the same
+    let cancelled = false;
+    const { password, passwordConfirm } = await prompts(
+      [
+        {
+          name: 'password',
+          type: 'password',
+          message: 'Enter new password',
+        },
+        {
+          name: 'passwordConfirm',
+          type: 'password',
+          message: 'Confirm new password',
+        },
+      ],
+      {
+        onCancel: () => {
+          cancelled = true;
+        },
+      },
+    );
+    console.log('passwords', password, passwordConfirm);
+    // If cancelled then we just return undefined
+    if (cancelled) return;
+    // Confirm that the passwords are the same
     if (password === passwordConfirm) return password;
     // Interactive message
     process.stderr.write('Passwords do not match!\n');
