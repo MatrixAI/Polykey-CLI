@@ -72,7 +72,6 @@ async function promptNewPassword(): Promise<string | undefined> {
         },
       },
     );
-    console.log('passwords', password, passwordConfirm);
     // If cancelled then we just return undefined
     if (cancelled) return;
     // Confirm that the passwords are the same
