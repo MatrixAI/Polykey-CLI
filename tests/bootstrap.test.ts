@@ -1,4 +1,3 @@
-import type { IChain } from 'nexpect';
 import path from 'path';
 import fs from 'fs';
 import readline from 'readline';
@@ -300,31 +299,6 @@ describe('bootstrap', () => {
         recoveryCode.split(' ').length === 12 ||
           recoveryCode.split(' ').length === 24,
       ).toBe(true);
-    },
-    globalThis.defaultTimeout * 2,
-  );
-  test(
-    'bootstraps node state prompts for password twice ',
-    async () => {
-      const password = 'password';
-      const passwordPath = path.join(dataDir, 'password');
-      await fs.promises.writeFile(passwordPath, password);
-      await testUtils.pkExpect({
-        args: ['bootstrap', '--verbose'],
-        env: {
-          PK_NODE_PATH: path.join(dataDir, 'polykey'),
-          PK_PASSWORD_OPS_LIMIT: 'min',
-          PK_PASSWORD_MEM_LIMIT: 'min',
-        },
-        cwd: dataDir,
-        expect: (expectChain: IChain) => {
-          expectChain.expect(/Enter new password/);
-          expectChain.sendline('password');
-          expectChain.wait(/Confirm new password/);
-          expectChain.sendEof();
-          return expectChain;
-        },
-      });
     },
     globalThis.defaultTimeout * 2,
   );

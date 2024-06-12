@@ -23,11 +23,23 @@ import * as errors from '../errors';
  * When SIGINT is received this will return undefined
  */
 async function promptPassword(): Promise<string | undefined> {
-  const { password } = await prompts({
-    name: 'password',
-    type: 'password',
-    message: 'Please enter the password',
-  });
+  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
+  if (process.stdin.setRawMode == null) return;
+  let cancelled = false;
+  const { password } = await prompts(
+    {
+      name: 'password',
+      type: 'password',
+      message: 'Please enter the password',
+    },
+    {
+      onCancel: () => {
+        cancelled = true;
+      },
+    },
+  );
+  // If cancelled then we just return undefined
+  if (cancelled) return;
   return password;
 }
 
@@ -37,28 +49,36 @@ async function promptPassword(): Promise<string | undefined> {
  * When SIGINT is received this will return undefined
  */
 async function promptNewPassword(): Promise<string | undefined> {
-  let password: string | undefined;
+  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
+  if (process.stdin.setRawMode == null) return;
   while (true) {
-    ({ password } = await prompts({
-      name: 'password',
-      type: 'password',
-      message: 'Enter new password',
-    }));
-    // If undefined, then SIGINT was sent, return undefined
-    if (password == null) return;
-    const { passwordConfirm } = await prompts({
-      name: 'passwordConfirm',
-      type: 'password',
-      message: 'Confirm new password',
-    });
-    // If undefined, then SIGINT was sent, return undefined
-    if (passwordConfirm == null) return;
-    // Compare the passwords are the same
-    if (password === passwordConfirm) break;
+    let cancelled = false;
+    const { password, passwordConfirm } = await prompts(
+      [
+        {
+          name: 'password',
+          type: 'password',
+          message: 'Enter new password',
+        },
+        {
+          name: 'passwordConfirm',
+          type: 'password',
+          message: 'Confirm new password',
+        },
+      ],
+      {
+        onCancel: () => {
+          cancelled = true;
+        },
+      },
+    );
+    // If cancelled then we just return undefined
+    if (cancelled) return;
+    // Confirm that the passwords are the same
+    if (password === passwordConfirm) return password;
     // Interactive message
     process.stderr.write('Passwords do not match!\n');
   }
-  return password;
 }
 
 /**
