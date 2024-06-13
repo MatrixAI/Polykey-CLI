@@ -7,13 +7,14 @@ import type {
   StatusStopping,
   StatusDead,
 } from 'polykey/dist/status/types';
+import type { ObjectEmpty } from 'polykey/dist/types';
 import type { SessionToken } from 'polykey/dist/sessions/types';
 import path from 'path';
 import prompts from 'prompts';
 import Logger from '@matrixai/logger';
 import Status from 'polykey/dist/status/Status';
 import * as clientUtils from 'polykey/dist/client/utils';
-import { arrayZip } from 'polykey/dist/utils';
+import { arrayZip, promise } from 'polykey/dist/utils';
 import config from 'polykey/dist/config';
 import * as errors from '../errors';
 
@@ -23,24 +24,44 @@ import * as errors from '../errors';
  * When SIGINT is received this will return undefined
  */
 async function promptPassword(): Promise<string | undefined> {
-  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
-  if (process.stdin.setRawMode == null) return;
   let cancelled = false;
-  const { password } = await prompts(
-    {
-      name: 'password',
-      type: 'password',
-      message: 'Please enter the password',
-    },
-    {
-      onCancel: () => {
-        cancelled = true;
-      },
-    },
-  );
-  // If cancelled then we just return undefined
-  if (cancelled) return;
-  return password;
+  // Creating promise for end of stdin
+  const { p: endP, resolveP: endResolveP } = promise<ObjectEmpty>();
+  const handleEnd = () => {
+    endResolveP({});
+    cancelled = true;
+    process.stdin.removeListener('end', handleEnd);
+  };
+  if (!process.stdin.readable) {
+    // Should already be ended so we handle resolve
+    handleEnd();
+  } else {
+    // Otherwise hook on the end event
+    process.stdin.on('end', handleEnd);
+  }
+  try {
+    const { password } = await Promise.race([
+      prompts(
+        {
+          name: 'password',
+          type: 'password',
+          message: 'Please enter the password',
+        },
+        {
+          onCancel: () => {
+            cancelled = true;
+          },
+        },
+      ),
+      endP,
+    ]);
+    // If cancelled then we just return undefined
+    if (cancelled) return;
+    return password;
+  } finally {
+    // Force clean up of the end promise
+    handleEnd();
+  }
 }
 
 /**
@@ -49,33 +70,53 @@ async function promptPassword(): Promise<string | undefined> {
  * When SIGINT is received this will return undefined
  */
 async function promptNewPassword(): Promise<string | undefined> {
-  // If `isTTY` is `undefined` then stdin has been piped into and `prompts` will not process it properly
-  if (process.stdin.setRawMode == null) return;
   while (true) {
     let cancelled = false;
-    const { password, passwordConfirm } = await prompts(
-      [
-        {
-          name: 'password',
-          type: 'password',
-          message: 'Enter new password',
-        },
-        {
-          name: 'passwordConfirm',
-          type: 'password',
-          message: 'Confirm new password',
-        },
-      ],
-      {
-        onCancel: () => {
-          cancelled = true;
-        },
-      },
-    );
-    // If cancelled then we just return undefined
-    if (cancelled) return;
-    // Confirm that the passwords are the same
-    if (password === passwordConfirm) return password;
+    // Creating promise for end of stdin
+    const { p: endP, resolveP: endResolveP } = promise<ObjectEmpty>();
+    const handleEnd = () => {
+      endResolveP({});
+      cancelled = true;
+      process.stdin.removeListener('end', handleEnd);
+    };
+    if (!process.stdin.readable) {
+      // Should already be ended so we handle resolve
+      handleEnd();
+    } else {
+      // Otherwise hook on the end event
+      process.stdin.on('end', handleEnd);
+    }
+    try {
+      const { password, passwordConfirm } = await Promise.race([
+        prompts(
+          [
+            {
+              name: 'password',
+              type: 'password',
+              message: 'Enter new password',
+            },
+            {
+              name: 'passwordConfirm',
+              type: 'password',
+              message: 'Confirm new password',
+            },
+          ],
+          {
+            onCancel: () => {
+              cancelled = true;
+            },
+          },
+        ),
+        endP,
+      ]);
+      // If cancelled then we just return undefined
+      if (cancelled) return;
+      // Confirm that the passwords are the same
+      if (password === passwordConfirm) return password;
+    } finally {
+      // Force clean up of the end promise
+      handleEnd();
+    }
     // Interactive message
     process.stderr.write('Passwords do not match!\n');
   }

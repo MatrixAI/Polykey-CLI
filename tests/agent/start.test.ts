@@ -1036,4 +1036,110 @@ describe('start', () => {
       globalThis.defaultTimeout * 2,
     );
   });
+  test('prompts for password twice when creating state', async () => {
+    const polykeyPath = path.join(dataDir, 'polykey');
+    await fs.promises.mkdir(polykeyPath);
+
+    // Starting with missing directory prompts a new password
+    await testUtils.pkExpect({
+      args: [
+        'agent',
+        'start',
+        '--node-path',
+        path.join(dataDir, 'polykey'),
+        '--client-host',
+        '127.0.0.1',
+        '--agent-host',
+        '127.0.0.1',
+        '--workers',
+        'none',
+        '--seed-nodes',
+        '',
+        '--verbose',
+        '--format',
+        'json',
+        '--password-ops-limit',
+        'min',
+        '--password-mem-limit',
+        'min',
+      ],
+      expect: (expectChain) => {
+        expectChain.expect(/Enter new password/);
+        expectChain.sendline('password');
+        expectChain.wait(/Confirm new password/);
+        expectChain.sendEof();
+        return expectChain;
+      },
+    });
+  });
+  test(
+    'prompts for password once with existing state',
+    async () => {
+      const password = 'abc123';
+      const agentProcess1 = await testUtils.pkSpawn(
+        [
+          'agent',
+          'start',
+          '--client-host',
+          '127.0.0.1',
+          '--agent-host',
+          '127.0.0.1',
+          '--workers',
+          'none',
+          '--seed-nodes',
+          '',
+          '--verbose',
+        ],
+        {
+          env: {
+            PK_NODE_PATH: path.join(dataDir, 'polykey'),
+            PK_PASSWORD: password,
+            PK_PASSWORD_OPS_LIMIT: 'min',
+            PK_PASSWORD_MEM_LIMIT: 'min',
+          },
+          cwd: dataDir,
+        },
+        logger,
+      );
+      const rlOut = readline.createInterface(agentProcess1.stdout!);
+      await new Promise<RecoveryCode>((resolve, reject) => {
+        rlOut.once('line', resolve);
+        rlOut.once('close', () => reject(Error('closed early')));
+      });
+      agentProcess1.kill('SIGHUP');
+
+      // Starting again on existing state
+      await testUtils.pkExpect({
+        args: [
+          'agent',
+          'start',
+          '--node-path',
+          path.join(dataDir, 'polykey'),
+          '--client-host',
+          '127.0.0.1',
+          '--agent-host',
+          '127.0.0.1',
+          '--workers',
+          'none',
+          '--seed-nodes',
+          '',
+          '--verbose',
+          '--format',
+          'json',
+          '--password-ops-limit',
+          'min',
+          '--password-mem-limit',
+          'min',
+        ],
+        expect: (expectChain) => {
+          expectChain.expect(/Please enter the password/);
+          expectChain.sendline('password');
+          expectChain.wait(/Creating PolykeyAgent/);
+          expectChain.sendEof();
+          return expectChain;
+        },
+      });
+    },
+    globalThis.defaultTimeout * 2,
+  );
 });
