@@ -47,6 +47,7 @@ class CommandQueue extends CommandPolykey {
             await pkClient.rpcClient.methods.gestaltsDiscoveryQueue({
               metadata: auth,
             });
+          let head = true;
           for await (const discoveryQueueInfo of readableStream) {
             const sanitizedData = {
               id: discoveryQueueInfo.id,
@@ -66,6 +67,8 @@ class CommandQueue extends CommandPolykey {
                 }),
               );
             } else {
+              if (!head) process.stdout.write('\n');
+              head = false;
               process.stdout.write(
                 binUtils.outputFormatter({
                   type: 'dict',

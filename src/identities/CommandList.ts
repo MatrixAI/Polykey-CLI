@@ -85,6 +85,7 @@ class CommandList extends CommandPolykey {
             }),
           );
         } else {
+          let head = true;
           // Convert to a human-readable list.
           for (const gestaltMessage of gestaltMessages) {
             const gestalt = gestaltMessage.gestalt;
@@ -94,6 +95,8 @@ class CommandList extends CommandPolykey {
             const identities = Object.values(gestalt.identities).map(
               (identity) => `${identity.providerId}:${identity.identityId}`,
             );
+            if (!head) process.stdout.write('\n');
+            head = false;
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',

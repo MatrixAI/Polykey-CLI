@@ -77,9 +77,12 @@ class CommandPermissions extends CommandPolykey {
             }),
           );
         } else {
+          let head = true;
           for (const permission of data) {
             permission.vaultPermissionList =
               permission.vaultPermissionList.join(',') as any;
+            if (!head) process.stdout.write('\n');
+            head = false;
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',
