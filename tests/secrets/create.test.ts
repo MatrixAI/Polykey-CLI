@@ -76,4 +76,39 @@ describe('commandCreateSecret', () => {
     },
     globalThis.defaultTimeout * 2,
   );
+  test(
+    'should create secrets with spaces in secretPath',
+    async () => {
+      const vaultName = 'Vault1' as VaultName;
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretPath = path.join(dataDir, 'my secret');
+      await fs.promises.writeFile(secretPath, 'this is a secret');
+
+      command = [
+        'secrets',
+        'create',
+        '-np',
+        dataDir,
+        secretPath,
+        `${vaultName}:my secret`,
+      ];
+
+      const result = await testUtils.pkStdio([...command], {
+        env: {
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        const list = await vaultOps.listSecrets(vault);
+        expect(list.sort()).toStrictEqual(['my secret']);
+        expect(
+          (await vaultOps.getSecret(vault, 'my secret')).toString(),
+        ).toStrictEqual('this is a secret');
+      });
+    },
+    globalThis.defaultTimeout * 2,
+  );
 });
