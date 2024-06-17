@@ -54,11 +54,15 @@ class CommandAuthenticated extends CommandPolykey {
               metadata: auth,
               providerId: options.providerId,
             });
+          let head = true;
           for await (const identityMessage of readableStream) {
             const output = {
               providerId: identityMessage.providerId,
               identityId: identityMessage.identityId,
             };
+            // Add a new line between entries
+            if (!head) process.stdout.write('\n');
+            head = false;
             process.stdout.write(
               binUtils.outputFormatter({
                 type: options.format === 'json' ? 'json' : 'dict',

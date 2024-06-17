@@ -125,7 +125,10 @@ class CommandSearch extends CommandPolykey {
               );
             }
           } else {
+            let head = true;
             for await (const output of readableStream) {
+              if (!head) process.stdout.write('\n');
+              head = false;
               process.stdout.write(
                 binUtils.outputFormatter({
                   type: 'dict',

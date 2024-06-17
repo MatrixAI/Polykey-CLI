@@ -75,7 +75,10 @@ class CommandLog extends CommandPolykey {
             binUtils.outputFormatter({ type: 'json', data }),
           );
         } else {
+          let head = true;
           for (const entry of data) {
+            if (!head) process.stdout.write('\n');
+            head = false;
             process.stdout.write(
               binUtils.outputFormatter({ type: 'dict', data: entry }),
             );

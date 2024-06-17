@@ -93,7 +93,10 @@ class CommandRead extends CommandPolykey {
             }),
           );
         } else {
+          let head = true;
           for (const notificationReadMessage of notificationReadMessages) {
+            if (!head) process.stdout.write('\n');
+            head = false;
             process.stdout.write(
               binUtils.outputFormatter({
                 type: 'dict',
