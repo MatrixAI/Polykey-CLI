@@ -6,7 +6,7 @@ const versionTarget = config.version;
 async function main(argv = process.argv) {
   // Test getting the hash
   const commitHashCurrentTarget =
-    process.env.CI_COMMIT_SHA ??
+    process.env.GITHUB_SHA ??
     childProcess.execSync('git rev-parse HEAD').toString();
   const hostname = argv[2];
   const poll = async () => {

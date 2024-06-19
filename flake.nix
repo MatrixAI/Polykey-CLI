@@ -1,10 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?rev=ea5234e7073d5f44728c499192544a84244bf35a";
+    nixpkgs.url = "github:nixos/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
+
+    nixpkgs-matrix.url = "github:matrixai/nixpkgs-matrix";
+    nixpkgs.follows = "nixpkgs-matrix/nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs, flake-utils, ... }:
     let
       # The system being used to build the outputs
       buildSystem = "x86_64-linux";
@@ -13,7 +16,6 @@
       systems = {
         "x86_64-linux" = [ "linux" "x64" ];
       };
-
     in
     {
       nixosModules.default = { config, ... }: with nixpkgs; with lib;
