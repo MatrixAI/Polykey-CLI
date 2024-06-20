@@ -784,3 +784,5 @@ describe('commandEnv', () => {
     expect(jsonOut['SECRET']).toBe('this is a secret\nit has multiple lines\n');
   });
 });
+
+// TODO: wip
