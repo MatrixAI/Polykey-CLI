@@ -239,7 +239,7 @@ class CommandEnv extends CommandPolykey {
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
                   data += `# ${envpPath[key].nameOrId}:${envpPath[key].secretName}\n`;
-                  data += `${key}="${value}"\n`;
+                  data += `${key}='${value}'\n`;
                 }
                 process.stdout.write(
                   binUtils.outputFormatter({

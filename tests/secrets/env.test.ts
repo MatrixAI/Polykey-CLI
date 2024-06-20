@@ -338,10 +338,10 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('SECRET1="this is the secret1"');
-    expect(result.stdout).toContain('SECRET2="this is the secret2"');
-    expect(result.stdout).toContain('SECRET3="this is the secret3"');
-    expect(result.stdout).toContain('SECRET4="this is the secret4"');
+    expect(result.stdout).toContain("SECRET1='this is the secret1'");
+    expect(result.stdout).toContain("SECRET2='this is the secret2'");
+    expect(result.stdout).toContain("SECRET3='this is the secret3'");
+    expect(result.stdout).toContain("SECRET4='this is the secret4'");
   });
   test('should output unix format', async () => {
     const vaultId1 = await polykeyAgent.vaultManager.createVault(
@@ -380,13 +380,13 @@ describe('commandEnv', () => {
     });
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('# vault1:SECRET1');
-    expect(result.stdout).toContain('SECRET1="this is the secret1"');
     expect(result.stdout).toContain('# vault2:SECRET2');
-    expect(result.stdout).toContain('SECRET2="this is the secret2"');
     expect(result.stdout).toContain('# vault1:dir1/SECRET3');
-    expect(result.stdout).toContain('SECRET3="this is the secret3"');
     expect(result.stdout).toContain('# vault2:dir1/SECRET4');
-    expect(result.stdout).toContain('SECRET4="this is the secret4"');
+    expect(result.stdout).toContain("SECRET1='this is the secret1'");
+    expect(result.stdout).toContain("SECRET2='this is the secret2'");
+    expect(result.stdout).toContain("SECRET3='this is the secret3'");
+    expect(result.stdout).toContain("SECRET4='this is the secret4'");
   });
   test('should output cmd format', async () => {
     const vaultId1 = await polykeyAgent.vaultManager.createVault(
