@@ -750,4 +750,37 @@ describe('commandEnv', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toInclude('this is a secret2');
   });
+  test('newlines in secrets are untouched', async () => {
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(
+        vault,
+        'SECRET',
+        'this is a secret\nit has multiple lines\n',
+      );
+    });
+
+    command = [
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '-e',
+      `${vaultName}:SECRET`,
+      '--env-format',
+      'unix',
+      '--',
+      'node',
+      '-e',
+      'console.log(JSON.stringify(process.env))',
+    ];
+
+    const result = await testUtils.pkExec([...command], {
+      env: { PK_PASSWORD: password },
+    });
+    expect(result.exitCode).toBe(0);
+    const jsonOut = JSON.parse(result.stdout);
+    expect(jsonOut['SECRET']).toBe('this is a secret\nit has multiple lines\n');
+  });
 });
