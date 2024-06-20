@@ -379,10 +379,6 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('# vault1:SECRET1');
-    expect(result.stdout).toContain('# vault2:SECRET2');
-    expect(result.stdout).toContain('# vault1:dir1/SECRET3');
-    expect(result.stdout).toContain('# vault2:dir1/SECRET4');
     expect(result.stdout).toContain("SECRET1='this is the secret1'");
     expect(result.stdout).toContain("SECRET2='this is the secret2'");
     expect(result.stdout).toContain("SECRET3='this is the secret3'");
@@ -424,13 +420,9 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('REM vault1:SECRET1');
     expect(result.stdout).toContain('set "SECRET1=this is the secret1"');
-    expect(result.stdout).toContain('REM vault2:SECRET2');
     expect(result.stdout).toContain('set "SECRET2=this is the secret2"');
-    expect(result.stdout).toContain('REM vault1:dir1/SECRET3');
     expect(result.stdout).toContain('set "SECRET3=this is the secret3"');
-    expect(result.stdout).toContain('REM vault2:dir1/SECRET4');
     expect(result.stdout).toContain('set "SECRET4=this is the secret4"');
   });
   test('should output powershell format', async () => {
@@ -469,13 +461,9 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('# vault1:SECRET1');
     expect(result.stdout).toContain(`$env:SECRET1 = 'this is the secret1'`);
-    expect(result.stdout).toContain('# vault2:SECRET2');
     expect(result.stdout).toContain(`$env:SECRET2 = 'this is the secret2'`);
-    expect(result.stdout).toContain('# vault1:dir1/SECRET3');
     expect(result.stdout).toContain(`$env:SECRET3 = 'this is the secret3'`);
-    expect(result.stdout).toContain('# vault2:dir1/SECRET4');
     expect(result.stdout).toContain(`$env:SECRET4 = 'this is the secret4'`);
   });
   test('should output json format', async () => {

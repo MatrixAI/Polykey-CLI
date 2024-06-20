@@ -101,95 +101,92 @@ class CommandEnv extends CommandPolykey {
         });
 
         // Getting envs
-        const [envp, envpPath] = await binUtils.retryAuthentication(
-          async (auth) => {
-            const responseStream =
-              await pkClient.rpcClient.methods.vaultsSecretsEnv();
-            // Writing desired secrets
-            const secretRenameMap = new Map<string, string | undefined>();
-            const writeP = (async () => {
-              const writer = responseStream.writable.getWriter();
-              let first = true;
-              for (const envVariable of envVariables) {
-                const [nameOrId, secretName, secretNameNew] = envVariable;
-                secretRenameMap.set(secretName, secretNameNew);
-                await writer.write({
-                  nameOrId,
-                  secretName,
-                  metadata: first ? auth : undefined,
-                });
-                first = false;
-              }
-              await writer.close();
-            })();
+        const [envp] = await binUtils.retryAuthentication(async (auth) => {
+          const responseStream =
+            await pkClient.rpcClient.methods.vaultsSecretsEnv();
+          // Writing desired secrets
+          const secretRenameMap = new Map<string, string | undefined>();
+          const writeP = (async () => {
+            const writer = responseStream.writable.getWriter();
+            let first = true;
+            for (const envVariable of envVariables) {
+              const [nameOrId, secretName, secretNameNew] = envVariable;
+              secretRenameMap.set(secretName, secretNameNew);
+              await writer.write({
+                nameOrId,
+                secretName,
+                metadata: first ? auth : undefined,
+              });
+              first = false;
+            }
+            await writer.close();
+          })();
 
-            const envp: Record<string, string> = {};
-            const envpPath: Record<
-              string,
-              {
-                nameOrId: string;
-                secretName: string;
-              }
-            > = {};
-            for await (const value of responseStream.readable) {
-              const { nameOrId, secretName, secretContent } = value;
-              let newName = secretRenameMap.get(secretName);
-              if (newName == null) {
-                const secretEnvName = path.basename(secretName);
-                // Validating name
-                if (!binUtils.validEnvRegex.test(secretEnvName)) {
-                  switch (envInvalid) {
-                    case 'error':
-                      throw new binErrors.ErrorPolykeyCLIInvalidEnvName(
-                        `The following env variable name (${secretEnvName}) is invalid`,
-                      );
-                    case 'warn':
-                      this.logger.warn(
-                        `The following env variable name (${secretEnvName}) is invalid and was dropped`,
-                      );
-                    // Fallthrough
-                    case 'ignore':
-                      continue;
-                    default:
-                      utils.never();
-                  }
-                }
-                newName = secretEnvName;
-              }
-              // Handling duplicate names
-              if (envp[newName] != null) {
-                switch (envDuplicate) {
-                  // Continue without modifying
+          const envp: Record<string, string> = {};
+          const envpPath: Record<
+            string,
+            {
+              nameOrId: string;
+              secretName: string;
+            }
+          > = {};
+          for await (const value of responseStream.readable) {
+            const { nameOrId, secretName, secretContent } = value;
+            let newName = secretRenameMap.get(secretName);
+            if (newName == null) {
+              const secretEnvName = path.basename(secretName);
+              // Validating name
+              if (!binUtils.validEnvRegex.test(secretEnvName)) {
+                switch (envInvalid) {
                   case 'error':
-                    throw new binErrors.ErrorPolykeyCLIDuplicateEnvName(
-                      `The env variable (${newName}) is duplicate`,
+                    throw new binErrors.ErrorPolykeyCLIInvalidEnvName(
+                      `The following env variable name (${secretEnvName}) is invalid`,
                     );
-                  // Fallthrough
-                  case 'keep':
-                    continue;
-                  // Log a warning and overwrite
                   case 'warn':
                     this.logger.warn(
-                      `The env variable (${newName}) is duplicate, overwriting`,
+                      `The following env variable name (${secretEnvName}) is invalid and was dropped`,
                     );
                   // Fallthrough
-                  case 'overwrite':
-                    break;
+                  case 'ignore':
+                    continue;
                   default:
                     utils.never();
                 }
               }
-              envp[newName] = secretContent;
-              envpPath[newName] = {
-                nameOrId,
-                secretName,
-              };
+              newName = secretEnvName;
             }
-            await writeP;
-            return [envp, envpPath];
-          },
-          meta,
-        );
+            // Handling duplicate names
+            if (envp[newName] != null) {
+              switch (envDuplicate) {
+                // Continue without modifying
+                case 'error':
+                  throw new binErrors.ErrorPolykeyCLIDuplicateEnvName(
+                    `The env variable (${newName}) is duplicate`,
+                  );
+                // Fallthrough
+                case 'keep':
+                  continue;
+                // Log a warning and overwrite
+                case 'warn':
+                  this.logger.warn(
+                    `The env variable (${newName}) is duplicate, overwriting`,
+                  );
+                // Fallthrough
+                case 'overwrite':
+                  break;
+                default:
+                  utils.never();
+              }
+            }
+            envp[newName] = secretContent;
+            envpPath[newName] = {
+              nameOrId,
+              secretName,
+            };
+          }
+          await writeP;
+          return [envp, envpPath];
+        }, meta);
         // End connection early to avoid errors on server
         await pkClient.stop();
 
@@ -238,7 +235,6 @@ class CommandEnv extends CommandPolykey {
                 // Formatting as a .env file
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
-                  data += `# ${envpPath[key].nameOrId}:${envpPath[key].secretName}\n`;
                   data += `${key}='${value}'\n`;
                 }
                 process.stdout.write(
@@ -254,7 +250,6 @@ class CommandEnv extends CommandPolykey {
                 // Formatting as a .bat file for windows cmd
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
-                  data += `REM ${envpPath[key].nameOrId}:${envpPath[key].secretName}\n`;
                   data += `set "${key}=${value}"\n`;
                 }
                 process.stdout.write(
@@ -270,7 +265,6 @@ class CommandEnv extends CommandPolykey {
                 // Formatting as a .bat file for windows cmd
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
-                  data += `# ${envpPath[key].nameOrId}:${envpPath[key].secretName}\n`;
                   data += `\$env:${key} = '${value}'\n`;
                 }
                 process.stdout.write(
