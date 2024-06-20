@@ -134,10 +134,9 @@ const seedNodes = new commander.Option(
   .default([{}, true]);
 
 const network = new commander.Option(
-  '-n --network <network>',
-  'Setting the desired default network.',
+  '-n --network <hostname>',
+  'Hostname of the desired default network.',
 )
-  .argParser(binParsers.parseNetwork)
   .env('PK_NETWORK')
   .default(config.network.mainnet);
 

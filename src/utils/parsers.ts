@@ -140,10 +140,6 @@ const parsePort: (data: string) => Port = validateParserToArgParser(
   networkUtils.parsePort,
 );
 
-const parseNetwork: (data: string) => Hostname = validateParserToArgParser(
-  nodesUtils.parseNetwork,
-);
-
 const parseSeedNodes: (data: string) => [SeedNodes, boolean] =
   validateParserToArgParser(nodesUtils.parseSeedNodes);
 
@@ -164,7 +160,6 @@ export {
   parseHostname,
   parseHostOrHostname,
   parsePort,
-  parseNetwork,
   parseSeedNodes,
   parseProviderId,
   parseIdentityId,
