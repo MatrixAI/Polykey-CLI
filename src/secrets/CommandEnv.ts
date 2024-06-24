@@ -42,26 +42,25 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.addOption(binOptions.envVariables);
     this.addOption(binOptions.envFormat);
     this.addOption(binOptions.envInvalid);
     this.addOption(binOptions.envDuplicate);
-    this.argument('[cmd] [argv...]', 'command and arguments');
+    this.argument('[args...]', 'command and arguments formatted as [envPaths...][cmd][cmdArgs...]');
     this.addHelpText('after', helpText);
     this.action(async (args: Array<string>, options) => {
-      const [cmd, ...argv] = args;
+      const { default: PolykeyClient } = await import(
+        'polykey/dist/PolykeyClient'
+      );
+      const binParsers = await import('../utils/parsers');
       const {
-        env: envVariables,
         envInvalid,
         envDuplicate,
         envFormat,
       }: {
-        env: Array<[string, string, string?]>;
         envInvalid: 'error' | 'warn' | 'ignore';
         envDuplicate: 'keep' | 'overwrite' | 'warn' | 'error';
         envFormat: 'auto' | 'unix' | 'cmd' | 'powershell' | 'json';
       } = options;
-
       // There are a few stages here
       // 1. parse the desired secrets
       // 2. obtain the desired secrets
@@ -69,9 +68,7 @@ class CommandEnv extends CommandPolykey {
       //   a. exec the command with the provided env variables from the secrets
       //   b. output the env variables in the desired format
 
-      const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
-      );
+      const [envVariables, [cmd, ...argv]] = binParsers.parseEnvArgs(args);
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

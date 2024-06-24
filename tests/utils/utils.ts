@@ -1,5 +1,7 @@
 import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import { promise } from 'polykey/dist/utils/utils';
+import fc from 'fast-check';
+import * as binParsers from '@/utils/parsers';
 
 function testIf(condition: boolean) {
   return condition ? test : test.skip;
@@ -86,4 +88,24 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   );
 }
 
-export { testIf, describeIf, trackTimers, nodesConnect };
+const secretPathEnvArb = fc
+  .stringMatching(binParsers.secretPathEnvRegex)
+  .noShrink();
+const secretPathEnvArrayArb = fc
+  .array(secretPathEnvArb, { minLength: 1, size: 'small' })
+  .noShrink();
+const cmdArgsArrayArb = fc
+  .array(fc.oneof(fc.string(), secretPathEnvArb, fc.constant('--')), {
+    size: 'small',
+  })
+  .noShrink();
+
+export {
+  testIf,
+  describeIf,
+  trackTimers,
+  nodesConnect,
+  secretPathEnvArb,
+  secretPathEnvArrayArb,
+  cmdArgsArrayArb,
+};
