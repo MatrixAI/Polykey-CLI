@@ -170,7 +170,41 @@ function parseEnvArgs(
       cmdArgs.push(arg);
     }
   }
+  if (envPaths.length === 0) {
+    throw new commander.InvalidArgumentError(
+      'You must provide at least 1 secret path',
+    );
+  }
   return [envPaths, cmdArgs];
+}
+
+function testParse(
+  value: string,
+  prev: [Array<[string, string, string?]>, Array<string>],
+): [Array<[string, string, string?]>, Array<string>] {
+  const current: [Array<[string, string, string?]>, Array<string>] = prev ?? [
+    [],
+    [],
+  ];
+  if (current[1].length === 0) {
+    // Parse a secret path
+    try {
+      current[0].push(parseEnvPath(value));
+    } catch (e) {
+      if (!(e instanceof commander.InvalidArgumentError)) throw e;
+      // If we get an invalid argument error then we switch over to parsing args verbatim
+      current[1].push(value);
+    }
+  } else {
+    // Otherwise we just have the cmd args
+    current[1].push(value);
+  }
+  if (current[0].length === 0 && current[1].length > 0) {
+    throw new commander.InvalidArgumentError(
+      'You must provide at least 1 secret path',
+    );
+  }
+  return current;
 }
 
 export {
@@ -197,4 +231,5 @@ export {
   parseIdentityId,
   parseProviderIdList,
   parseEnvArgs,
+  testParse,
 };

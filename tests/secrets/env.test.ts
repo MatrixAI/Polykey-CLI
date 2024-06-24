@@ -785,4 +785,28 @@ describe('commandEnv', () => {
       expect(parsedArgs).toMatchObject([cmd, ...cmdArgsArray]);
     },
   );
+  test('handles no arguments', async () => {
+    command = ['secrets', 'env', '-np', dataDir, '--env-format', 'unix'];
+
+    const result1 = await testUtils.pkExec([...command], {
+      env: { PK_PASSWORD: password },
+    });
+    expect(result1.exitCode).toBe(64);
+  });
+  test('Handles providing no secret paths', async () => {
+    command = [
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '--env-format',
+      'unix',
+      'someCommand',
+    ];
+
+    const result1 = await testUtils.pkExec([...command], {
+      env: { PK_PASSWORD: password },
+    });
+    expect(result1.exitCode).toBe(64);
+  });
 });

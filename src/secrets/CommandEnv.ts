@@ -7,6 +7,7 @@ import * as binUtils from '../utils';
 import * as binErrors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
+import * as binParsers from '../utils/parsers';
 
 const description = `
 Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.
@@ -45,13 +46,16 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.envFormat);
     this.addOption(binOptions.envInvalid);
     this.addOption(binOptions.envDuplicate);
-    this.argument('[args...]', 'command and arguments formatted as [envPaths...][cmd][cmdArgs...]');
+    this.argument(
+      '<args...>',
+      'command and arguments formatted as [envPaths...][cmd][cmdArgs...]',
+      binParsers.testParse,
+    );
     this.addHelpText('after', helpText);
     this.action(async (args: Array<string>, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
-      const binParsers = await import('../utils/parsers');
       const {
         envInvalid,
         envDuplicate,
@@ -68,7 +72,7 @@ class CommandEnv extends CommandPolykey {
       //   a. exec the command with the provided env variables from the secrets
       //   b. output the env variables in the desired format
 
-      const [envVariables, [cmd, ...argv]] = binParsers.parseEnvArgs(args);
+      const [envVariables, [cmd, ...argv]] = args;
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
