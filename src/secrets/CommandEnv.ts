@@ -9,37 +9,13 @@ import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
 import * as binParsers from '../utils/parsers';
 
-const description = `
-Run a command with the given secrets and env variables. If no command is specified then the variables are printed to stdout in the format specified by env-format.
-
-When selecting secrets with --env secrets with invalid names can be selected. By default when these are encountered then the command will throw an error. This behaviour can be modified with '--env-invalid'. the invalid name can be silently dropped with 'ignore' or logged out with 'warn'
-
-Duplicate secret names can be specified, by default with 'overwrite' the env variable will be overwritten with the latest found secret of that name. It can be specified to 'keep' the first found secret of that name, 'error' to throw if there is a duplicate and 'warn' to log a warning while overwriting.
-`;
-
-const helpText = `
-This command has two main ways of functioning. Executing a provided command or outputting formatted env variables to] stdout.
-
-Running the command with 'polykey secrets env --env vault:secret -- some command' will do process replacement to run 'some command' while providing environment variables selected by '-e' to that process. Note that process replacement is only supported on unix systems such as linux or macos. When running on windows a child process will be used.
-
-Running the command with 'polykey secrets env --env vault:secret --env-format <format>' will output the environment variables to stdout with the given <format>. The following formats are supported, 'auto', 'json', 'unix', 'cmd' and 'powershell'.
-
-'auto' will automatically detect the current platform and select the appropriate format. This is 'unix' for unix based systems and 'cmd' for windows.
-
-'json' Will format the environment variables as a json object in the form {'key': 'value'}.
-
-'unix' Will format the environment variables as a '.env' file for use on unix systems. It will include comments before each variable showing the secret path used for that variable.
-
-'cmd' Will format the environment variables as a '.bat' file for use on windows cmd. It will include comments before each variable showing the secret path used for that variable.
-
-'powershell' Will format the environment variables as a '.ps1' file for use on windows Powershell. It will include comments before each variable showing the secret path used for that variable.
-`;
-
 class CommandEnv extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('env');
-    this.description(description);
+    this.description(
+      `Run a command with the given secrets and env variables using process replacement. If no command is specified then the variables are printed to stdout in the format specified by env-format.`,
+    );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
@@ -51,7 +27,6 @@ class CommandEnv extends CommandPolykey {
       'command and arguments formatted as [envPaths...][cmd][cmdArgs...]',
       binParsers.testParse,
     );
-    this.addHelpText('after', helpText);
     this.action(async (args: Array<string>, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
