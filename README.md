@@ -1,8 +1,5 @@
 # Polykey-CLI
 
-staging:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/staging/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/staging)
-master:[![pipeline status](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/badges/master/pipeline.svg)](https://gitlab.com/MatrixAI/open-source/Polykey-CLI/commits/master)
-
 Polykey is an open-source, peer-to-peer system that addresses the critical challenge in cybersecurity: the secure sharing and delegation of authority, in the form of secrets like keys, tokens, certificates, and passwords.
 
 It allows users including developers, organizations, and machines—to store these secrets in encrypted vaults on their own devices, and share them directly with trusted parties.
