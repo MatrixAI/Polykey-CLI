@@ -233,6 +233,10 @@ jobs:
     steps:
       - run: entrypoint
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: builds
+          path: ./builds
       - name: Deploying image to ECR
         env:
           name: 'testnet'
@@ -372,6 +376,7 @@ jobs:
         with:
           pattern: builds*
           path: ./builds
+          merge-multiple: true
       - name: Publish pre-release
         env:
           CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
@@ -458,6 +463,7 @@ jobs:
         with:
           pattern: builds*
           path: ./builds
+          merge-multiple: true
       - name: Run deployment
         env:
           name: 'mainnet'
@@ -503,6 +509,7 @@ jobs:
         with:
           pattern: builds*
           path: ./builds
+          merge-multiple: true
       - name: Publish release
         env:
           REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
