@@ -1,6 +1,8 @@
 import type { VaultName } from 'polykey/dist/vaults/types';
 import path from 'path';
 import fs from 'fs';
+import { test } from '@fast-check/jest';
+import fc from 'fast-check';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/dist/PolykeyAgent';
 import { vaultOps } from 'polykey/dist/vaults';
@@ -75,5 +77,43 @@ describe('commandCreateSecret', () => {
       });
     },
     globalThis.defaultTimeout * 2,
+  );
+  const fileNameArb = fc.stringMatching(/^[^\0\\/=]$/);
+  test.prop([fileNameArb, fileNameArb], { numRuns: 10 })(
+    'secrets handle unix style paths for secrets',
+    async (directoryName, secretName) => {
+      await polykeyAgent.vaultManager.stop();
+      await polykeyAgent.vaultManager.start({ fresh: true });
+      const vaultName = 'Vault1' as VaultName;
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretPath = path.join(dataDir, 'secret');
+      await fs.promises.writeFile(secretPath, 'this is a secret');
+      const vaultsSecretPath = path.join(directoryName, secretName);
+
+      command = [
+        'secrets',
+        'create',
+        '-np',
+        dataDir,
+        secretPath,
+        `${vaultName}:${vaultsSecretPath}`,
+      ];
+
+      const result = await testUtils.pkStdio([...command], {
+        env: {
+          PK_PASSWORD: password,
+        },
+        cwd: dataDir,
+      });
+      expect(result.exitCode).toBe(0);
+
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        const list = await vaultOps.listSecrets(vault);
+        expect(list.sort()).toStrictEqual([vaultsSecretPath]);
+        expect(
+          (await vaultOps.getSecret(vault, vaultsSecretPath)).toString(),
+        ).toStrictEqual('this is a secret');
+      });
+    },
   );
 });
