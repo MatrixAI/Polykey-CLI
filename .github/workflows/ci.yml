@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v4
       - id: set-matrix
         run: |
-          files=$(find tests/* -maxdepth 0 -type d | sed 's/.*/"&"/' | paste -sd, -)
+          files=$(find tests/* -maxdepth 0 -type d -not -path "tests/integration" | sed 's/.*/"&"/' | paste -sd, -)
           files=$files,$(find tests/* -maxdepth 0 -type f | grep -e "/*.test.ts" | sed 's/.*/"&"/' | paste -sd, -)
           if [ -z "$files" ]; then
             echo "matrix={\"shard\":[]}" >> $GITHUB_OUTPUT
@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set artifact name
-        run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/_/g')" >> $GITHUB_ENV
+        run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/-/g')" >> $GITHUB_ENV
       - name: Run tests
         run: |
           npm install
@@ -250,6 +250,35 @@ jobs:
           ./scripts/wait-for-deploy.js testnet.polykey.com
           '
 
+  integration-test:
+    name: "Integration / Test"
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/matrixai/github-runner
+    needs: integration-deployment
+    if: github.ref == 'refs/heads/staging'
+    steps:
+      - run: entrypoint
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: builds
+          path: ./builds
+      - name: Run tests
+        env:
+          DOCKER_TLS_CERTDIR: "/certs"
+          FF_NETWORK_PER_BUILD: "true"
+          PK_TEST_TMPDIR: "$GITHUB_WORKSPACE/tmp/test"
+          PK_NETWORK: "testnet"
+        run: |
+          docker info
+          mkdir $PK_TEST_TMPDIR
+          nix develop .#ci --command bash -c $'
+          image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)"
+          docker tag "$image_and_tag" "polykey-cli:testtarget"
+          npm run test tests/integration/docker
+          '
+
   integration-platforms:
     name: "Integration / Platforms"
     runs-on: ${{ matrix.os }}
@@ -353,6 +382,7 @@ jobs:
       cancel-in-progress: false
     needs:
       - build-prerelease
+      - integration-test
       - integration-platforms
     if: >
       github.ref == 'refs/heads/staging' &&
@@ -404,6 +434,7 @@ jobs:
       cancel-in-progress: true
     needs:
       - build-pull
+      - integration-test
       - integration-platforms
     if: github.ref == 'refs/heads/staging'
     steps:
