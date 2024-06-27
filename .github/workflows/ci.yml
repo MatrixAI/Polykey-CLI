@@ -27,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Run linting
         run: |
           npm install
@@ -49,6 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Run build
         run: |
           npm install
@@ -80,6 +86,9 @@ jobs:
     needs: check-matrix
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Set artifact name
         run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/-/g')" >> $GITHUB_ENV
       - name: Run tests
@@ -101,6 +110,9 @@ jobs:
     needs: check-test
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: actions/download-artifact@v4
         with:
           pattern: coverage-artifacts-*
@@ -155,6 +167,9 @@ jobs:
       contains(github.ref, '-')
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - name: Run deployment
         run: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
@@ -517,6 +532,9 @@ jobs:
       !contains(github.ref, '-')
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - uses: actions/download-artifact@v4
         with:
           pattern: builds*
