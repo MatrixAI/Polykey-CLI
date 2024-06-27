@@ -185,6 +185,8 @@ describe('stop', () => {
         fs,
         logger,
       });
+      const startingPromise = status.waitFor('STARTING');
+      const livePromise = status.waitFor('LIVE');
       const agentProcess = await testUtils.pkSpawn(
         [
           'agent',
@@ -209,7 +211,7 @@ describe('stop', () => {
         },
         logger,
       );
-      await status.waitFor('STARTING');
+      await startingPromise;
       const { exitCode, stderr } = await testUtils.pkStdio(
         ['agent', 'stop', '--format', 'json'],
         {
@@ -222,7 +224,7 @@ describe('stop', () => {
       testUtils.expectProcessError(exitCode, stderr, [
         new binErrors.ErrorPolykeyCLIAgentStatus('Agent is starting'),
       ]);
-      await status.waitFor('LIVE');
+      await livePromise;
       await testUtils.pkStdio(['agent', 'stop'], {
         env: {
           PK_NODE_PATH: path.join(dataDir, 'polykey'),
