@@ -93,11 +93,12 @@ jobs:
         run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/-/g')" >> $GITHUB_ENV
       - name: Run tests
         run: |
-          npm install
+          nix develop .#ci --command bash -c $'
           npm run test -- \
             --coverageReporters json \
             --coverage \
             "${{ matrix.shard }}"
+          '
           mv tmp/coverage/coverage-final.json "tmp/coverage/${{ env.SLUG }}.json"
       - uses: actions/upload-artifact@v4
         with:
