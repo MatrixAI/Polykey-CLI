@@ -80,15 +80,15 @@ jobs:
   check-test:
     name: "Check / Test"
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/matrixai/github-runner
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.check-matrix.outputs.matrix)}}
     needs: check-matrix
     steps:
+      - run: entrypoint
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
       - name: Set artifact name
         run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/-/g')" >> $GITHUB_ENV
       - name: Run tests
