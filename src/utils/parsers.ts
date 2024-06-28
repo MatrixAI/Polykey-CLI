@@ -8,10 +8,9 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const secretPathRegex =
-  /^([\w-]+)(?::)([\w\-\\\/\.\$]+)(?:=)?([a-zA-Z_][\w]+)?$/;
+const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)(?:=)?([a-zA-Z_][\w]+)?$/;
 const secretPathEnvRegex =
-  /^([\w-]+)(?::)([\w\-\\\/\.\$]+)(?:=)?([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
+  /^([\w-]+)(?::)([^\0\\=]+)(?:=)?([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
 /**
  * Converts a validation parser to commander argument parser
