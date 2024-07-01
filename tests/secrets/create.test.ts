@@ -78,10 +78,11 @@ describe('commandCreateSecret', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  const fileNameArb = fc.stringMatching(/^[^\0\\/=]$/);
-  test.prop([fileNameArb, fileNameArb], { numRuns: 10 })(
+  const fileNameArb = fc.stringMatching(/^[^\0\\/]$/);
+  const envVariableArb = fc.stringMatching(/^([a-zA-Z_][\w]+)?$/);
+  test.prop([fileNameArb, fileNameArb, envVariableArb], { numRuns: 10 })(
     'secrets handle unix style paths for secrets',
-    async (directoryName, secretName) => {
+    async (directoryName, secretName, envVariableName) => {
       await polykeyAgent.vaultManager.stop();
       await polykeyAgent.vaultManager.start({ fresh: true });
       const vaultName = 'Vault1' as VaultName;
@@ -96,7 +97,7 @@ describe('commandCreateSecret', () => {
         '-np',
         dataDir,
         secretPath,
-        `${vaultName}:${vaultsSecretPath}`,
+        `${vaultName}:${vaultsSecretPath}=${envVariableName}`,
       ];
 
       const result = await testUtils.pkStdio([...command], {

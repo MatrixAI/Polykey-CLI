@@ -13,7 +13,7 @@ class CommandMkdir extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the directory to be created, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.option('-r, --recursive', 'Create the directory recursively');
     this.addOption(binOptions.nodeId);

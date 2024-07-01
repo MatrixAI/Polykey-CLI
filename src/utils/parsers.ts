@@ -8,9 +8,9 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)(?:=)?([a-zA-Z_][\w]+)?$/;
-const secretPathEnvRegex =
-  /^([\w-]+)(?::)([^\0\\=]+)(?:=)?([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
+const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)$/;
+const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
+const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
 /**
  * Converts a validation parser to commander argument parser
@@ -68,27 +68,39 @@ function parseCoreCount(v: string): number | undefined {
 function parseSecretPath(secretPath: string): [string, string, string?] {
   // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
   //      If 'vault1:a/b/c=VARIABLE', ['vault1, 'a/b/c', 'VARIABLE'] is returned
-  if (!secretPathRegex.test(secretPath)) {
+  const lastEqualIndex = secretPath.lastIndexOf('=');
+  const splitSecretPath =
+    lastEqualIndex === -1
+      ? secretPath
+      : secretPath.substring(0, lastEqualIndex);
+  const value =
+    lastEqualIndex === -1 ? '' : secretPath.substring(lastEqualIndex + 1);
+  if (!secretPathRegex.test(splitSecretPath)) {
     throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>:<directoryPath>`,
+      `${splitSecretPath} is not of the format <vaultName>:<directoryPath>`,
     );
   }
-  const [, vaultName, directoryPath, value] =
-    secretPath.match(secretPathRegex)!;
+  const [, vaultName, directoryPath] = splitSecretPath.match(secretPathRegex)!;
   return [vaultName, directoryPath, value];
 }
 
-function parseEnvPath(secretPath: string): [string, string, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1:a/b/c=VARIABLE', ['vault1, 'a/b/c', 'VARIABLE'] is returned
-  // VARIABLE must be a valid ENV variable name
-  if (!secretPathEnvRegex.test(secretPath)) {
+function parseSecretPathValue(secretPath: string): [string, string, string?] {
+  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
+  if (value != null && !secretPathValueRegex.test(value)) {
     throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>:<directoryPath>`,
+      `${value} is not a valid value name`,
     );
   }
-  const [, vaultName, directoryPath, value] =
-    secretPath.match(secretPathEnvRegex)!;
+  return [vaultName, directoryPath, value];
+}
+
+function parseSecretPathEnv(secretPath: string): [string, string, string?] {
+  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
+  if (value != null && !environmentVariableRegex.test(value)) {
+    throw new commander.InvalidArgumentError(
+      `${value} is not a valid environment variable name`,
+    );
+  }
   return [vaultName, directoryPath, value];
 }
 
@@ -148,38 +160,8 @@ const parseSeedNodes: (data: string) => [SeedNodes, boolean] =
  * The cmd part of the list is separated in two ways, either the user explicitly uses `--` or the first non-secret path separates it.
  */
 function parseEnvArgs(
-  args: Array<string>,
-): [Array<[string, string, string?]>, Array<string>] {
-  let isEnvStage = true;
-  const envPaths: Array<[string, string, string?]> = [];
-  const cmdArgs: Array<string> = [];
-  for (const arg of args) {
-    if (isEnvStage) {
-      // Parse a secret path
-      try {
-        envPaths.push(parseEnvPath(arg));
-      } catch (e) {
-        if (!(e instanceof commander.InvalidArgumentError)) throw e;
-        // If we get an invalid argument error then we switch over to parsing args verbatim
-        cmdArgs.push(arg);
-        isEnvStage = false;
-      }
-    } else {
-      // Otherwise we just have the cmd args
-      cmdArgs.push(arg);
-    }
-  }
-  if (envPaths.length === 0) {
-    throw new commander.InvalidArgumentError(
-      'You must provide at least 1 secret path',
-    );
-  }
-  return [envPaths, cmdArgs];
-}
-
-function testParse(
   value: string,
-  prev: [Array<[string, string, string?]>, Array<string>],
+  prev: [Array<[string, string, string?]>, Array<string>] | undefined,
 ): [Array<[string, string, string?]>, Array<string>] {
   const current: [Array<[string, string, string?]>, Array<string>] = prev ?? [
     [],
@@ -188,7 +170,7 @@ function testParse(
   if (current[1].length === 0) {
     // Parse a secret path
     try {
-      current[0].push(parseEnvPath(value));
+      current[0].push(parseSecretPathEnv(value));
     } catch (e) {
       if (!(e instanceof commander.InvalidArgumentError)) throw e;
       // If we get an invalid argument error then we switch over to parsing args verbatim
@@ -208,12 +190,14 @@ function testParse(
 
 export {
   secretPathRegex,
-  secretPathEnvRegex,
+  secretPathValueRegex,
+  environmentVariableRegex,
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
   parseSecretPath,
-  parseEnvPath,
+  parseSecretPathValue,
+  parseSecretPathEnv,
   parseInteger,
   parseNumber,
   parseNodeId,
@@ -230,5 +214,4 @@ export {
   parseIdentityId,
   parseProviderIdList,
   parseEnvArgs,
-  testParse,
 };

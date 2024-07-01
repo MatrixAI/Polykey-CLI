@@ -14,7 +14,7 @@ class CommandDelete extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret that to be deleted, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

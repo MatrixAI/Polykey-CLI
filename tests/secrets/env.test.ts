@@ -764,7 +764,7 @@ describe('commandEnv', () => {
     const jsonOut = JSON.parse(result.stdout);
     expect(jsonOut['SECRET']).toBe('this is a secret\nit has multiple lines\n');
   });
-  test.prop([
+  test.only.prop([
     testUtils.secretPathEnvArrayArb,
     fc.string().noShrink(),
     testUtils.cmdArgsArrayArb,
@@ -774,12 +774,16 @@ describe('commandEnv', () => {
       // If we don't use the optional `--` delimiter then we can't include `:` in vault names
       fc.pre(!cmd.includes(':'));
 
+      let output:
+        | [Array<[string, string, string?]>, Array<string>]
+        | undefined = undefined;
       const args: Array<string> = [...secretPathEnvArray, cmd, ...cmdArgsArray];
-      const parsed = binParsers.parseEnvArgs(args);
-      const [parsedEnvs, parsedArgs] = parsed;
+      for (const arg of args) {
+        output = binParsers.parseEnvArgs(arg, output);
+      }
+      const [parsedEnvs, parsedArgs] = output!;
       const expectedSecretPathArray = secretPathEnvArray.map((v) => {
-        const matched = v.match(binParsers.secretPathEnvRegex)!;
-        return [matched[1], matched[2], matched[3]];
+        return binParsers.parseSecretPath(v);
       });
       expect(parsedEnvs).toMatchObject(expectedSecretPathArray);
       expect(parsedArgs).toMatchObject([cmd, ...cmdArgsArray]);

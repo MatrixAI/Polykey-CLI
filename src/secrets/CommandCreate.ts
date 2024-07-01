@@ -18,7 +18,7 @@ class CommandCreate extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret to be created, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

@@ -13,7 +13,7 @@ class CommandRename extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the secret to be renamed, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.argument('<newSecretName>', 'New name of the secret');
     this.addOption(binOptions.nodeId);

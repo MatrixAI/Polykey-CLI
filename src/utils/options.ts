@@ -206,7 +206,7 @@ const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
   .argParser(
     (value: string, previous: Array<[string, string, string?]> | undefined) => {
       const acc = previous ?? [];
-      acc.push(binParsers.parseEnvPath(value));
+      acc.push(binParsers.parseSecretPathEnv(value));
       return acc;
     },
   );

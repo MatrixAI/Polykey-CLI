@@ -13,7 +13,7 @@ class CommandStat extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the secret, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

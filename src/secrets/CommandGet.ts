@@ -13,7 +13,7 @@ class CommandGet extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to where the secret to be retrieved, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

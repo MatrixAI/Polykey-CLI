@@ -88,9 +88,21 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   );
 }
 
-const secretPathEnvArb = fc
-  .stringMatching(binParsers.secretPathEnvRegex)
+const secretPathWithoutEnvArb = fc
+  .stringMatching(binParsers.secretPathRegex)
   .noShrink();
+const environmentVariableAre = fc
+  .stringMatching(binParsers.environmentVariableRegex)
+  .filter((v) => v.length > 0)
+  .noShrink();
+const secretPathWithEnvArb = fc
+  .tuple(secretPathWithoutEnvArb, environmentVariableAre)
+  .map((v) => v.join('='));
+const secretPathEnvArb = fc.oneof(
+  secretPathWithoutEnvArb,
+  secretPathWithEnvArb,
+);
+
 const secretPathEnvArrayArb = fc
   .array(secretPathEnvArb, { minLength: 1, size: 'small' })
   .noShrink();

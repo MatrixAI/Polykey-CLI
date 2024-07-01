@@ -16,7 +16,7 @@ class CommandEdit extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret to be edited, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPath,
+      binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
