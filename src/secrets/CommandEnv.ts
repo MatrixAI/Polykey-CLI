@@ -25,7 +25,7 @@ class CommandEnv extends CommandPolykey {
     this.argument(
       '<args...>',
       'command and arguments formatted as [envPaths...][cmd][cmdArgs...]',
-      binParsers.testParse,
+      binParsers.parseEnvArgs,
     );
     this.action(async (args: Array<string>, options) => {
       const { default: PolykeyClient } = await import(
