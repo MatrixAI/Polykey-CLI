@@ -147,6 +147,15 @@ const parseHostname: (data: string) => Hostname = validateParserToArgParser(
 const parseHostOrHostname: (data: string) => Host | Hostname =
   validateParserToArgParser(networkUtils.parseHostOrHostname);
 
+function parseAddresses(
+  value: string,
+  previous: Array<string> | undefined,
+): Array<string> {
+  const current = previous ?? [];
+  current.push(parseHostOrHostname(value));
+  return current;
+}
+
 const parsePort: (data: string) => Port = validateParserToArgParser(
   networkUtils.parsePort,
 );
@@ -208,6 +217,7 @@ export {
   parseHost,
   parseHostname,
   parseHostOrHostname,
+  parseAddresses,
   parsePort,
   parseSeedNodes,
   parseProviderId,

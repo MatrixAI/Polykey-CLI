@@ -83,6 +83,14 @@ const agentPort = new commander.Option('-ap, --agent-port <port>', 'Agent Port')
   .argParser(binParsers.parsePort)
   .default(config.defaultsUser.agentServicePort);
 
+const dnsServers = new commander.Option(
+  '--dns-servers [addresses...]',
+  'List of dns servers used for dns resolution',
+)
+  .env('PK_DNS_SERVERS')
+  .argParser(binParsers.parseAddresses)
+  .default(undefined);
+
 const connConnectTime = new commander.Option(
   '--connection-timeout <ms>',
   'Timeout value for connection establishment between nodes',
@@ -304,6 +312,7 @@ export {
   clientPort,
   agentHost,
   agentPort,
+  dnsServers,
   connConnectTime,
   recoveryCodeFile,
   recoveryCodeOutFile,
