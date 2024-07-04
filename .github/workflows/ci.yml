@@ -288,7 +288,7 @@ jobs:
           PK_NETWORK: "testnet"
         run: |
           docker info
-          mkdir $PK_TEST_TMPDIR
+          mkdir -p $PK_TEST_TMPDIR
           nix develop .#ci --command bash -c $'
           image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)"
           docker tag "$image_and_tag" "polykey-cli:testtarget"
