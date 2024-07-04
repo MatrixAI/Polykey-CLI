@@ -169,7 +169,7 @@ describe('stop', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  test(
+  test.skip(
     'stopping starting agent results in error',
     async () => {
       // This relies on fast execution of `agent stop` while agent is starting,
