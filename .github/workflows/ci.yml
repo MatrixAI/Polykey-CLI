@@ -284,7 +284,7 @@ jobs:
         env:
           DOCKER_TLS_CERTDIR: "/certs"
           FF_NETWORK_PER_BUILD: "true"
-          PK_TEST_TMPDIR: "$GITHUB_WORKSPACE/tmp/test"
+          PK_TEST_TMPDIR: "${{ github.workspace }}/tmp/test"
           PK_NETWORK: "testnet"
         run: |
           docker info
