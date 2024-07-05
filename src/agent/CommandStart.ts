@@ -128,7 +128,8 @@ class CommandStart extends CommandPolykey {
             keysUtils.passwordMemLimits[options.passwordMemLimit],
         },
         nodes: {
-          dnsServers: options.dnsServers,
+          // `--dns-server` with no value returns true, convert that to an empty list
+          dnsServers: options.dnsServers === true ? [] : options.dnsServers,
         },
         versionMetadata: buildJSON.versionMetadata,
       };
