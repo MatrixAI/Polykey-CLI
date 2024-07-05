@@ -45,6 +45,7 @@ class CommandStart extends CommandPolykey {
     this.addOption(binOptions.privateKeyFile);
     this.addOption(binOptions.passwordOpsLimit);
     this.addOption(binOptions.passwordMemLimit);
+    this.addOption(binOptions.dnsServers);
     this.action(async (options) => {
       options.clientHost =
         options.clientHost ?? config.defaultsUser.clientServiceHost;
@@ -125,6 +126,10 @@ class CommandStart extends CommandPolykey {
             keysUtils.passwordOpsLimits[options.passwordOpsLimit],
           passwordMemLimit:
             keysUtils.passwordMemLimits[options.passwordMemLimit],
+        },
+        nodes: {
+          // `--dns-server` with no value returns true, convert that to an empty list
+          dnsServers: options.dnsServers === true ? [] : options.dnsServers,
         },
         versionMetadata: buildJSON.versionMetadata,
       };
