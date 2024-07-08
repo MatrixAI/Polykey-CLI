@@ -292,7 +292,7 @@ jobs:
               --repo "$GITHUB_REPOSITORY"; \
           else \
             gh release \
-              create "$CI_COMMIT_TAG" \
+              create "$GITHUB_REF_NAME" \
               builds/*.closure.gz \
               builds/*-docker-* \
               builds/*-linux-* \
@@ -326,6 +326,9 @@ jobs:
           name: 'testnet'
           deployment_tier: 'staging'
           url: 'https://testnet.polykey.com'
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
         run: |
           nix develop .#ci --command bash -c $'
@@ -394,6 +397,9 @@ jobs:
           deployment_tier: 'production'
           url: 'https://mainnet.polykey.com'
           REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
         run: |
           echo 'Deploying container image to ECR'
