@@ -6,30 +6,12 @@ on:
       - staging
       - feature*
 
-env:
-  # Caching
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  CACHIX_SIGNING_KEY: ${{ secrets.CACHIX_SIGNING_KEY }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  NIX_CACHE_PRIV_KEY: ${{ secrets.NIX_CACHE_PRIV_KEY }}
-  NIX_CACHE_PUB_KEY: ${{ secrets.NIX_CACHE_PUB_KEY }}
-
-  # Other
-  GIT_SUBMODULE_STRATEGY: recursive
-  npm_config_cache: "${{ github.workspace }}/tmp/npm"
-  npm_config_prefer_offline: "true"
-
 jobs:
   check-lint:
     name: "Check / Lint"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
       - name: Run linting
         run: |
           npm install
@@ -42,7 +24,6 @@ jobs:
     container:
       image: ghcr.io/matrixai/github-runner
     steps:
-      - run: entrypoint
       - uses: actions/checkout@v4
       - name: Dry run
         run: nix build .#docker --dry-run
@@ -52,9 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
       - name: Run build
         run: |
           npm install
@@ -80,25 +58,21 @@ jobs:
   check-test:
     name: "Check / Test"
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/matrixai/github-runner
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.check-matrix.outputs.matrix)}}
     needs: check-matrix
     steps:
-      - run: entrypoint
       - uses: actions/checkout@v4
       - name: Set artifact name
         run: echo "SLUG=$(echo ${{ matrix.shard }} | sed 's/[/.]/-/g')" >> $GITHUB_ENV
       - name: Run tests
         run: |
-          nix develop .#ci --command bash -c $'
+          npm install
           npm run test -- \
             --coverageReporters json \
             --coverage \
             "${{ matrix.shard }}"
-          '
           mv tmp/coverage/coverage-final.json "tmp/coverage/${{ env.SLUG }}.json"
       - uses: actions/upload-artifact@v4
         with:
@@ -111,9 +85,6 @@ jobs:
     needs: check-test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
       - uses: actions/download-artifact@v4
         with:
           pattern: coverage-artifacts-*
@@ -130,11 +101,6 @@ jobs:
   build-pull:
     name: "Build / Pull Request"
     runs-on: ubuntu-latest
-    needs:
-      - check-lint
-      - check-dry
-      - check-build
-      - check-test
     if: github.ref == 'refs/heads/staging'
     steps:
       - uses: actions/checkout@v4
@@ -154,294 +120,6 @@ jobs:
             --body-file - \
             --repo "$GITHUB_REPOSITORY"
 
-  build-prerelease:
-    name: "Build / Pre-release"
-    runs-on: ubuntu-latest
-    needs:
-      - check-lint
-      - check-dry
-      - check-build
-      - check-test
-    if: >
-      github.ref == 'refs/heads/staging' &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      contains(github.ref, '-')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Run deployment
-        run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
-          echo 'Publishing library prerelease'
-          npm install
-          npm publish --tag prerelease --access public
-          rm -f ./.npmrc
-
-  integration-builds:
-    name: "Integration / Builds"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/matrixai/github-runner
-    needs:
-      - check-lint
-      - check-dry
-      - check-build
-      - check-test
-    if: github.ref == 'refs/heads/staging'
-    steps:
-      - run: entrypoint
-      - uses: actions/checkout@v4
-      - name: Build targets
-        run: |
-          mkdir -p ./builds
-          build_application="$(nix build \
-            --max-jobs "$(nproc)" \
-            --cores "$(nproc)" \
-            --print-out-paths \
-            .# \
-          )"
-          nix-store --export $( \
-            nix-store --query --requisites "$build_application" \
-          ) | gzip > ./builds/polykey-cli.closure.gz
-          builds="$(nix build \
-            --max-jobs "$(nproc)" \
-            --cores "$(nproc)" \
-            --print-out-paths \
-            --print-build-logs \
-            .# \
-            .#docker \
-            .#packages.x86_64-linux.executable \
-          )"
-          cp -r $(echo $builds | tr '\n' ' ') ./builds/
-          nix develop .#ci --command bash -c $'
-          npm run build
-          '
-      - uses: actions/upload-artifact@v4
-        with:
-          name: builds
-          path: ./builds
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: ./dist
-
-  integration-deployment:
-    name: "Integration / Deployment"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/matrixai/github-runner
-    concurrency:
-      group: integration-deployment
-      cancel-in-progress: true
-    needs: integration-builds
-    if: github.ref == 'refs/heads/staging'
-    steps:
-      - run: entrypoint
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: builds
-          path: ./builds
-      - name: Deploying image to ECR
-        env:
-          name: 'testnet'
-          deployment_tier: 'staging'
-          url: 'https://testnet.polykey.com'
-          CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
-        run: |
-          nix develop .#ci --command bash -c $'
-          aws ecr get-login-password \
-            | skopeo login \
-            --username AWS \
-            --password-stdin \
-            --authfile "$REGISTRY_AUTH_FILE" \
-            "$CI_REGISTRY_IMAGE"
-          image=(./builds/*-docker-*)
-          ./scripts/deploy-image.sh "${image[0]}" \'testnet\' "$CI_REGISTRY_IMAGE"
-          '
-          echo 'Waiting for Testnet Deployment'
-          nix develop .#ci --command bash -c $'
-          ./scripts/wait-for-deploy.js testnet.polykey.com
-          '
-
-  integration-test:
-    name: "Integration / Test"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/matrixai/github-runner
-    needs: integration-deployment
-    if: github.ref == 'refs/heads/staging'
-    steps:
-      - run: entrypoint
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: builds
-          path: ./builds
-      - name: Run tests
-        env:
-          DOCKER_TLS_CERTDIR: "/certs"
-          FF_NETWORK_PER_BUILD: "true"
-          PK_TEST_TMPDIR: "${{ github.workspace }}/tmp/test"
-          PK_NETWORK: "testnet"
-        run: |
-          docker info
-          mkdir -p $PK_TEST_TMPDIR
-          nix develop .#ci --command bash -c $'
-          image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)"
-          docker tag "$image_and_tag" "polykey-cli:testtarget"
-          npm run test tests/integration/docker
-          '
-
-  integration-platforms:
-    name: "Integration / Platforms"
-    runs-on: ${{ matrix.os }}
-    container:
-      image: ${{ (matrix.platform == 'nix' || matrix.platform == 'docker') && 'ghcr.io/matrixai/github-runner' || null }}
-    needs: integration-deployment
-    if: github.ref == 'refs/heads/staging'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: nix
-            os: ubuntu-latest
-            env: {}
-            script: |
-              entrypoint
-              build_application="$( \
-                gunzip -c ./builds/polykey-cli.closure.gz | \
-                nix-store --import | \
-                tail -1 \
-              )"
-              $build_application/bin/polykey
-          - platform: docker
-            os: ubuntu-latest
-            env:
-              DOCKER_TLS_CERTDIR: "/certs"
-              FF_NETWORK_PER_BUILD: "true"
-              PK_TEST_TMPDIR: "${{ github.workspace }}/tmp/test"
-              PK_NETWORK: "testnet"
-            script: |
-              entrypoint
-              docker info
-              mkdir $PK_TEST_TMPDIR
-              nix develop .#ci --command bash -c $'
-              image_and_tag="$(docker load --input ./builds/*docker* | cut -d\' \' -f3)"
-              docker tag "$image_and_tag" "polykey-cli:testtarget"
-              '
-          - platform: linux
-            os: ubuntu-latest
-            env: {}
-            script: |
-              chmod +x ./builds/*-linux-*
-              for f in ./builds/*-linux-*; do "$f"; done
-          - platform: windows
-            os: windows-latest
-            env: {}
-            script: |
-              mkdir -Force "$GITHUB_WORKSPACE/tmp"
-              Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-              .\scripts\choco-install.ps1
-              refreshenv
-              npm ci --ignore-scripts
-              $env:Path = "$(npm root)\.bin;" + $env:Path
-              $env:version = $(node -p "require('./package.json').version")
-              npm run pkg -- `
-                --output=builds\polykey-cli-$env:version-win32-x64 `
-                --bin=dist\polykey.js `
-                --node-version=20 `
-                --platform=win32 `
-                --arch=x64
-              Get-ChildItem -File ./builds/*-win32-* | ForEach {& $_.FullName}
-          - platform: macos
-            os: macos-latest
-            env: {}
-            script: |
-              version=$(node -p "require('./package.json').version")
-              npm ci
-              npm run pkg -- \
-                --output=builds/polykey-cli-$version-darwin-universal \
-                --bin=dist/polykey.js \
-                --node-version=20 \
-                --platform=darwin \
-                --arch=arm64
-              for f in ./builds/*-darwin-universal*; do "$f"; done
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - uses: actions/download-artifact@v4
-        with:
-          name: builds
-          path: ./builds
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: ./dist
-      - name: Build
-        env: ${{ matrix.env }}
-        run: ${{ matrix.script }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: builds-${{ matrix.platform }}
-          path: ./builds
-
-  integration-prerelease:
-    name: "Integration / Pre-release"
-    runs-on: ubuntu-latest
-    concurrency:
-      group: integration-prerelease
-      cancel-in-progress: false
-    needs:
-      - build-prerelease
-      - integration-test
-      - integration-platforms
-    if: >
-      github.ref == 'refs/heads/staging' &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      contains(github.ref, '-')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: builds*
-          path: ./builds
-          merge-multiple: true
-      - name: Publish pre-release
-        env:
-          CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          echo 'Publishing application prerelease'
-          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null; then \
-            gh release \
-              upload "$GITHUB_REF_NAME" \
-              builds/*.closure.gz \
-              builds/*-docker-* \
-              builds/*-linux-* \
-              builds/*-win32-* \
-              builds/*-darwin-* \
-              --clobber \
-              --repo "$GITHUB_REPOSITORY"; \
-          else \
-            gh release \
-              create "$CI_COMMIT_TAG" \
-              builds/*.closure.gz \
-              builds/*-docker-* \
-              builds/*-linux-* \
-              builds/*-win32-* \
-              builds/*-darwin-* \
-              --title "${GITHUB_REF_NAME}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-              --notes "" \
-              --prerelease \
-              --target staging \
-              --repo "$GITHUB_REPOSITORY"; \
-          fi
-
   integration-merge:
     name: "Integration / Merge"
     runs-on: ubuntu-latest
@@ -449,9 +127,11 @@ jobs:
       group: integration-merge
       cancel-in-progress: true
     needs:
+      - check-lint
+      - check-dry
+      - check-build
+      - check-test
       - build-pull
-      - integration-test
-      - integration-platforms
     if: github.ref == 'refs/heads/staging'
     steps:
       - uses: actions/checkout@v4
@@ -473,94 +153,3 @@ jobs:
           git checkout master
           git merge --ff-only "$GITHUB_SHA"
           git push origin master
-
-  release-deployment:
-    name: "Release / Deployment"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/matrixai/github-runner
-    concurrency:
-      group: release-deployment
-      cancel-in-progress: false
-    needs: integration-merge
-    if: >
-      github.ref == 'refs/heads/staging' &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      !contains(github.ref, '-')
-    steps:
-      - run: entrypoint
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: builds*
-          path: ./builds
-          merge-multiple: true
-      - name: Run deployment
-        env:
-          name: 'mainnet'
-          deployment_tier: 'production'
-          url: 'https://mainnet.polykey.com'
-          REGISTRY_AUTH_FILE: "./tmp/registry-auth-file.json"
-          CI_REGISTRY_IMAGE: '015248367786.dkr.ecr.ap-southeast-2.amazonaws.com/polykey'
-        run: |
-          echo 'Deploying container image to ECR'
-          nix develop .#ci --command bash -c $'
-          aws ecr get-login-password \
-            | skopeo login \
-            --username AWS \
-            --password-stdin \
-            --authfile "$REGISTRY_AUTH_FILE" \
-            "$CI_REGISTRY_IMAGE"
-          image=(./builds/*-docker-*)
-          ./scripts/deploy-image.sh "${image[0]}" \'mainnet\' "$CI_REGISTRY_IMAGE"
-          '
-          echo 'Waiting for Mainnet Deployment'
-          nix develop .#ci --command bash -c $'
-          ./scripts/wait-for-deploy.js mainnet.polykey.com
-          '
-          rm -f "$REGISTRY_AUTH_FILE"
-
-  release-distribution:
-    name: "Release / Distribution"
-    runs-on: ubuntu-latest
-    concurrency:
-      group: release-distribution
-      cancel-in-progress: false
-    needs: release-deployment
-    if: >
-      github.ref == 'refs/heads/staging' &&
-      startsWith(github.ref, 'refs/tags/v') &&
-      !contains(github.ref, '-')
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: builds*
-          path: ./builds
-          merge-multiple: true
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ./.npmrc
-          echo 'Publishing library'
-          npm install
-          npm publish --access public
-          echo 'Releasing application builds'
-          gh release \
-            create "$GITHUB_REF_NAME" \
-            builds/*.closure.gz \
-            builds/*-docker-* \
-            builds/*-linux-* \
-            builds/*-win32-* \
-            builds/*-darwin-* \
-            --title "${GITHUB_REF_NAME}-$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --notes "" \
-            --target master \
-            --repo "$GITHUB_REPOSITORY"
-          rm -f ./.npmrc
-          rm -f "$REGISTRY_AUTH_FILE"
-
