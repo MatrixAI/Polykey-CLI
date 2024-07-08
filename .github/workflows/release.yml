@@ -265,7 +265,7 @@ jobs:
     concurrency:
       group: integration-prerelease
       cancel-in-progress: false
-    needs: integration-platforms
+    needs: [integration-platforms, integration-test]
     if: contains(github.ref, '-')
     steps:
       - uses: actions/checkout@v4
@@ -425,7 +425,7 @@ jobs:
     concurrency:
       group: release-distribution
       cancel-in-progress: false
-    needs: release-deployment
+    needs: [integration-platforms, release-deployment]
     if: >
       !contains(github.ref, '-')
     steps:
