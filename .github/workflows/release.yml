@@ -1,4 +1,4 @@
-name: Release
+name: CI
 
 on:
   push:
@@ -314,7 +314,6 @@ jobs:
       group: integration-deployment
       cancel-in-progress: true
     needs: integration-builds
-    if: contains(github.ref, '-')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -362,7 +361,7 @@ jobs:
         env:
           DOCKER_TLS_CERTDIR: "/certs"
           FF_NETWORK_PER_BUILD: "true"
-          PK_TEST_TMPDIR: "${{ github.workspace }}/tmp/test"
+          PK_TEST_TMPDIR: "./tmp/test"
           PK_NETWORK: "testnet"
         run: |
           docker info
@@ -381,7 +380,7 @@ jobs:
     concurrency:
       group: release-deployment
       cancel-in-progress: false
-    needs: integration-builds
+    needs: integration-test
     if: >
       !contains(github.ref, '-')
     steps:
