@@ -39,7 +39,7 @@ const generateDockerArgs = (mountPath: string) => [
   `--user`,
   `${process.getuid!()}`,
   '-v',
-  `${mountPath}:${mountPath}`,
+  `${mountPath}:${mountPath}:rshared`,
   '--env',
   'PK_PASSWORD',
   '--env',
