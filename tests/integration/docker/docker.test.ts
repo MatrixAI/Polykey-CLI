@@ -153,14 +153,6 @@ describe('docker integration tests', () => {
       agentProcess.kill('SIGKILL');
       await exitP;
     });
-    agentProcess.stdout?.on('data', (d) => {
-      // eslint-disable-next-line no-console
-      console.log('stdout: ', d.toString());
-    });
-    agentProcess.stderr?.on('data', (d) => {
-      // eslint-disable-next-line no-console
-      console.log('stderr: ', d.toString());
-    });
     await sleep(10000);
     agentProcess.kill('SIGKILL');
     await exitP;
