@@ -26,10 +26,14 @@ describe('docker integration tests', () => {
   let dataDir: string;
   let cleanup: Array<() => Promise<void>>;
 
+  console.log("tmpDir: ", globalThis.tmpDir);
+
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
+    console.log("dataDir: ", dataDir);
+    console.log(await fs.promises.readdir(globalThis.tmpDir));
     cleanup = [];
   });
   afterEach(async () => {
