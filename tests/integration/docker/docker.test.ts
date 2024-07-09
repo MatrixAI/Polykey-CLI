@@ -73,6 +73,12 @@ describe('docker integration tests', () => {
         agentProcess.kill('SIGTERM');
         await statusInfoProm;
       });
+      agentProcess.stdout?.on('data', (d) => {
+        console.log("stdout: ", d.toString());
+      });
+      agentProcess.stderr?.on('data', (d) => {
+        console.log("stderr: ", d.toString());
+      });
       const rlOut = readline.createInterface(agentProcess.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
         rlOut.once('line', resolve);
