@@ -76,9 +76,10 @@ describe('docker integration tests', () => {
         },
         logger,
       );
+      const exitP = testUtils.createChildProcessExitP(agentProcess);
       cleanup.push(async () => {
-        agentProcess.kill('SIGTERM');
-        await statusInfoProm;
+        agentProcess.kill('SIGKILL');
+        await exitP;
       });
       agentProcess.stdout?.on('data', (d) => {
         // eslint-disable-next-line no-console
@@ -119,6 +120,10 @@ describe('docker integration tests', () => {
         logger,
       });
       const statusInfoProm = status.waitFor('DEAD');
+      cleanup.push(async () => {
+        statusInfoProm.cancel();
+        await statusInfoProm.catch(() => {});
+      });
 
       agentProcess.kill('SIGTERM');
       expect((await statusInfoProm).status).toBe('DEAD');
@@ -158,6 +163,11 @@ describe('docker integration tests', () => {
       },
       logger,
     );
+    const exitP = testUtils.createChildProcessExitP(agentProcess);
+    cleanup.push(async () => {
+      agentProcess.kill('SIGKILL');
+      await exitP;
+    });
     const status = new Status({
       statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
       statusLockPath: path.join(
@@ -169,17 +179,16 @@ describe('docker integration tests', () => {
       logger,
     });
     const waitForLiveP = status.waitFor('LIVE');
-
     cleanup.push(async () => {
-      await waitForLiveP;
-      agentProcess.kill('SIGTERM');
-      await status.waitFor('DEAD');
+      waitForLiveP.cancel();
+      await waitForLiveP.catch(() => {});
     });
-
     const statusInfo = await waitForLiveP;
     expect(statusInfo.status).toBe('LIVE');
     await sleep(2000);
     expect((await status.readStatus())?.status).toBe('LIVE');
+    agentProcess.kill('SIGTERM');
+    await exitP;
 
     // Checking for connections
     // await sleep(5000);

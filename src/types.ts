@@ -52,6 +52,15 @@ type AgentChildProcessOutput =
       error: POJO;
     };
 
+/**
+ * Deconstructed promise
+ */
+type PromiseDeconstructed<T> = {
+  p: Promise<T>;
+  resolveP: (value: T | PromiseLike<T>) => void;
+  rejectP: (reason?: any) => void;
+};
+
 export type {
   TableRow,
   TableOptions,
@@ -59,4 +68,5 @@ export type {
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
+  PromiseDeconstructed,
 };

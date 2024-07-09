@@ -1,5 +1,10 @@
 import type { POJO } from 'polykey/dist/types';
-import type { TableRow, TableOptions, DictOptions } from '../types';
+import type {
+  TableRow,
+  TableOptions,
+  DictOptions,
+  PromiseDeconstructed,
+} from '../types';
 import process from 'process';
 import { LogLevel } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
@@ -556,6 +561,22 @@ function generateVersionString(): string {
   return JSON.stringify(version);
 }
 
+/**
+ * Deconstructed promise
+ */
+function promise<T = void>(): PromiseDeconstructed<T> {
+  let resolveP, rejectP;
+  const p = new Promise<T>((resolve, reject) => {
+    resolveP = resolve;
+    rejectP = reject;
+  });
+  return {
+    p,
+    resolveP,
+    rejectP,
+  };
+}
+
 export {
   verboseToLogLevel,
   standardErrorReplacer,
@@ -576,6 +597,7 @@ export {
   decodeEscapedRegex,
   validEnvRegex,
   generateVersionString,
+  promise,
 };
 
 export type { OutputObject };

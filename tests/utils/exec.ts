@@ -10,6 +10,7 @@ import mockedEnv from 'mocked-env';
 import nexpect from 'nexpect';
 import Logger from '@matrixai/logger';
 import main from '@/polykey';
+import * as utils from '@/utils/utils';
 
 type ExecOpts = {
   env: Record<string, string | undefined>;
@@ -557,6 +558,35 @@ function escapeShellArgs(arg: string): string {
   return arg.replace(/(["\s'$`\\])/g, '\\$1');
 }
 
+/**
+ * This takes a `ChildProcess` and creates a `Promise<number>` that will return the exit code of that
+ * child process when it exits. If it fails to exit then it will throw with that error instead.
+ */
+function createChildProcessExitP(
+  subProcess: childProcess.ChildProcess,
+): Promise<number> {
+  const {
+    p: endedP,
+    resolveP: resolveEndedP,
+    rejectP: rejectEndedP,
+  } = utils.promise<number>();
+  if (subProcess.exitCode != null) {
+    resolveEndedP(subProcess.exitCode);
+  } else {
+    const handleExit = (code) => {
+      resolveEndedP(code);
+      subProcess.removeListener('error', handleError);
+    };
+    const handleError = (e) => {
+      rejectEndedP(e);
+      subProcess.removeListener('exit', handleExit);
+    };
+    subProcess.once('exit', handleExit);
+    subProcess.once('error', handleError);
+  }
+  return endedP;
+}
+
 export {
   tsConfigPath,
   polykeyPath,
@@ -575,4 +605,5 @@ export {
   processExit,
   expectProcessError,
   escapeShellArgs,
+  createChildProcessExitP,
 };
