@@ -26,17 +26,10 @@ describe('docker integration tests', () => {
   let dataDir: string;
   let cleanup: Array<() => Promise<void>>;
 
-  // eslint-disable-next-line no-console
-  console.log('tmpDir: ', globalThis.tmpDir);
-
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
-    // eslint-disable-next-line no-console
-    console.log('dataDir: ', dataDir);
-    // eslint-disable-next-line no-console
-    console.log(await fs.promises.readdir(globalThis.tmpDir));
     cleanup = [];
   });
   afterEach(async () => {
@@ -80,14 +73,6 @@ describe('docker integration tests', () => {
       cleanup.push(async () => {
         agentProcess.kill('SIGKILL');
         await exitP;
-      });
-      agentProcess.stdout?.on('data', (d) => {
-        // eslint-disable-next-line no-console
-        console.log('stdout: ', d.toString());
-      });
-      agentProcess.stderr?.on('data', (d) => {
-        // eslint-disable-next-line no-console
-        console.log('stderr: ', d.toString());
       });
       const rlOut = readline.createInterface(agentProcess.stdout!);
       const stdout = await new Promise<string>((resolve, reject) => {
@@ -167,6 +152,14 @@ describe('docker integration tests', () => {
     cleanup.push(async () => {
       agentProcess.kill('SIGKILL');
       await exitP;
+    });
+    agentProcess.stdout?.on('data', (d) => {
+      // eslint-disable-next-line no-console
+      console.log('stdout: ', d.toString());
+    });
+    agentProcess.stderr?.on('data', (d) => {
+      // eslint-disable-next-line no-console
+      console.log('stderr: ', d.toString());
     });
     const status = new Status({
       statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
