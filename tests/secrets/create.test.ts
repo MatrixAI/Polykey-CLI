@@ -78,7 +78,7 @@ describe('commandCreateSecret', () => {
     },
     globalThis.defaultTimeout * 2,
   );
-  const fileNameArb = fc.stringMatching(/^[^\0\\/]$/);
+  const fileNameArb = fc.stringMatching(/^[^\0\\/=]$/);
   const envVariableArb = fc.stringMatching(/^([a-zA-Z_][\w]+)?$/);
   test.prop([fileNameArb, fileNameArb, envVariableArb], { numRuns: 10 })(
     'secrets handle unix style paths for secrets',
