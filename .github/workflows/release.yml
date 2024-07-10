@@ -1,4 +1,4 @@
-name: CI
+name: CI / Release
 
 on:
   push:
@@ -313,6 +313,7 @@ jobs:
     concurrency:
       group: integration-deployment
       cancel-in-progress: true
+    environment: testnet
     needs: integration-builds
     steps:
       - uses: actions/checkout@v4
@@ -380,6 +381,7 @@ jobs:
     concurrency:
       group: release-deployment
       cancel-in-progress: false
+    environment: mainnet
     needs: integration-test
     if: >
       !contains(github.ref, '-')
