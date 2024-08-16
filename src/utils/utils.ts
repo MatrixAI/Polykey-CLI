@@ -254,7 +254,7 @@ function outputFormatterList(items: Array<string>): string {
  * If it is `Record<string, number>`, the `number` values will be used as the initial padding lengths.
  * The object is also mutated if any cells exceed the initial padding lengths.
  * This parameter can also be supplied to filter the columns that will be displayed.
- * @param options.includeHeaders - Defaults to `True`
+ * @param options.includeHeaders - Defaults to `True`.
  * @param options.includeRowCount - Defaults to `False`.
  * @returns
  */

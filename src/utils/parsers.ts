@@ -8,7 +8,8 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)$/;
+const vaultNameRegex = /^[\w.-]+$/;
+const secretPathNameRegex = /^([\w-]+)(?::([^\0\\=]+))?$/;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
@@ -65,27 +66,47 @@ function parseCoreCount(v: string): number | undefined {
   }
 }
 
-function parseSecretPath(secretPath: string): [string, string, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1:a/b/c=VARIABLE', ['vault1, 'a/b/c', 'VARIABLE'] is returned
-  const lastEqualIndex = secretPath.lastIndexOf('=');
-  const splitSecretPath =
-    lastEqualIndex === -1
-      ? secretPath
-      : secretPath.substring(0, lastEqualIndex);
-  const value =
-    lastEqualIndex === -1 ? '' : secretPath.substring(lastEqualIndex + 1);
-  if (!secretPathRegex.test(splitSecretPath)) {
+function parseVaultName(vaultName: string): string {
+  // E.g. If 'vault1, 'vault1' is returned
+  //      If 'vault1:a/b/c', an error is thrown
+  if (!vaultNameRegex.test(vaultName)) {
     throw new commander.InvalidArgumentError(
-      `${splitSecretPath} is not of the format <vaultName>:<directoryPath>`,
+      `${vaultName} is not of the format <vaultName>`,
     );
   }
-  const [, vaultName, directoryPath] = splitSecretPath.match(secretPathRegex)!;
-  return [vaultName, directoryPath, value];
+  // Returns match[1], or the parsed vaultName
+  return vaultName.match(secretPathNameRegex)![1];
+}
+
+function parseSecretName(secretPath: string): [string, string?] {
+  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+  //      If 'vault1', ['vault1, undefined] is returned
+  if (!secretPathNameRegex.test(secretPath)) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>[:<directoryPath>]`,
+    );
+  }
+  // Returns [vaultName, secretName?]
+  const match = secretPath.match(secretPathNameRegex)!;
+  return [match[1], match[2] || undefined];
+}
+
+function parseSecretPath(secretPath: string): [string, string, string?] {
+  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+  //      If 'vault1', an error is thrown
+  const [vaultName, secretName] = parseSecretName(secretPath);
+  if (secretName === undefined) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>`,
+    );
+  }
+  return [vaultName, secretName];
 }
 
 function parseSecretPathValue(secretPath: string): [string, string, string?] {
-  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
+  const [vaultName, directoryPath] = parseSecretPath(secretPath);
+  const lastEqualIndex = secretPath.lastIndexOf('=');
+  const value = lastEqualIndex === -1 ? '' : secretPath.substring(lastEqualIndex + 1);
   if (value != null && !secretPathValueRegex.test(value)) {
     throw new commander.InvalidArgumentError(
       `${value} is not a valid value name`,
@@ -198,12 +219,13 @@ function parseEnvArgs(
 }
 
 export {
-  secretPathRegex,
   secretPathValueRegex,
   environmentVariableRegex,
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
+  parseVaultName,
+  parseSecretName,
   parseSecretPath,
   parseSecretPathValue,
   parseSecretPathEnv,
