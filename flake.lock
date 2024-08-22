@@ -39,11 +39,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1724733243,
-        "narHash": "sha256-0oYi7F5GHsBr714FvPxRyqkIyGAQAiLYF+4+lmtjxRQ=",
+        "lastModified": 1724748625,
+        "narHash": "sha256-aJn/QBY200UOvRCtsBbWdlixHoYxSp+UHlxSZ25HTpE=",
         "owner": "MatrixAI",
         "repo": "nixpkgs-matrix",
-        "rev": "d8946c1dddce9eb3136080a1efc47f7afee76ecc",
+        "rev": "850aaa543b8913ee2ef69f145265211f344ca9b2",
         "type": "github"
       },
       "original": {
