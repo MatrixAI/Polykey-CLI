@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Dry run
-        run: nix build .#docker --dry-run
+        run: nix build .#docker --dry-run --no-update-lock-file
 
   check-build:
     name: "Check / Build"
