@@ -3,18 +3,23 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
 
 class CommandList extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-    this.name('list');
-    this.aliases(['ls']);
-    this.description('List all Available Secrets for a Vault');
-    this.argument('<vaultName>', 'Name of the vault to list secrets from');
+    this.name('ls');
+    this.aliases(['list']);
+    this.description('List all secrets for a vault within a directory');
+    this.argument(
+      '<directoryPath>',
+      'Directory to list files from, specified as <vaultName>[:<path>]',
+      binParsers.parseSecretPathOptional,
+    );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.action(async (vaultName, options) => {
+    this.action(async (vaultPattern, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
@@ -40,39 +45,38 @@ class CommandList extends CommandPolykey {
           nodeId: clientOptions.nodeId,
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
-          options: {
-            nodePath: options.nodePath,
-          },
+          options: { nodePath: options.nodePath },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const data = await binUtils.retryAuthentication(async (auth) => {
-          const data: Array<{ secretName: string }> = [];
+        const secretPaths = await binUtils.retryAuthentication(async (auth) => {
+          const secretPaths: Array<string> = [];
           const stream = await pkClient.rpcClient.methods.vaultsSecretsList({
             metadata: auth,
-            nameOrId: vaultName,
+            nameOrId: vaultPattern[0],
+            secretName: vaultPattern[1] ?? '/',
           });
           for await (const secret of stream) {
-            data.push({
-              secretName: secret.secretName,
-            });
+            // Remove leading slashes
+            if (secret.path.startsWith('/')) {
+              secret.path = secret.path.substring(1);
+            }
+            secretPaths.push(secret.path);
           }
-          return data;
+          return secretPaths;
         }, auth);
 
         if (options.format === 'json') {
           process.stdout.write(
             binUtils.outputFormatter({
               type: 'json',
-              data: data,
+              data: secretPaths,
             }),
           );
         } else {
           process.stdout.write(
             binUtils.outputFormatter({
               type: 'list',
-              data: data.map(
-                (secretsListMessage) => secretsListMessage.secretName,
-              ),
+              data: secretPaths,
             }),
           );
         }

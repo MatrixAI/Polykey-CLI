@@ -764,7 +764,7 @@ describe('commandEnv', () => {
     const jsonOut = JSON.parse(result.stdout);
     expect(jsonOut['SECRET']).toBe('this is a secret\nit has multiple lines\n');
   });
-  test.only.prop([
+  test.prop([
     testUtils.secretPathEnvArrayArb,
     fc.string().noShrink(),
     testUtils.cmdArgsArrayArb,
@@ -773,7 +773,6 @@ describe('commandEnv', () => {
     async (secretPathEnvArray, cmd, cmdArgsArray) => {
       // If we don't use the optional `--` delimiter then we can't include `:` in vault names
       fc.pre(!cmd.includes(':'));
-
       let output:
         | [Array<[string, string, string?]>, Array<string>]
         | undefined = undefined;

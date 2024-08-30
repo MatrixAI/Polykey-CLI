@@ -8,7 +8,7 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)$/;
+const secretPathRegex = /^([\w-]+)(?::([^\0\\=]+))?$/;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
@@ -65,23 +65,40 @@ function parseCoreCount(v: string): number | undefined {
   }
 }
 
-function parseSecretPath(secretPath: string): [string, string, string?] {
+function parseSecretPathOptional(
+  secretPath: string,
+): [string, string?, string?] {
   // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1:a/b/c=VARIABLE', ['vault1, 'a/b/c', 'VARIABLE'] is returned
+  //      If 'vault1', ['vault1, undefined] is returned
+  // splits out everything after an `=` separator
   const lastEqualIndex = secretPath.lastIndexOf('=');
   const splitSecretPath =
     lastEqualIndex === -1
       ? secretPath
       : secretPath.substring(0, lastEqualIndex);
   const value =
-    lastEqualIndex === -1 ? '' : secretPath.substring(lastEqualIndex + 1);
+    lastEqualIndex === -1
+      ? undefined
+      : secretPath.substring(lastEqualIndex + 1);
   if (!secretPathRegex.test(splitSecretPath)) {
     throw new commander.InvalidArgumentError(
-      `${splitSecretPath} is not of the format <vaultName>:<directoryPath>`,
+      `${secretPath} is not of the format <vaultName>[:<directoryPath>][=<value>]`,
     );
   }
   const [, vaultName, directoryPath] = splitSecretPath.match(secretPathRegex)!;
   return [vaultName, directoryPath, value];
+}
+
+function parseSecretPath(secretPath: string): [string, string, string?] {
+  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+  //      If 'vault1', an error is thrown
+  const [vaultName, secretName, value] = parseSecretPathOptional(secretPath);
+  if (secretName === undefined) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
+    );
+  }
+  return [vaultName, secretName, value];
 }
 
 function parseSecretPathValue(secretPath: string): [string, string, string?] {
@@ -204,6 +221,7 @@ export {
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
+  parseSecretPathOptional,
   parseSecretPath,
   parseSecretPathValue,
   parseSecretPathEnv,
