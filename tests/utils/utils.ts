@@ -88,9 +88,9 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   );
 }
 
-const secretPathWithoutEnvArb = fc
-  .stringMatching(binParsers.secretPathRegex)
-  .noShrink();
+// This regex defines a vault secret path that always includes the secret path
+const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)$/;
+const secretPathWithoutEnvArb = fc.stringMatching(secretPathRegex).noShrink();
 const environmentVariableAre = fc
   .stringMatching(binParsers.environmentVariableRegex)
   .filter((v) => v.length > 0)

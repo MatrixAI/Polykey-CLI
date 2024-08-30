@@ -14,7 +14,7 @@ class CommandList extends CommandPolykey {
     this.argument(
       '<directoryPath>',
       'Directory to list files from, specified as <vaultName>[:<path>]',
-      binParsers.parseSecretName,
+      binParsers.parseSecretPathOptional,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

@@ -4,7 +4,6 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
-import * as binParsers from '../utils/parsers';
 
 class CommandCreate extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -12,11 +11,7 @@ class CommandCreate extends CommandPolykey {
     this.name('create');
     this.aliases(['touch']);
     this.description('Create a new Vault');
-    this.argument(
-      '<vaultName>',
-      'Name of the new vault to be created',
-      binParsers.parseVaultName,
-    );
+    this.argument('<vaultName>', 'Name of the new vault to be created');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
