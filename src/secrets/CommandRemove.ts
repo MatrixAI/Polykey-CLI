@@ -8,18 +8,20 @@ import * as binProcessors from '../utils/processors';
 class CommandDelete extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-    this.name('delete');
-    this.aliases(['del', 'rm']);
-    this.description('Delete a Secret from a Specified Vault');
+    this.name('rm');
+    this.description('Delete a Secret from a specified Vault');
     this.argument(
-      '<secretPath>',
-      'Path to the secret that to be deleted, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPathValue,
+      '<secretPaths...>',
+      'Path to one or more secret to be deleted, each specified as <vaultName>:<directoryPath>',
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.action(async (secretPath, options) => {
+    this.addOption(binOptions.recursive);
+    this.action(async (secretPaths, options) => {
+      secretPaths = secretPaths.map((path: string) =>
+        binParsers.parseSecretPathValue(path),
+      );
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
@@ -31,11 +33,10 @@ class CommandDelete extends CommandPolykey {
         this.fs,
         this.logger.getChild(binProcessors.processClientOptions.name),
       );
-      const auth = await binProcessors.processAuthentication(
+      const meta = await binProcessors.processAuthentication(
         options.passwordFile,
         this.fs,
       );
-
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
@@ -45,20 +46,16 @@ class CommandDelete extends CommandPolykey {
           nodeId: clientOptions.nodeId,
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
-          options: {
-            nodePath: options.nodePath,
-          },
+          options: { nodePath: options.nodePath },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        await binUtils.retryAuthentication(
-          (auth) =>
-            pkClient.rpcClient.methods.vaultsSecretsDelete({
-              metadata: auth,
-              nameOrId: secretPath[0],
-              secretName: secretPath[1],
-            }),
-          auth,
-        );
+        await binUtils.retryAuthentication(async (auth) => {
+          await pkClient.rpcClient.methods.vaultsSecretsRemove({
+            metadata: auth,
+            secretNames: secretPaths,
+            options: { recursive: options.recursive },
+          });
+        }, meta);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
