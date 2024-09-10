@@ -52,9 +52,7 @@ describe('commandGetSecret', () => {
     command = ['secrets', 'get', '-np', dataDir, `${vaultName}:MySecret`];
 
     const result = await testUtils.pkStdio([...command], {
-      env: {
-        PK_PASSWORD: password,
-      },
+      env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
     expect(result.stdout).toBe('this is the secret');

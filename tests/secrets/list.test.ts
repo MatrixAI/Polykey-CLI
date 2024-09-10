@@ -84,7 +84,7 @@ describe('commandListSecrets', () => {
   test(
     'should fail when path is not a directory',
     async () => {
-      const vaultName = 'Vault5' as VaultName;
+      const vaultName = 'Vault4' as VaultName;
       const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
 
       await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
@@ -124,7 +124,7 @@ describe('commandListSecrets', () => {
   test(
     'should list secrets within directories',
     async () => {
-      const vaultName = 'Vault6' as VaultName;
+      const vaultName = 'Vault4' as VaultName;
       const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
 
       await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
