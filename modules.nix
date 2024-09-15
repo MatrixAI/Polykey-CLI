@@ -2,7 +2,7 @@
 
 {
   polykey = { config, ... }:
-    with nixpkgs-matrix.lib.${system}; {
+    with nixpkgs-matrix.lib; {
       options = {
         services.polykey = {
           enable = mkEnableOption
@@ -82,7 +82,7 @@
       };
     };
   polykey-home = { config, ... }:
-    with nixpkgs-matrix.lib.${system}; {
+    with nixpkgs-matrix.lib; {
       options = {
         programs.polykey = {
           enable = mkEnableOption "Enable the user-space Polykey agent.";
