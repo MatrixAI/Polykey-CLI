@@ -5,19 +5,20 @@ import * as binOptions from '../utils/options';
 import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
-class CommandDelete extends CommandPolykey {
+class CommandGet extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-    this.name('rm');
-    this.description('Delete a Secret from a specified Vault');
+    this.name('cat');
+    this.description(
+      'Concatenates secrets and prints them on the standard output',
+    );
     this.argument(
-      '<secretPaths...>',
-      'Path to one or more secret to be deleted, each specified as <vaultName>:<directoryPath>',
+      '[secretPaths...]',
+      'Path to a secret to be retrieved, specified as <vaultName>:<directoryPath>',
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.addOption(binOptions.recursive);
     this.action(async (secretPaths, options) => {
       secretPaths = secretPaths.map((path: string) =>
         binParsers.parseSecretPathValue(path),
@@ -37,6 +38,7 @@ class CommandDelete extends CommandPolykey {
         options.passwordFile,
         this.fs,
       );
+
       let pkClient: PolykeyClient;
       this.exitHandlers.handlers.push(async () => {
         if (pkClient != null) await pkClient.stop();
@@ -46,31 +48,57 @@ class CommandDelete extends CommandPolykey {
           nodeId: clientOptions.nodeId,
           host: clientOptions.clientHost,
           port: clientOptions.clientPort,
-          options: { nodePath: options.nodePath },
+          options: {
+            nodePath: options.nodePath,
+          },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        const response = await binUtils.retryAuthentication(async (auth) => {
-          const response =
-            await pkClient.rpcClient.methods.vaultsSecretsRemove();
+        if (secretPaths.length === 0) {
+          await new Promise<void>((resolve, reject) => {
+            const cleanup = () => {
+              process.stdin.removeListener('data', dataHandler);
+              process.stdin.removeListener('error', errorHandler);
+              process.stdin.removeListener('end', endHandler);
+            };
+            const dataHandler = (data: Buffer) => {
+              process.stdout.write(data);
+            };
+            const errorHandler = (err: Error) => {
+              cleanup();
+              reject(err);
+            };
+            const endHandler = () => {
+              cleanup();
+              resolve();
+            };
+            process.stdin.on('data', dataHandler);
+            process.stdin.once('error', errorHandler);
+            process.stdin.once('end', endHandler);
+          });
+          return;
+        }
+        await binUtils.retryAuthentication(async (auth) => {
+          const response = await pkClient.rpcClient.methods.vaultsSecretsGet();
           await (async () => {
             const writer = response.writable.getWriter();
             let first = true;
-            for (const [vault, path] of secretPaths) {
+            for (const [vaultName, secretPath] of secretPaths) {
               await writer.write({
-                nameOrId: vault,
-                secretName: path,
+                nameOrId: vaultName,
+                secretName: secretPath,
                 metadata: first
-                  ? { ...auth, options: { recursive: options.recursive } }
+                  ? { ...auth, options: { continueOnError: true } }
                   : undefined,
               });
               first = false;
             }
             await writer.close();
           })();
-          return response;
+          for await (const chunk of response.readable) {
+            if (chunk.error) process.stderr.write(chunk.error);
+            else process.stdout.write(chunk.secretContent);
+          }
         }, meta);
-        // Wait for the program to generate a response (complete processing).
-        await response.output;
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
@@ -78,4 +106,4 @@ class CommandDelete extends CommandPolykey {
   }
 }
 
-export default CommandDelete;
+export default CommandGet;
