@@ -302,6 +302,11 @@ const order = new commander.Option(
   .choices(['asc', 'desc'])
   .default('asc');
 
+const recursive = new commander.Option(
+  '--recursive',
+  'If enabled, specified directories will be removed along with their contents',
+).default(false);
+
 export {
   nodePath,
   format,
@@ -343,4 +348,5 @@ export {
   events,
   limit,
   order,
+  recursive,
 };
