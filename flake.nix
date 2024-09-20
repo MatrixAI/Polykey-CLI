@@ -1,6 +1,10 @@
 {
   inputs = {
-    nixpkgs-matrix.url = "github:MatrixAI/nixpkgs-matrix";
+    nixpkgs-matrix = {
+      type = "indirect";
+      id = "nixpkgs-matrix";
+    };
+
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -17,7 +21,8 @@
 
         utils = pkgs.callPackage ./utils.nix { };
 
-        commitHash = toString (self.rev or self.dirtyRev);
+        commitHash = builtins.replaceStrings [ "-dirty" ] [ "" ]
+          (toString (self.rev or self.dirtyRev));
         npmDepsHash = builtins.readFile ./npmDepsHash;
 
         polykey-cli = pkgs.buildNpmPackage {
