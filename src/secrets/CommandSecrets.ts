@@ -1,8 +1,8 @@
 import CommandCreate from './CommandCreate';
+import CommandCat from './CommandCat';
 import CommandDir from './CommandDir';
 import CommandEdit from './CommandEdit';
 import CommandEnv from './CommandEnv';
-import CommandGet from './CommandGet';
 import CommandList from './CommandList';
 import CommandMkdir from './CommandMkdir';
 import CommandRename from './CommandRename';
@@ -17,10 +17,10 @@ class CommandSecrets extends CommandPolykey {
     this.name('secrets');
     this.description('Secrets Operations');
     this.addCommand(new CommandCreate(...args));
+    this.addCommand(new CommandCat(...args));
     this.addCommand(new CommandDir(...args));
     this.addCommand(new CommandEdit(...args));
     this.addCommand(new CommandEnv(...args));
-    this.addCommand(new CommandGet(...args));
     this.addCommand(new CommandList(...args));
     this.addCommand(new CommandMkdir(...args));
     this.addCommand(new CommandRename(...args));

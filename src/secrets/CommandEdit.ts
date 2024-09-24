@@ -63,14 +63,24 @@ class CommandEdit extends CommandPolykey {
         const secretExists = await binUtils.retryAuthentication(
           async (auth) => {
             let exists: boolean = true;
+            const response =
+              await pkClient.rpcClient.methods.vaultsSecretsGet();
+            await (async () => {
+              const writer = response.writable.getWriter();
+              await writer.write({
+                nameOrId: secretPath[0],
+                secretName: secretPath[1],
+                metadata: auth,
+              });
+              await writer.close();
+            })();
             try {
-              const response =
-                await pkClient.rpcClient.methods.vaultsSecretsGet({
-                  metadata: auth,
-                  nameOrId: secretPath[0],
-                  secretName: secretPath[1],
-                });
-              await this.fs.promises.writeFile(tmpFile, response.secretContent);
+              let rawSecretContent: string = '';
+              for await (const chunk of response.readable) {
+                rawSecretContent += chunk.secretContent;
+              }
+              const secretContent = Buffer.from(rawSecretContent, 'binary');
+              await this.fs.promises.writeFile(tmpFile, secretContent);
             } catch (e) {
               const [cause, _] = binUtils.remoteErrorCause(e);
               if (cause instanceof vaultsErrors.ErrorSecretsSecretUndefined) {
