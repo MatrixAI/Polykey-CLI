@@ -9,7 +9,7 @@ class CommandList extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('ls');
-    this.aliases(['list']);
+    this.alias('list');
     this.description('List all secrets for a vault within a directory');
     this.argument(
       '<directoryPath>',

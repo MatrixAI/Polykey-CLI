@@ -1,29 +1,24 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
+import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
 
-class CommandUpdate extends CommandPolykey {
+class CommandWrite extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
-    this.name('update');
-    this.description('Update a Secret');
-    this.argument(
-      '<directoryPath>',
-      'On disk path to the secret file with the contents of the updated secret',
-    );
+    this.name('write');
+    this.description('Write data into a secret from standard in');
     this.argument(
       '<secretPath>',
-      'Path to where the secret to be updated, specified as <vaultName>:<directoryPath>',
+      'Path to the secret, specified as <vaultName>:<directoryPath>',
       binParsers.parseSecretPathValue,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.action(async (directoryPath, secretPath, options) => {
+    this.action(async (secretPath, options) => {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
@@ -54,27 +49,36 @@ class CommandUpdate extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
-        let content: Buffer;
-        try {
-          content = await this.fs.promises.readFile(directoryPath);
-        } catch (e) {
-          throw new errors.ErrorPolykeyCLIFileRead(e.message, {
-            data: {
-              errno: e.errno,
-              syscall: e.syscall,
-              code: e.code,
-              path: e.path,
-            },
-            cause: e,
-          });
-        }
+
+        let stdin: string = '';
+        await new Promise<void>((resolve, reject) => {
+          const cleanup = () => {
+            process.stdin.removeListener('data', dataHandler);
+            process.stdin.removeListener('error', errorHandler);
+            process.stdin.removeListener('end', endHandler);
+          };
+          const dataHandler = (data: Buffer) => {
+            stdin += data.toString();
+          };
+          const errorHandler = (err: Error) => {
+            cleanup();
+            reject(err);
+          };
+          const endHandler = () => {
+            cleanup();
+            resolve();
+          };
+          process.stdin.on('data', dataHandler);
+          process.stdin.once('error', errorHandler);
+          process.stdin.once('end', endHandler);
+        });
         await binUtils.retryAuthentication(
-          (auth) =>
-            pkClient.rpcClient.methods.vaultsSecretsEdit({
+          async (auth) =>
+            await pkClient.rpcClient.methods.vaultsSecretsWriteFile({
               metadata: auth,
               nameOrId: secretPath[0],
               secretName: secretPath[1],
-              secretContent: content.toString('binary'),
+              secretContent: stdin,
             }),
           meta,
         );
@@ -85,4 +89,4 @@ class CommandUpdate extends CommandPolykey {
   }
 }
 
-export default CommandUpdate;
+export default CommandWrite;
