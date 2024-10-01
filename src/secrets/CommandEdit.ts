@@ -12,6 +12,7 @@ class CommandEdit extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('edit');
+    this.alias('ed');
     this.description('Edit a Secret');
     this.argument(
       '<secretPath>',
@@ -62,21 +63,18 @@ class CommandEdit extends CommandPolykey {
         const tmpFile = path.join(tmpDir, path.basename(secretPath[1]));
         const secretExists = await binUtils.retryAuthentication(
           async (auth) => {
-            let exists: boolean = true;
-            const response =
-              await pkClient.rpcClient.methods.vaultsSecretsGet();
-            await (async () => {
-              const writer = response.writable.getWriter();
-              await writer.write({
-                nameOrId: secretPath[0],
-                secretName: secretPath[1],
-                metadata: auth,
-              });
-              await writer.close();
-            })();
+            let exists = true;
+            const res = await pkClient.rpcClient.methods.vaultsSecretsGet();
+            const writer = res.writable.getWriter();
+            await writer.write({
+              nameOrId: secretPath[0],
+              secretName: secretPath[1],
+              metadata: auth,
+            });
+            await writer.close();
             try {
               let rawSecretContent: string = '';
-              for await (const chunk of response.readable) {
+              for await (const chunk of res.readable) {
                 rawSecretContent += chunk.secretContent;
               }
               const secretContent = Buffer.from(rawSecretContent, 'binary');
@@ -99,9 +97,8 @@ class CommandEdit extends CommandPolykey {
         execSync(`${process.env.EDITOR} \"${tmpFile}\"`, { stdio: 'inherit' });
         let content: string;
         try {
-          content = (await this.fs.promises.readFile(tmpFile)).toString(
-            'binary',
-          );
+          const buffer = await this.fs.promises.readFile(tmpFile);
+          content = buffer.toString('binary');
         } catch (e) {
           if (e.code === 'ENOENT') {
             // If the secret exists but the file doesn't, then something went
@@ -125,26 +122,17 @@ class CommandEdit extends CommandPolykey {
           }
           throw e;
         }
-        await binUtils.retryAuthentication(async (auth) => {
-          // This point will never be reached if the temp file doesn't exist.
-          // As such, if the secret didn't exist before, then we want to make it.
-          // Otherwise, if the secret existed before, then we want to edit it.
-          if (secretExists) {
-            await pkClient.rpcClient.methods.vaultsSecretsEdit({
+        // We will reach here only when the user wants to write a new secret.
+        await binUtils.retryAuthentication(
+          async (auth) =>
+            await pkClient.rpcClient.methods.vaultsSecretsWriteFile({
               metadata: auth,
               nameOrId: secretPath[0],
               secretName: secretPath[1],
               secretContent: content,
-            });
-          } else {
-            await pkClient.rpcClient.methods.vaultsSecretsNew({
-              metadata: auth,
-              nameOrId: secretPath[0],
-              secretName: secretPath[1],
-              secretContent: content,
-            });
-          }
-        }, meta);
+            }),
+          meta,
+        );
         // Windows
         // TODO: complete windows impl
       } finally {

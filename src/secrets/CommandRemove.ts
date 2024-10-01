@@ -5,10 +5,11 @@ import * as binOptions from '../utils/options';
 import * as binParsers from '../utils/parsers';
 import * as binProcessors from '../utils/processors';
 
-class CommandDelete extends CommandPolykey {
+class CommandRemove extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('rm');
+    this.alias('remove');
     this.description('Delete a Secret from a specified Vault');
     this.argument(
       '<secretPaths...>',
@@ -78,4 +79,4 @@ class CommandDelete extends CommandPolykey {
   }
 }
 
-export default CommandDelete;
+export default CommandRemove;
