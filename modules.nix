@@ -10,7 +10,6 @@
 
           passwordFilePath = mkOption {
             type = with types; uniq str;
-            default = "/root/.pkpass";
             description = ''
               The path to the Polykey password file. This is required to be set for the module to work, otherwise this module will fail.
             '';
@@ -26,7 +25,6 @@
 
           recoveryCodeOutPath = mkOption {
             type = with types; uniq str;
-            default = "/root/.recoveryout";
             description = ''
               The path to the Polykey recovery code file output location.
             '';
@@ -91,7 +89,6 @@
 
           passwordFilePath = mkOption {
             type = with types; uniq str;
-            default = "%h/.pkpass";
             description = ''
               The path to the Polykey password file. This is required to be set for the module to work, otherwise this module will fail.
             '';
@@ -107,7 +104,6 @@
 
           recoveryCodeOutPath = mkOption {
             type = with types; uniq str;
-            default = "%h/.recoveryout";
             description = ''
               The path to the Polykey recovery code file output location.
             '';
@@ -125,7 +121,11 @@
         home.packages = [ outputs.packages.${system}.default ];
 
         systemd.user.services.polykey = {
-          Unit = { Description = "Polykey Agent"; };
+          Unit = {
+            Description = "Polykey Agent";
+            After = [ "default.target" "network.target" ];
+            Wants = [ "network.target" ];
+          };
           Service = {
             ExecStartPre = ''
               -${outputs.packages.${system}.default}/bin/polykey \
@@ -146,6 +146,7 @@
               --recovery-code-out-file ${config.programs.polykey.recoveryCodeOutPath}
             '';
           };
+          Install = { WantedBy = [ "default.target" ]; };
         };
       };
     };
