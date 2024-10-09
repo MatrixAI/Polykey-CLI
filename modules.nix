@@ -77,6 +77,8 @@
               agent start \
               --recovery-code-out-file ${config.services.polykey.recoveryCodeOutPath}
             '';
+            Restart = "always";
+            RestartSec = "1s";
           };
         };
       };
@@ -145,6 +147,8 @@
               agent start \
               --recovery-code-out-file ${config.programs.polykey.recoveryCodeOutPath}
             '';
+            Restart = "always";
+            RestartSec = "1s";
           };
           Install = { WantedBy = [ "default.target" ]; };
         };
