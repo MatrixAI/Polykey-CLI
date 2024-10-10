@@ -79,6 +79,8 @@
             '';
             Restart = "always";
             RestartSec = "1s";
+            StartLimitIntervalSec = "0";
+            StartLimitBurst = "0";
           };
         };
       };
@@ -127,6 +129,8 @@
             Description = "Polykey Agent";
             After = [ "default.target" "network.target" ];
             Wants = [ "network.target" ];
+            StartLimitIntervalSec = "0";
+            StartLimitBurst = "0";
           };
           Service = {
             ExecStartPre = ''
