@@ -60,8 +60,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -89,9 +89,9 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET1`,
       `${vaultName}:SECRET2`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -122,8 +122,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:dir1`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -152,8 +152,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET=SECRET_NEW`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -183,8 +183,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:dir1=SECRET_NEW`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -217,10 +217,10 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET1`,
       `${vaultName}:SECRET2`,
       `${vaultName}:dir1`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -250,8 +250,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET1`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -286,11 +286,11 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET1`,
       `${vaultName}:SECRET2=SECRET1`,
       `${vaultName}:SECRET3=SECRET4`,
       `${vaultName}:dir1`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -325,7 +325,7 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      `${vaultName}:.`,
+      `${vaultName}`,
     ];
 
     const result = await testUtils.pkExec([...command], {
@@ -364,8 +364,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      `${vaultName}1:.`,
-      `${vaultName}2:.`,
+      `${vaultName}1`,
+      `${vaultName}2`,
     ];
 
     const result = await testUtils.pkExec([...command], {
@@ -404,8 +404,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'cmd',
-      `${vaultName}1:.`,
-      `${vaultName}2:.`,
+      `${vaultName}1`,
+      `${vaultName}2`,
     ];
 
     const result = await testUtils.pkExec([...command], {
@@ -444,8 +444,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'powershell',
-      `${vaultName}1:.`,
-      `${vaultName}2:.`,
+      `${vaultName}1`,
+      `${vaultName}2`,
     ];
 
     const result = await testUtils.pkExec([...command], {
@@ -475,7 +475,7 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'json',
-      `${vaultName}:.`,
+      `${vaultName}`,
     ];
 
     const result = await testUtils.pkExec([...command], {
@@ -560,7 +560,7 @@ describe('commandEnv', () => {
         'unix',
         '-ei',
         'error',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -584,7 +584,7 @@ describe('commandEnv', () => {
         'unix',
         '-ei',
         'warn',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -612,7 +612,7 @@ describe('commandEnv', () => {
         'unix',
         '-ei',
         'ignore',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -642,7 +642,7 @@ describe('commandEnv', () => {
         'unix',
         '-ed',
         'error',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -669,7 +669,7 @@ describe('commandEnv', () => {
         'unix',
         '-ed',
         'warn',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -698,7 +698,7 @@ describe('commandEnv', () => {
         'unix',
         '-ed',
         'keep',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -725,7 +725,7 @@ describe('commandEnv', () => {
         'unix',
         '-ed',
         'overwrite',
-        `${vaultName}:.`,
+        `${vaultName}`,
       ],
       { env: { PK_PASSWORD: password } },
     );
@@ -750,8 +750,8 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
-      '--',
       `${vaultName}:SECRET`,
+      '--',
       'node',
       '-e',
       'console.log(JSON.stringify(process.env))',
@@ -771,12 +771,15 @@ describe('commandEnv', () => {
   ])(
     'parse secrets env arguments',
     async (secretPathEnvArray, cmd, cmdArgsArray) => {
-      // If we don't use the optional `--` delimiter then we can't include `:` in vault names
-      fc.pre(!cmd.includes(':'));
       let output:
-        | [Array<[string, string, string?]>, Array<string>]
+        | [Array<[string, string?, string?]>, Array<string>]
         | undefined = undefined;
-      const args: Array<string> = [...secretPathEnvArray, cmd, ...cmdArgsArray];
+      const args: Array<string> = [
+        ...secretPathEnvArray,
+        '--',
+        cmd,
+        ...cmdArgsArray,
+      ];
       for (const arg of args) {
         output = binParsers.parseEnvArgs(arg, output);
       }
@@ -785,7 +788,7 @@ describe('commandEnv', () => {
         return binParsers.parseSecretPath(v);
       });
       expect(parsedEnvs).toMatchObject(expectedSecretPathArray);
-      expect(parsedArgs).toMatchObject([cmd, ...cmdArgsArray]);
+      expect(parsedArgs).toMatchObject(['--', cmd, ...cmdArgsArray]);
     },
   );
   test('handles no arguments', async () => {
@@ -796,7 +799,7 @@ describe('commandEnv', () => {
     });
     expect(result1.exitCode).toBe(64);
   });
-  test('Handles providing no secret paths', async () => {
+  test('handles providing no secret paths', async () => {
     command = [
       'secrets',
       'env',
@@ -804,6 +807,7 @@ describe('commandEnv', () => {
       dataDir,
       '--env-format',
       'unix',
+      '--',
       'someCommand',
     ];
 
@@ -811,5 +815,45 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result1.exitCode).toBe(64);
+  });
+  test('should output all secrets without explicit secret path', async () => {
+    const vaultId1 = await polykeyAgent.vaultManager.createVault(
+      `${vaultName}1`,
+    );
+    const vaultId2 = await polykeyAgent.vaultManager.createVault(
+      `${vaultName}2`,
+    );
+
+    await polykeyAgent.vaultManager.withVaults(
+      [vaultId1, vaultId2],
+      async (vault1, vault2) => {
+        await vaultOps.addSecret(vault1, 'SECRET1', 'this is the secret1');
+        await vaultOps.addSecret(vault2, 'SECRET2', 'this is the secret2');
+        await vaultOps.mkdir(vault1, 'dir1');
+        await vaultOps.mkdir(vault2, 'dir1');
+        await vaultOps.addSecret(vault1, 'dir1/SECRET3', 'this is the secret3');
+        await vaultOps.addSecret(vault2, 'dir1/SECRET4', 'this is the secret4');
+      },
+    );
+
+    command = [
+      'secrets',
+      'env',
+      '-np',
+      dataDir,
+      '--env-format',
+      'unix',
+      `${vaultName}1`,
+      `${vaultName}2`,
+    ];
+
+    const result = await testUtils.pkExec([...command], {
+      env: { PK_PASSWORD: password },
+    });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("SECRET1='this is the secret1'");
+    expect(result.stdout).toContain("SECRET2='this is the secret2'");
+    expect(result.stdout).toContain("SECRET3='this is the secret3'");
+    expect(result.stdout).toContain("SECRET4='this is the secret4'");
   });
 });

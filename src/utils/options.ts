@@ -214,7 +214,13 @@ const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
   .argParser(
     (value: string, previous: Array<[string, string, string?]> | undefined) => {
       const acc = previous ?? [];
-      acc.push(binParsers.parseSecretPathEnv(value));
+      const [vault, secret, val] = binParsers.parseSecretPathEnv(value);
+      if (secret == null) {
+        throw new commander.InvalidArgumentError(
+          'You must provide at least one secret path',
+        );
+      }
+      acc.push([vault, secret, val]);
       return acc;
     },
   );

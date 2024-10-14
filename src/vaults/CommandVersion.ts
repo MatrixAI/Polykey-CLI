@@ -3,13 +3,18 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
 
 class CommandVersion extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('version');
     this.description('Set a Vault to a Particular Version in its History');
-    this.argument('<vaultName>', 'Name of the vault to change the version of');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to change the version of',
+      binParsers.parseVaultName,
+    );
     this.argument('<versionId>', 'Id of the commit that will be changed to');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

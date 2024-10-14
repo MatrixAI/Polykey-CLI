@@ -3,6 +3,7 @@ import * as binProcessors from '../utils/processors';
 import * as binUtils from '../utils';
 import CommandPolykey from '../CommandPolykey';
 import * as binOptions from '../utils/options';
+import * as binParsers from '../utils/parsers';
 
 class CommandPermissions extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -10,7 +11,7 @@ class CommandPermissions extends CommandPolykey {
     this.name('permissions');
     this.alias('perms');
     this.description('Sets the permissions of a vault for Node Ids');
-    this.argument('<vaultName>', 'Name or ID of the vault');
+    this.argument('<vaultName', 'Name of the vault', binParsers.parseVaultName);
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);

@@ -4,13 +4,18 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
 
 class CommandLog extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('log');
     this.description('Get the Version History of a Vault');
-    this.argument('<vaultName>', 'Name of the vault to obtain the log from');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to obtain the log from',
+      binParsers.parseVaultName,
+    );
     this.addOption(binOptions.commitId);
     this.addOption(binOptions.depth);
     this.addOption(binOptions.nodeId);
