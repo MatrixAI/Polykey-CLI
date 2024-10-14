@@ -11,7 +11,11 @@ class CommandUnshare extends CommandPolykey {
     super(...args);
     this.name('unshare');
     this.description('Unset the Permissions of a Vault for a Node');
-    this.argument('<vaultName>', 'Name of the vault to be unshared');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to be unshared',
+      binParsers.parseVaultName,
+    );
     this.argument(
       '<nodeId>',
       'Id of the node to unshare with',

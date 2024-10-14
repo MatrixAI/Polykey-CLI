@@ -28,6 +28,7 @@ class CommandEnv extends CommandPolykey {
       binParsers.parseEnvArgs,
     );
     this.action(async (args: Array<string>, options) => {
+      console.error(args)
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
