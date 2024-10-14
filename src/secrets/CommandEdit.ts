@@ -17,7 +17,7 @@ class CommandEdit extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret to be edited, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPathValue,
+      binParsers.parseSecretPath,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
@@ -68,7 +68,7 @@ class CommandEdit extends CommandPolykey {
             const writer = res.writable.getWriter();
             await writer.write({
               nameOrId: secretPath[0],
-              secretName: secretPath[1],
+              secretName: secretPath[1] ?? '/',
               metadata: auth,
             });
             await writer.close();
