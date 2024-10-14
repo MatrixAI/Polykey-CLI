@@ -13,7 +13,7 @@ class CommandWrite extends CommandPolykey {
     this.argument(
       '<secretPath>',
       'Path to the secret, specified as <vaultName>:<directoryPath>',
-      binParsers.parseSecretPathValue,
+      binParsers.parseSecretPath,
     );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);

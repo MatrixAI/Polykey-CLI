@@ -85,7 +85,7 @@ class CommandGet extends CommandPolykey {
             for (const [vaultName, secretPath] of secretPaths) {
               await writer.write({
                 nameOrId: vaultName,
-                secretName: secretPath,
+                secretName: secretPath ?? '/',
                 metadata: first
                   ? { ...auth, options: { continueOnError: true } }
                   : undefined,

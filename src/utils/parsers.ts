@@ -65,12 +65,12 @@ function parseCoreCount(v: string): number | undefined {
   }
 }
 
-function parseSecretPathOptional(
-  secretPath: string,
-): [string, string?, string?] {
+function parseSecretPath(secretPath: string): [string, string?, string?] {
   // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
   //      If 'vault1', ['vault1, undefined] is returned
-  // splits out everything after an `=` separator
+  //      If 'vault1:', an error is thrown
+  //      If 'a/b/c', an error is thrown
+  // Splits out everything after an `=` separator
   const lastEqualIndex = secretPath.lastIndexOf('=');
   const splitSecretPath =
     lastEqualIndex === -1
@@ -89,23 +89,16 @@ function parseSecretPathOptional(
   return [vaultName, directoryPath, value];
 }
 
-function parseSecretPath(secretPath: string): [string, string, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1', an error is thrown
-  const [vaultName, secretName, value] = parseSecretPathOptional(secretPath);
-  if (secretName === undefined) {
-    throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
-    );
-  }
-  return [vaultName, secretName, value];
-}
-
 function parseSecretPathValue(secretPath: string): [string, string, string?] {
   const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
   if (value != null && !secretPathValueRegex.test(value)) {
     throw new commander.InvalidArgumentError(
       `${value} is not a valid value name`,
+    );
+  }
+  if (directoryPath == null) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
     );
   }
   return [vaultName, directoryPath, value];
@@ -116,6 +109,11 @@ function parseSecretPathEnv(secretPath: string): [string, string, string?] {
   if (value != null && !environmentVariableRegex.test(value)) {
     throw new commander.InvalidArgumentError(
       `${value} is not a valid environment variable name`,
+    );
+  }
+  if (directoryPath == null) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
     );
   }
   return [vaultName, directoryPath, value];
@@ -221,7 +219,6 @@ export {
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
-  parseSecretPathOptional,
   parseSecretPath,
   parseSecretPathValue,
   parseSecretPathEnv,
