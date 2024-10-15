@@ -152,6 +152,11 @@ class ErrorPolykeyCLIDuplicateEnvName<T> extends ErrorPolykeyCLI<T> {
   exitCode = sysexits.USAGE;
 }
 
+class ErrorPolykeyCLIMakeDirectory<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Failed to create one or more directories';
+  exitCode = 1;
+}
+
 export {
   ErrorPolykeyCLI,
   ErrorPolykeyCLIUncaughtException,
@@ -172,4 +177,5 @@ export {
   ErrorPolykeyCLINodePingFailed,
   ErrorPolykeyCLIInvalidEnvName,
   ErrorPolykeyCLIDuplicateEnvName,
+  ErrorPolykeyCLIMakeDirectory,
 };
