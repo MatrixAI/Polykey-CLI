@@ -8,8 +8,8 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const vaultNameRegex = /^([\w-.]+)$/;
-const secretPathRegex = /^([^\0\\=]+)?$/;
+const vaultNameRegex = /^([\w\-.]+)$/;
+const secretPathRegex = /^([\w\/;,.]+)?$/;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
@@ -95,24 +95,20 @@ function parseSecretPath(secretPath: string): [string, string?, string?] {
   // The colon character `:` is prohibited in vaultName, so it's first occurence
   // means that this is the delimiter between vaultName and secretPath.
   const colonIndex = splitSecretPath.indexOf(':');
+  // If no colon exists, treat entire string as vault name
+  if (colonIndex === -1) {
+    return [parseVaultName(splitSecretPath), undefined, value];
+  }
   // Calculate contents before the `=` separator
-  const vaultNamePart =
-    colonIndex === -1
-      ? splitSecretPath
-      : splitSecretPath.substring(0, colonIndex);
-  const secretPathPart =
-    colonIndex === -1 ? undefined : splitSecretPath.substring(colonIndex + 1);
-
-  if (secretPathPart && !secretPathRegex.test(secretPathPart)) {
+  const vaultNamePart = splitSecretPath.substring(0, colonIndex);
+  const secretPathPart = splitSecretPath.substring(colonIndex + 1);
+  if (secretPathPart != null && !secretPathRegex.test(secretPathPart)) {
     throw new commander.InvalidArgumentError(
       `${secretPath} is not of the format <vaultName>[:<secretPath>][=<value>]`,
     );
   }
   const parsedVaultName = parseVaultName(vaultNamePart);
-  const parsedSecretPath =
-    secretPathPart == null
-      ? undefined
-      : secretPathPart.match(secretPathRegex)![1];
+  const parsedSecretPath = secretPathPart.match(secretPathRegex)?.[1];
   return [parsedVaultName, parsedSecretPath, value];
 }
 

@@ -1,23 +1,26 @@
 import type { Host, Port } from 'polykey/dist/network/types';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import { test } from '@fast-check/jest';
 import * as ids from 'polykey/dist/ids';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 import * as polykeyErrors from 'polykey/dist/errors';
 import * as fc from 'fast-check';
 import * as binUtils from '@/utils/utils';
+import * as binParsers from '@/utils/parsers';
+import path from 'path';
 
-const nonPrintableCharArb = fc
-  .oneof(
-    fc.integer({ min: 0, max: 0x1f }),
-    fc.integer({ min: 0x7f, max: 0x9f }),
-  )
-  .map((code) => String.fromCharCode(code));
+describe('outputFormatters', () => {
+  const nonPrintableCharArb = fc
+    .oneof(
+      fc.integer({ min: 0, max: 0x1f }),
+      fc.integer({ min: 0x7f, max: 0x9f }),
+    )
+    .map((code) => String.fromCharCode(code));
 
-const stringWithNonPrintableCharsArb = fc.stringOf(
-  fc.oneof(fc.char(), nonPrintableCharArb),
-);
+  const stringWithNonPrintableCharsArb = fc.stringOf(
+    fc.oneof(fc.char(), nonPrintableCharArb),
+  );
 
-describe('bin/utils', () => {
   test('list in human and json format', () => {
     // List
     expect(
@@ -164,7 +167,7 @@ describe('bin/utils', () => {
         '      key9\tvalue\n',
     );
   });
-  test('outputFormatter should encode non-printable characters within a dict', () => {
+  test('should encode non-printable characters within a dict', () => {
     fc.assert(
       fc.property(
         stringWithNonPrintableCharsArb,
@@ -174,15 +177,12 @@ describe('bin/utils', () => {
             type: 'dict',
             data: { [key]: value },
           });
-
           const expectedKey = binUtils.encodeEscapedWrapped(key);
-
           // Construct the expected output
           let expectedValue = value;
           expectedValue = binUtils.encodeEscapedWrapped(expectedValue);
           expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
           expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
-
           const maxKeyLength = Math.max(
             ...Object.keys({ [key]: value }).map((k) => k.length),
           );
@@ -341,4 +341,56 @@ describe('bin/utils', () => {
       { numRuns: 100 }, // Number of times to run the test
     );
   });
+});
+
+describe('parsers', () => {
+  const vaultNameArb = fc.stringOf(
+    fc.char().filter((c) => binParsers.vaultNameRegex.test(c)),
+    { minLength: 1, maxLength: 100 },
+  );
+  const singleSecretPathArb = fc.stringOf(
+    fc.char().filter((c) => binParsers.secretPathRegex.test(c)),
+    { minLength: 1, maxLength: 25 },
+  );
+  const secretPathArb = fc
+    .array(singleSecretPathArb, { minLength: 1, maxLength: 5 })
+    .map((segments) => path.join(...segments));
+  const valueFirstCharArb = fc.char().filter((c) => /^[a-zA-Z_]$/.test(c));
+  const valueRestCharArb = fc.stringOf(
+    fc.char().filter((c) => /^[\w]$/.test(c)),
+    { minLength: 1, maxLength: 100 },
+  );
+  const valueDataArb = fc
+    .tuple(valueFirstCharArb, valueRestCharArb)
+    .map((components) => components.join(''));
+
+  test.prop([vaultNameArb], { numRuns: 100 })(
+    'should parse vault name',
+    async (vaultName) => {
+      expect(binParsers.parseVaultName(vaultName)).toEqual(vaultName);
+    },
+  );
+  test.prop([vaultNameArb], { numRuns: 10 })(
+    'should parse secret path with only vault name',
+    async (vaultName) => {
+      const result = [vaultName, undefined, undefined];
+      expect(binParsers.parseSecretPath(vaultName)).toEqual(result);
+    },
+  );
+  test.prop([vaultNameArb, secretPathArb], { numRuns: 100 })(
+    'should parse full secret path with vault name',
+    async (vaultName, secretPath) => {
+      const query = `${vaultName}:${secretPath}`;
+      const result = [vaultName, secretPath, undefined];
+      expect(binParsers.parseSecretPath(query)).toEqual(result);
+    },
+  );
+  test.prop([vaultNameArb, secretPathArb, valueDataArb], { numRuns: 100 })(
+    'should parse full secret path with vault name and value',
+    async (vaultName, secretPath, valueData) => {
+      const query = `${vaultName}:${secretPath}=${valueData}`;
+      const result = [vaultName, secretPath, valueData];
+      expect(binParsers.parseSecretPathValue(query)).toEqual(result);
+    },
+  );
 });
