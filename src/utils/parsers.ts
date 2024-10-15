@@ -8,7 +8,8 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const secretPathRegex = /^([\w-]+)(?::([^\0\\=]+))?$/;
+const vaultNameRegex = /^([\w-.]+)$/;
+const secretPathRegex = /^([^\0\\=]+)?$/;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
@@ -65,12 +66,23 @@ function parseCoreCount(v: string): number | undefined {
   }
 }
 
+function parseVaultName(vaultName: string): string {
+  if (!vaultNameRegex.test(vaultName)) {
+    throw new commander.InvalidArgumentError(
+      `${vaultName} is not a valid vault name`,
+    );
+  }
+  // Make sure we don't accidentally return garbage data
+  return vaultName.match(vaultNameRegex)![1];
+}
+
+// E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+//      If 'vault1', ['vault1, undefined] is returned
+//      If 'vault1:', an error is thrown
+//      If 'a/b/c', an error is thrown
+// Splits out everything after an `=` separator
 function parseSecretPath(secretPath: string): [string, string?, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1', ['vault1, undefined] is returned
-  //      If 'vault1:', an error is thrown
-  //      If 'a/b/c', an error is thrown
-  // Splits out everything after an `=` separator
+  // Calculate contents after the `=` separator
   const lastEqualIndex = secretPath.lastIndexOf('=');
   const splitSecretPath =
     lastEqualIndex === -1
@@ -80,13 +92,28 @@ function parseSecretPath(secretPath: string): [string, string?, string?] {
     lastEqualIndex === -1
       ? undefined
       : secretPath.substring(lastEqualIndex + 1);
-  if (!secretPathRegex.test(splitSecretPath)) {
+  // The colon character `:` is prohibited in vaultName, so it's first occurence
+  // means that this is the delimiter between vaultName and secretPath.
+  const colonIndex = splitSecretPath.indexOf(':');
+  // Calculate contents before the `=` separator
+  const vaultNamePart =
+    colonIndex === -1
+      ? splitSecretPath
+      : splitSecretPath.substring(0, colonIndex);
+  const secretPathPart =
+    colonIndex === -1 ? undefined : splitSecretPath.substring(colonIndex + 1);
+
+  if (secretPathPart && !secretPathRegex.test(secretPathPart)) {
     throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>[:<directoryPath>][=<value>]`,
+      `${secretPath} is not of the format <vaultName>[:<secretPath>][=<value>]`,
     );
   }
-  const [, vaultName, directoryPath] = splitSecretPath.match(secretPathRegex)!;
-  return [vaultName, directoryPath, value];
+  const parsedVaultName = parseVaultName(vaultNamePart);
+  const parsedSecretPath =
+    secretPathPart == null
+      ? undefined
+      : secretPathPart.match(secretPathRegex)![1];
+  return [parsedVaultName, parsedSecretPath, value];
 }
 
 function parseSecretPathValue(secretPath: string): [string, string, string?] {
@@ -213,12 +240,14 @@ function parseEnvArgs(
 }
 
 export {
+  vaultNameRegex,
   secretPathRegex,
   secretPathValueRegex,
   environmentVariableRegex,
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
+  parseVaultName,
   parseSecretPath,
   parseSecretPathValue,
   parseSecretPathEnv,
