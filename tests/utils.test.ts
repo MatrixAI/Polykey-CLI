@@ -1,4 +1,5 @@
 import type { Host, Port } from 'polykey/dist/network/types';
+import path from 'path';
 import ErrorPolykey from 'polykey/dist/ErrorPolykey';
 import { test } from '@fast-check/jest';
 import * as ids from 'polykey/dist/ids';
@@ -7,7 +8,6 @@ import * as polykeyErrors from 'polykey/dist/errors';
 import * as fc from 'fast-check';
 import * as binUtils from '@/utils/utils';
 import * as binParsers from '@/utils/parsers';
-import path from 'path';
 
 describe('outputFormatters', () => {
   const nonPrintableCharArb = fc
@@ -167,33 +167,26 @@ describe('outputFormatters', () => {
         '      key9\tvalue\n',
     );
   });
-  test('should encode non-printable characters within a dict', () => {
-    fc.assert(
-      fc.property(
-        stringWithNonPrintableCharsArb,
-        stringWithNonPrintableCharsArb,
-        (key, value) => {
-          const formattedOutput = binUtils.outputFormatter({
-            type: 'dict',
-            data: { [key]: value },
-          });
-          const expectedKey = binUtils.encodeEscapedWrapped(key);
-          // Construct the expected output
-          let expectedValue = value;
-          expectedValue = binUtils.encodeEscapedWrapped(expectedValue);
-          expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
-          expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
-          const maxKeyLength = Math.max(
-            ...Object.keys({ [key]: value }).map((k) => k.length),
-          );
-          const padding = ' '.repeat(maxKeyLength - key.length);
-          const expectedOutput = `${expectedKey}${padding}\t${expectedValue}\n`;
-          // Assert that the formatted output matches the expected output
-          expect(formattedOutput).toBe(expectedOutput);
-        },
-      ),
-      { numRuns: 100 }, // Number of times to run the test
+  test.prop([stringWithNonPrintableCharsArb, stringWithNonPrintableCharsArb], {
+    numRuns: 100,
+  })('should encode non-printable characters within a dict', (key, value) => {
+    const formattedOutput = binUtils.outputFormatter({
+      type: 'dict',
+      data: { [key]: value },
+    });
+    const expectedKey = binUtils.encodeEscapedWrapped(key);
+    // Construct the expected output
+    let expectedValue = value;
+    expectedValue = binUtils.encodeEscapedWrapped(expectedValue);
+    expectedValue = expectedValue.replace(/(?:\r\n|\n)$/, '');
+    expectedValue = expectedValue.replace(/(\r\n|\n)/g, '$1\t');
+    const maxKeyLength = Math.max(
+      ...Object.keys({ [key]: value }).map((k) => k.length),
     );
+    const padding = ' '.repeat(maxKeyLength - key.length);
+    const expectedOutput = `${expectedKey}${padding}\t${expectedValue}\n`;
+    // Assert that the formatted output matches the expected output
+    expect(formattedOutput).toBe(expectedOutput);
   });
   test('errors in human and json format', () => {
     const nodeIdGenerator = ids.createNodeIdGenerator();
@@ -302,45 +295,37 @@ describe('outputFormatters', () => {
         '\n',
     );
   });
-  test('encodeEscaped should encode all escapable characters', () => {
-    fc.assert(
-      fc.property(stringWithNonPrintableCharsArb, (value) => {
-        expect(binUtils.decodeEscaped(binUtils.encodeEscaped(value))).toBe(
-          value,
-        );
-      }),
-      { numRuns: 100 }, // Number of times to run the test
-    );
-  });
-  test('encodeEscapedReplacer should encode all escapable characters', () => {
-    fc.assert(
-      fc.property(
-        stringWithNonPrintableCharsArb,
-        stringWithNonPrintableCharsArb,
-        (key, value) => {
-          const encodedKey = binUtils.encodeEscaped(key);
-          const encodedValue = binUtils.encodeEscaped(value);
-          const object = {
-            [key]: value,
-            [key]: {
-              [key]: value,
-            },
-            [key]: [value],
-          };
-          const encodedObject = {
-            [encodedKey]: encodedValue,
-            [encodedKey]: {
-              [encodedKey]: encodedValue,
-            },
-            [encodedKey]: [encodedValue],
-          };
-          const output = JSON.stringify(object, binUtils.encodeEscapedReplacer);
-          expect(JSON.parse(output)).toEqual(encodedObject);
+  test.prop([stringWithNonPrintableCharsArb], { numRuns: 100 })(
+    'encodeEscaped should encode all escapable characters',
+    (value) => {
+      expect(binUtils.decodeEscaped(binUtils.encodeEscaped(value))).toBe(value);
+    },
+  );
+  test.prop([stringWithNonPrintableCharsArb, stringWithNonPrintableCharsArb], {
+    numRuns: 100,
+  })(
+    'encodeEscapedReplacer should encode all escapable characters',
+    (key, value) => {
+      const encodedKey = binUtils.encodeEscaped(key);
+      const encodedValue = binUtils.encodeEscaped(value);
+      const object = {
+        [key]: value,
+        [key]: {
+          [key]: value,
         },
-      ),
-      { numRuns: 100 }, // Number of times to run the test
-    );
-  });
+        [key]: [value],
+      };
+      const encodedObject = {
+        [encodedKey]: encodedValue,
+        [encodedKey]: {
+          [encodedKey]: encodedValue,
+        },
+        [encodedKey]: [encodedValue],
+      };
+      const output = JSON.stringify(object, binUtils.encodeEscapedReplacer);
+      expect(JSON.parse(output)).toEqual(encodedObject);
+    },
+  );
 });
 
 describe('parsers', () => {
