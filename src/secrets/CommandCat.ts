@@ -98,6 +98,7 @@ class CommandGet extends CommandPolykey {
             if (chunk.error) process.stderr.write(chunk.error);
             else process.stdout.write(chunk.secretContent);
           }
+          process.stderr.write("\n");
         }, meta);
       } finally {
         if (pkClient! != null) await pkClient.stop();

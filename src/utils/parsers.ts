@@ -125,16 +125,11 @@ function parseSecretPathValue(secretPath: string): [string, string, string?] {
   return [vaultName, directoryPath, value];
 }
 
-function parseSecretPathEnv(secretPath: string): [string, string, string?] {
+function parseSecretPathEnv(secretPath: string): [string, string?, string?] {
   const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
   if (value != null && !environmentVariableRegex.test(value)) {
     throw new commander.InvalidArgumentError(
       `${value} is not a valid environment variable name`,
-    );
-  }
-  if (directoryPath == null) {
-    throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
     );
   }
   return [vaultName, directoryPath, value];
@@ -215,7 +210,9 @@ function parseEnvArgs(
   if (current[1].length === 0) {
     // Parse a secret path
     try {
-      current[0].push(parseSecretPathEnv(value));
+      const [vaultName, secretPath, valueData] = parseSecretPathEnv(value);
+      const parsedSecretPath = secretPath == null ? '/' : secretPath;
+      current[0].push([vaultName, parsedSecretPath, valueData]);
     } catch (e) {
       if (!(e instanceof commander.InvalidArgumentError)) throw e;
       // If we get an invalid argument error then we switch over to parsing args verbatim
