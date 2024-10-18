@@ -11,7 +11,11 @@ class CommandPull extends CommandPolykey {
     super(...args);
     this.name('pull');
     this.description('Pull a Vault from Another Node');
-    this.argument('<vaultNameOrId>', 'Name of the vault to be pulled into');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to be pulled into',
+      binParsers.parseVaultName,
+    );
     this.argument(
       '[targetNodeId]',
       '(Optional) target node to pull from',

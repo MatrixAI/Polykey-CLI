@@ -24,7 +24,7 @@ class CommandMkdir extends CommandPolykey {
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.addOption(binOptions.recursive);
+    this.addOption(binOptions.parents);
     this.action(async (secretPaths, options) => {
       secretPaths = secretPaths.map((path: string) =>
         binParsers.parseSecretPath(path),
@@ -67,9 +67,9 @@ class CommandMkdir extends CommandPolykey {
           for (const [vault, path] of secretPaths) {
             await writer.write({
               nameOrId: vault,
-              dirName: path,
+              dirName: path ?? '/',
               metadata: first
-                ? { ...auth, options: { recursive: options.recursive } }
+                ? { ...auth, options: { recursive: options.parents } }
                 : undefined,
             });
             first = false;
