@@ -193,8 +193,10 @@ describe('commandEnv', () => {
     const result = await testUtils.pkExec([...command], {
       env: { PK_PASSWORD: password },
     });
+    console.error(result.stderr)
     expect(result.exitCode).toBe(0);
     const jsonOut = JSON.parse(result.stdout);
+    console.log(jsonOut);
     expect(jsonOut['SECRET_NEW']).toBeUndefined();
     expect(jsonOut['SECRET1']).toBe('this is the secret1');
     expect(jsonOut['SECRET2']).toBe('this is the secret2');

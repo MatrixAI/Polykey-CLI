@@ -3,14 +3,23 @@ import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
 import * as binProcessors from '../utils/processors';
+import * as binParsers from '../utils/parsers';
 
 class CommandRename extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('rename');
     this.description('Rename an Existing Vault');
-    this.argument('<vaultName>', 'Name of the vault to be renamed');
-    this.argument('<newVaultName>', 'New name of the vault');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to be renamed',
+      binParsers.parseVaultName,
+    );
+    this.argument(
+      '<newVaultName>',
+      'New name of the vault',
+      binParsers.parseVaultName,
+    );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
