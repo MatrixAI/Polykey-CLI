@@ -304,7 +304,12 @@ const order = new commander.Option(
 
 const recursive = new commander.Option(
   '--recursive',
-  'If enabled, specified directories will be removed along with their contents',
+  'If enabled, specified operation will be applied recursively to the directory and its contents',
+).default(false);
+
+const parents = new commander.Option(
+  '--parents',
+  'If enabled, create all parent directories as well. If the directories exist, do nothing.',
 ).default(false);
 
 export {
@@ -349,4 +354,5 @@ export {
   limit,
   order,
   recursive,
+  parents,
 };

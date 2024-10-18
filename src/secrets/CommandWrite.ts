@@ -77,7 +77,7 @@ class CommandWrite extends CommandPolykey {
             await pkClient.rpcClient.methods.vaultsSecretsWriteFile({
               metadata: auth,
               nameOrId: secretPath[0],
-              secretName: secretPath[1],
+              secretName: secretPath[1] ?? '/',
               secretContent: stdin,
             }),
           meta,
