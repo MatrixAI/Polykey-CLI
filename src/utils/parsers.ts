@@ -8,8 +8,8 @@ import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
 import * as networkUtils from 'polykey/dist/network/utils';
 import * as nodesUtils from 'polykey/dist/nodes/utils';
 
-const vaultNameRegex = /^([\w\-.]+)$/;
-const secretPathRegex = /^([\w\/;,.]+)?$/;
+const vaultNameRegex = /^(?!.*[:])[ -~\t\n]*$/s;
+const secretPathRegex = /^(?!.*[=])[ -~\t\n]*$/s;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
 
@@ -73,7 +73,7 @@ function parseVaultName(vaultName: string): string {
     );
   }
   // Make sure we don't accidentally return garbage data
-  return vaultName.match(vaultNameRegex)![1];
+  return vaultName.match(vaultNameRegex)![0];
 }
 
 // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
@@ -82,33 +82,31 @@ function parseVaultName(vaultName: string): string {
 //      If 'a/b/c', an error is thrown
 // Splits out everything after an `=` separator
 function parseSecretPath(secretPath: string): [string, string?, string?] {
-  // Calculate contents after the `=` separator
-  const lastEqualIndex = secretPath.lastIndexOf('=');
-  const splitSecretPath =
-    lastEqualIndex === -1
-      ? secretPath
-      : secretPath.substring(0, lastEqualIndex);
-  const value =
-    lastEqualIndex === -1
-      ? undefined
-      : secretPath.substring(lastEqualIndex + 1);
   // The colon character `:` is prohibited in vaultName, so it's first occurence
   // means that this is the delimiter between vaultName and secretPath.
-  const colonIndex = splitSecretPath.indexOf(':');
+  const colonIndex = secretPath.indexOf(':');
   // If no colon exists, treat entire string as vault name
   if (colonIndex === -1) {
-    return [parseVaultName(splitSecretPath), undefined, value];
+    return [parseVaultName(secretPath), undefined, undefined];
   }
   // Calculate contents before the `=` separator
-  const vaultNamePart = splitSecretPath.substring(0, colonIndex);
-  const secretPathPart = splitSecretPath.substring(colonIndex + 1);
-  if (secretPathPart != null && !secretPathRegex.test(secretPathPart)) {
+  const vaultNamePart = secretPath.substring(0, colonIndex);
+  const secretPathPart = secretPath.substring(colonIndex + 1);
+  // Calculate contents after the `=` separator
+  const equalIndex = secretPathPart.indexOf('=');
+  const splitSecretPath =
+    equalIndex === -1
+      ? secretPathPart
+      : secretPathPart.substring(0, equalIndex);
+  const value =
+    equalIndex === -1 ? undefined : secretPathPart.substring(equalIndex + 1);
+  if (splitSecretPath != null && !secretPathRegex.test(splitSecretPath)) {
     throw new commander.InvalidArgumentError(
       `${secretPath} is not of the format <vaultName>[:<secretPath>][=<value>]`,
     );
   }
   const parsedVaultName = parseVaultName(vaultNamePart);
-  const parsedSecretPath = secretPathPart.match(secretPathRegex)?.[1];
+  const parsedSecretPath = splitSecretPath.match(secretPathRegex)?.[0];
   return [parsedVaultName, parsedSecretPath, value];
 }
 
