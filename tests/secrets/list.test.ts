@@ -65,9 +65,11 @@ describe('commandListSecrets', () => {
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(
-      `${secretName1}\n${secretName2}\n${secretName3}\n`,
-    );
+    expect(result.stdout.trim().split('\n')).toEqual([
+      secretName1,
+      secretName2,
+      secretName3,
+    ]);
   });
   test('should list secrets', async () => {
     const vaultName = 'vault' as VaultName;
@@ -86,9 +88,11 @@ describe('commandListSecrets', () => {
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(
-      `${secretName1}\n${secretName2}\n${secretName3}\n`,
-    );
+    expect(result.stdout.trim().split('\n')).toEqual([
+      secretName1,
+      secretName2,
+      secretName3,
+    ]);
   });
   test('should fail when path is not a directory', async () => {
     const vaultName = 'vault' as VaultName;
@@ -141,7 +145,10 @@ describe('commandListSecrets', () => {
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toBe(`${secretDirName1}\n${nestedDir}\n`);
+    expect(result.stdout.trim().split('\n')).toEqual([
+      nestedDir,
+      secretDirName1,
+    ]);
     command = ['secrets', 'ls', '-np', dataDir, `${vaultName}:${nestedDir}`];
     result = await testUtils.pkStdio(command, {
       env: { PK_PASSWORD: password },

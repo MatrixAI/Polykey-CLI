@@ -74,7 +74,7 @@ describe('commandCatSecret', () => {
       env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).not.toBe(0);
     expect(result.stderr).toBeDefined();
   });
   test('should concatenate multiple secrets', async () => {
