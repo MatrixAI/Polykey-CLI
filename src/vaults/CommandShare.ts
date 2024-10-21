@@ -11,7 +11,11 @@ class CommandShare extends CommandPolykey {
     super(...args);
     this.name('share');
     this.description('Set the Permissions of a Vault for a Node');
-    this.argument('<vaultName>', 'Name of the vault to be shared');
+    this.argument(
+      '<vaultName>',
+      'Name of the vault to be shared',
+      binParsers.parseVaultName,
+    );
     this.argument(
       '<nodeId>',
       'Id of the node to share to',
