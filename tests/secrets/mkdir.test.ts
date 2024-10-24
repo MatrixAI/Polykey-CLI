@@ -56,6 +56,20 @@ describe('commandMkdir', () => {
       expect(stat.isDirectory()).toBeTruthy();
     });
   });
+  test('should fail when provided only the vault name', async () => {
+    const vaultName = 'vault' as VaultName;
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+    command = ['secrets', 'mkdir', '-np', dataDir, vaultName];
+    const result = await testUtils.pkStdio([...command], {
+      env: { PK_PASSWORD: password },
+      cwd: dataDir,
+    });
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toInclude('EEXIST'); // Root directory is already a directory
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      expect(await vaultOps.listSecrets(vault)).toEqual([]);
+    });
+  });
   test('should make directories recursively', async () => {
     const vaultName = 'vault' as VaultName;
     const dirName1 = 'dir1';
@@ -68,7 +82,7 @@ describe('commandMkdir', () => {
       '-np',
       dataDir,
       `${vaultName}:${dirNameNested}`,
-      '--recursive',
+      '--parents',
     ];
     const result = await testUtils.pkStdio([...command], {
       env: { PK_PASSWORD: password },

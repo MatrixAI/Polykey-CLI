@@ -67,32 +67,6 @@ function parseCoreCount(v: string): number | undefined {
   }
 }
 
-function parseSecretPathOptional(
-  secretPath: string,
-): [string, string?, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1', ['vault1, undefined] is returned
-  // splits out everything after an `=` separator
-  const lastEqualIndex = secretPath.lastIndexOf('=');
-  const splitSecretPath =
-    lastEqualIndex === -1
-      ? secretPath
-      : secretPath.substring(0, lastEqualIndex);
-  const value =
-    lastEqualIndex === -1
-      ? undefined
-      : secretPath.substring(lastEqualIndex + 1);
-  if (!vaultNameSecretPathRegex.test(splitSecretPath)) {
-    throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>[:<directoryPath>][=<value>]`,
-    );
-  }
-  const [, vaultName, directoryPath] = splitSecretPath.match(
-    vaultNameSecretPathRegex,
-  )!;
-  return [vaultName, directoryPath, value];
-}
-
 function parseVaultName(vaultName: string): string {
   if (!vaultNameRegex.test(vaultName)) {
     throw new commander.InvalidArgumentError(
@@ -102,29 +76,12 @@ function parseVaultName(vaultName: string): string {
   return vaultName;
 }
 
-function parseSecretPath(secretPath: string): [string, string, string?] {
-  // E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
-  //      If 'vault1', an error is thrown
-  const [vaultName, secretName, value] = parseSecretPathOptional(secretPath);
-  if (secretName === undefined) {
-    throw new commander.InvalidArgumentError(
-      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
-    );
-  }
-  return [vaultName, secretName, value];
-}
-
-function parseSecretPathValue(secretPath: string): [string, string, string?] {
-  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
-  if (value != null && !secretPathValueRegex.test(value)) {
-    throw new commander.InvalidArgumentError(
-      `${value} is not a valid value name`,
-    );
-  }
-  return [vaultName, directoryPath, value];
-}
-
-function parseSecretPathEnv(secretPath: string): [string, string?, string?] {
+// E.g. If 'vault1:a/b/c', ['vault1', 'a/b/c'] is returned
+//      If 'vault1', ['vault1, undefined] is returned
+//      If 'vault1:', an error is thrown
+//      If 'a/b/c', an error is thrown
+// Splits out everything after an `=` separator
+function parseSecretPath(secretPath: string): [string, string?, string?] {
   // The colon character `:` is prohibited in vaultName, so it's first occurence
   // means that this is the delimiter between vaultName and secretPath.
   const colonIndex = secretPath.indexOf(':');
@@ -141,7 +98,7 @@ function parseSecretPathEnv(secretPath: string): [string, string?, string?] {
     equalIndex === -1
       ? secretPathPart
       : secretPathPart.substring(0, equalIndex);
-  const valueData =
+  const value =
     equalIndex === -1 ? undefined : secretPathPart.substring(equalIndex + 1);
   if (splitSecretPath != null && !secretPathRegex.test(splitSecretPath)) {
     throw new commander.InvalidArgumentError(
@@ -149,12 +106,27 @@ function parseSecretPathEnv(secretPath: string): [string, string?, string?] {
     );
   }
   const parsedVaultName = parseVaultName(vaultNamePart);
-  const parsedSecretPath = splitSecretPath.match(secretPathRegex)?.[0] ?? '/';
-  const [vaultName, directoryPath, value] = [
-    parsedVaultName,
-    parsedSecretPath,
-    valueData,
-  ];
+  const parsedSecretPath = splitSecretPath.match(secretPathRegex)?.[0];
+  return [parsedVaultName, parsedSecretPath, value];
+}
+
+function parseSecretPathValue(secretPath: string): [string, string, string?] {
+  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
+  if (value != null && !secretPathValueRegex.test(value)) {
+    throw new commander.InvalidArgumentError(
+      `${value} is not a valid value name`,
+    );
+  }
+  if (directoryPath == null) {
+    throw new commander.InvalidArgumentError(
+      `${secretPath} is not of the format <vaultName>:<directoryPath>[=<value>]`,
+    );
+  }
+  return [vaultName, directoryPath, value];
+}
+
+function parseSecretPathEnv(secretPath: string): [string, string?, string?] {
+  const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
   if (value != null && !environmentVariableRegex.test(value)) {
     throw new commander.InvalidArgumentError(
       `${value} is not a valid environment variable name`,
@@ -263,7 +235,6 @@ export {
   validateParserToArgParser,
   validateParserToArgListParser,
   parseCoreCount,
-  parseSecretPathOptional,
   parseVaultName,
   parseSecretPath,
   parseSecretPathValue,

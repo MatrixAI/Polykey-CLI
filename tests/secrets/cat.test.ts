@@ -61,6 +61,22 @@ describe('commandCatSecret', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toBe(secretContent);
   });
+  test('should fail when reading root without secret path', async () => {
+    const vaultName = 'Vault3' as VaultName;
+    const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+    const secretName = 'secret-name';
+    const secretContent = 'this is the contents of the secret';
+    await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+      await vaultOps.addSecret(vault, secretName, secretContent);
+    });
+    const command = ['secrets', 'cat', '-np', dataDir, vaultName];
+    const result = await testUtils.pkStdio(command, {
+      env: { PK_PASSWORD: password },
+      cwd: dataDir,
+    });
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toBeDefined();
+  });
   test('should concatenate multiple secrets', async () => {
     const vaultName = 'Vault3' as VaultName;
     const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
@@ -169,7 +185,7 @@ describe('commandCatSecret', () => {
         resolve(exitCode);
       });
     });
-    expect(exitCode).toStrictEqual(0);
+    expect(exitCode).toBe(0);
     expect(stdout).toBe(stdinData);
   });
 });

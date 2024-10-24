@@ -21,7 +21,7 @@ class CommandRemove extends CommandPolykey {
     this.addOption(binOptions.recursive);
     this.action(async (secretPaths, options) => {
       secretPaths = secretPaths.map((path: string) =>
-        binParsers.parseSecretPathValue(path),
+        binParsers.parseSecretPath(path),
       );
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
