@@ -1,6 +1,4 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { SuccessOrErrorMessage } from 'polykey/dist/client/types';
-import type { ReadableStream } from 'stream/web';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -56,25 +54,31 @@ class CommandRemove extends CommandPolykey {
         const hasErrored = await binUtils.retryAuthentication(async (auth) => {
           const response =
             await pkClient.rpcClient.methods.vaultsSecretsRemove();
+          // Extract all unique vault names
+          const uniqueVaultNames = new Set<string>();
+          for (const [vaultName] of secretPaths) {
+            uniqueVaultNames.add(vaultName);
+          }
           const writer = response.writable.getWriter();
-          let first = true;
+          // Send the header message first
+          await writer.write({
+            type: 'VaultNamesHeaderMessage',
+            vaultNames: Array.from(uniqueVaultNames),
+            recursive: options.recursive,
+            metadata: auth,
+          });
+          // Then send all the paths in subsequent messages
           for (const [vaultName, secretPath] of secretPaths) {
             await writer.write({
               type: 'SecretIdentifierMessage',
               nameOrId: vaultName,
               secretName: secretPath ?? '/',
-              metadata: first
-                ? { ...auth, options: { recursive: options.recursive } }
-                : undefined,
             });
-            first = false;
           }
           await writer.close();
           // Check if any errors were raised
           let hasErrored = false;
-          // TypeScript cannot properly perform type narrowing on this type, so
-          // the `as` keyword is used to help it out.
-          for await (const result of response.readable as ReadableStream<SuccessOrErrorMessage>) {
+          for await (const result of response.readable) {
             if (result.type === 'error') {
               hasErrored = true;
               switch (result.code) {
