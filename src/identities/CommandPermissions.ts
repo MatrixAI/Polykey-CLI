@@ -84,7 +84,7 @@ class CommandPermissions extends CommandPolykey {
             }
             break;
           default:
-            utils.never();
+            utils.never(`type ${type} is not valid, expected node or identity`);
         }
         if (options.format === 'json') {
           process.stdout.write(

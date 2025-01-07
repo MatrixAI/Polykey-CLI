@@ -112,7 +112,7 @@ class CommandAuthenticate extends CommandPolykey {
                 }),
               );
             } else {
-              never();
+              never(`either message request or response must be defined`);
             }
           }
         }, auth);

@@ -81,7 +81,7 @@ class CommandTrust extends CommandPolykey {
             }
             break;
           default:
-            utils.never();
+            utils.never(`type ${type} is not valid, expected node or identity`);
         }
       } finally {
         if (pkClient! != null) await pkClient.stop();

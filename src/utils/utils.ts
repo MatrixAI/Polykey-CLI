@@ -189,7 +189,7 @@ function decodeEscaped(str: string): string {
     // Length of substr will always be at least 1
     const lastChar = substr.at(-1);
     if (lastChar == null) {
-      utils.never();
+      utils.never('length must be greater than 0');
     }
     switch (lastChar) {
       case 'n':
@@ -208,7 +208,7 @@ function decodeEscaped(str: string): string {
       case '\\':
         return lastChar;
     }
-    utils.never();
+    utils.never(`character "${lastChar}" is not handled`);
   });
 }
 

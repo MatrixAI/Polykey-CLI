@@ -60,6 +60,7 @@ class CommandRemove extends CommandPolykey {
           let first = true;
           for (const [vaultName, secretPath] of secretPaths) {
             await writer.write({
+              type: 'SecretIdentifierMessage',
               nameOrId: vaultName,
               secretName: secretPath ?? '/',
               metadata: first

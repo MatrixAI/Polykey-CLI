@@ -85,7 +85,7 @@ class CommandGet extends CommandPolykey {
             }
             break;
           default:
-            utils.never();
+            utils.never(`type ${type} is not valid, expected node or identity`);
         }
         const gestalt = res!.gestalt;
         if (options.format === 'json') {

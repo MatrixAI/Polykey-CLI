@@ -167,7 +167,9 @@ class CommandEnv extends CommandPolykey {
                   case 'ignore':
                     continue;
                   default:
-                    utils.never();
+                    utils.never(
+                      `option ${envInvalid} is not valid, expected error, warn or ignore`,
+                    );
                 }
               }
               newName = secretEnvName;
@@ -192,7 +194,9 @@ class CommandEnv extends CommandPolykey {
                 case 'overwrite':
                   break;
                 default:
-                  utils.never();
+                  utils.never(
+                    `option ${envDuplicate} is not valid, expected error, keep, warn or overwrite`,
+                  );
               }
             }
 
@@ -338,7 +342,9 @@ class CommandEnv extends CommandPolykey {
               }
               break;
             default:
-              utils.never();
+              utils.never(
+                `format '${format}' is not valid, expected unix, cmd, powershell or json`,
+              );
           }
         }
       } finally {
