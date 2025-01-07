@@ -1,6 +1,4 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { ContentOrErrorMessage } from 'polykey/dist/client/types';
-import type { ReadableStream } from 'stream/web';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
 import * as binOptions from '../utils/options';
@@ -96,9 +94,7 @@ class CommandGet extends CommandPolykey {
           await writer.close();
           // Print out incoming data to standard out
           let hasErrored = false;
-          // TypeScript cannot properly perform type narrowing on this type, so
-          // the `as` keyword is used to help it out.
-          for await (const result of response.readable as ReadableStream<ContentOrErrorMessage>) {
+          for await (const result of response.readable) {
             if (result.type === 'error') {
               hasErrored = true;
               switch (result.code) {

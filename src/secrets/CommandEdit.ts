@@ -159,9 +159,9 @@ class CommandEdit extends CommandPolykey {
                 },
                 cause: e,
               });
-              // If the secret didn't exist before and we can't read the file,
+              // If the secret didn't exist before, and we can't read the file,
               // then the secret was never actually created or saved. The user
-              // doesn't want to make the secret anymore, so abort mision!
+              // doesn't want to make the secret anymore, so abort mission!
             } else {
               return;
             }
