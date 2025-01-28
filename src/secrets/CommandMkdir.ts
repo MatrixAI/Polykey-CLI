@@ -72,13 +72,10 @@ class CommandMkdir extends CommandPolykey {
             first = false;
           }
           await writer.close();
-          // Print out incoming data to standard out, or incoming errors to
-          // standard error.
+          // Print out incoming errors to standard error.
           let hasErrored = false;
-          // TypeScript cannot properly perform type narrowing on this type, so
-          // the `as` keyword is used to help it out.
           for await (const result of response.readable) {
-            if (result.type === 'error') {
+            if (result.type === 'ErrorMessage') {
               hasErrored = true;
               switch (result.code) {
                 case 'ENOENT':
@@ -98,6 +95,8 @@ class CommandMkdir extends CommandPolykey {
                   throw result;
               }
             }
+            // No additional processing needs to be done if directory creation
+            // was successful.
           }
           return hasErrored;
         }, meta);
