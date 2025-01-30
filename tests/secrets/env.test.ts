@@ -416,10 +416,10 @@ describe('commandEnv', () => {
       env: { PK_PASSWORD: password },
     });
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain(`$env:SECRET1 = 'this is the secret1'`);
-    expect(result.stdout).toContain(`$env:SECRET2 = 'this is the secret2'`);
-    expect(result.stdout).toContain(`$env:SECRET3 = 'this is the secret3'`);
-    expect(result.stdout).toContain(`$env:SECRET4 = 'this is the secret4'`);
+    expect(result.stdout).toContain(`$SECRET1 = 'this is the secret1'`);
+    expect(result.stdout).toContain(`$SECRET2 = 'this is the secret2'`);
+    expect(result.stdout).toContain(`$SECRET3 = 'this is the secret3'`);
+    expect(result.stdout).toContain(`$SECRET4 = 'this is the secret4'`);
   });
   test('should output json format', async () => {
     const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
@@ -924,4 +924,33 @@ describe('commandEnv', () => {
     expect(result.stdout).toContain("SECRET3='this is the secret3'");
     expect(result.stdout).toContain("SECRET4='this is the secret4'");
   });
+  test.each(['unix', 'cmd', 'powershell'])(
+    'should export all secrets in %s format to child processes',
+    async (format) => {
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, 'SECRET1', 'this is the secret1');
+      });
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        format,
+        '--env-export',
+        `${vaultName}:SECRET1`,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+      const formatResult = {
+        unix: `export SECRET1='this is the secret1'\n`,
+        cmd: `set "SECRET1=this is the secret1"\n`,
+        powershell: `$env:SECRET1 = 'this is the secret1'\n`,
+      };
+      expect(result.stdout).toEqual(formatResult[format]);
+    },
+  );
 });

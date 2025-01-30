@@ -24,6 +24,7 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.envFormat);
     this.addOption(binOptions.envInvalid);
     this.addOption(binOptions.envDuplicate);
+    this.addOption(binOptions.envExport);
     this.addOption(binOptions.preserveNewline);
     this.argument(
       '<args...>',
@@ -284,22 +285,24 @@ class CommandEnv extends CommandPolykey {
           switch (format) {
             case 'unix':
               {
-                // Formatting as a .env file
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
-                  data += `${key}='${value}'\n`;
+                  if (options.envExport) {
+                    data += `export ${key}='${value}'\n`;
+                  } else {
+                    data += `${key}='${value}'\n`;
+                  }
                 }
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'raw',
-                    data,
+                    data: data,
                   }),
                 );
               }
               break;
             case 'cmd':
               {
-                // Formatting as a .bat file for windows cmd
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
                   data += `set "${key}=${value}"\n`;
@@ -307,22 +310,25 @@ class CommandEnv extends CommandPolykey {
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'raw',
-                    data,
+                    data: data,
                   }),
                 );
               }
               break;
             case 'powershell':
               {
-                // Formatting as a .bat file for windows cmd
                 let data = '';
                 for (const [key, value] of Object.entries(envp)) {
-                  data += `\$env:${key} = '${value}'\n`;
+                  if (options.envExport) {
+                    data += `$env:${key} = '${value}'\n`;
+                  } else {
+                    data += `$${key} = '${value}'\n`;
+                  }
                 }
                 process.stdout.write(
                   binUtils.outputFormatter({
                     type: 'raw',
-                    data,
+                    data: data,
                   }),
                 );
               }

@@ -246,6 +246,11 @@ const envDuplicate = new commander.Option(
   .choices(['keep', 'overwrite', 'warn', 'error'])
   .default('overwrite');
 
+const envExport = new commander.Option(
+  '-ee --env-export',
+  'If enabled, exports the set environment variables to child environments',
+).default(false);
+
 const discoveryMonitor = new commander.Option(
   '--monitor',
   'Enabling monitoring will cause discover to output discovery events as they happen and will exit once all children are processed',
@@ -363,6 +368,7 @@ export {
   envFormat,
   envInvalid,
   envDuplicate,
+  envExport,
   discoveryMonitor,
   seekStart,
   seekEnd,
