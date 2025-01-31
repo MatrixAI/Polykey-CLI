@@ -88,43 +88,10 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   );
 }
 
-// This regex defines a vault secret path that always includes the secret path
-const secretPathRegex = /^([\w-]+)(?::)([^\0\\=]+)$/;
-const secretPathWithoutEnvArb = fc.stringMatching(secretPathRegex).noShrink();
-const environmentVariableAre = fc
-  .stringMatching(binParsers.environmentVariableRegex)
-  .filter((v) => v.length > 0)
-  .noShrink();
-const secretPathWithEnvArb = fc
-  .tuple(secretPathWithoutEnvArb, environmentVariableAre)
-  .map((v) => v.join('='));
-const secretPathEnvArb = fc.oneof(
-  secretPathWithoutEnvArb,
-  secretPathWithEnvArb,
-);
-
-const secretPathEnvArrayArb = fc
-  .array(secretPathEnvArb, { minLength: 1, size: 'small' })
-  .noShrink();
-const cmdArgsArrayArb = fc
-  .array(fc.oneof(fc.string(), secretPathEnvArb, fc.constant('--')), {
-    size: 'small',
-  })
-  .noShrink();
-
 const vaultNameArb = fc
   .string({ minLength: 1, maxLength: 100 })
   .filter((str) => binParsers.vaultNameRegex.test(str))
   .filter((str) => !str.startsWith('-'))
   .noShrink();
 
-export {
-  testIf,
-  describeIf,
-  trackTimers,
-  nodesConnect,
-  secretPathEnvArb,
-  secretPathEnvArrayArb,
-  cmdArgsArrayArb,
-  vaultNameArb,
-};
+export { testIf, describeIf, trackTimers, nodesConnect, vaultNameArb };

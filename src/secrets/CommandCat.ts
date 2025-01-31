@@ -27,6 +27,7 @@ class CommandGet extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
+      const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -95,27 +96,35 @@ class CommandGet extends CommandPolykey {
           // Print out incoming data to standard out
           let hasErrored = false;
           for await (const result of response.readable) {
-            if (result.type === 'error') {
-              hasErrored = true;
-              switch (result.code) {
-                case 'ENOENT':
-                  // Attempt to cat a non-existent file
-                  process.stderr.write(
-                    `cat: ${result.reason}: No such file or directory\n`,
-                  );
-                  break;
-                case 'EISDIR':
-                  // Attempt to cat a directory
-                  process.stderr.write(
-                    `cat: ${result.reason}: Is a directory\n`,
-                  );
-                  break;
-                default:
-                  // No other code should be thrown
-                  throw result;
-              }
-            } else {
-              process.stdout.write(result.secretContent);
+            const type = result.type;
+            switch (type) {
+              case 'ErrorMessage':
+                hasErrored = true;
+                switch (result.code) {
+                  case 'ENOENT':
+                    // Attempt to cat a non-existent file
+                    process.stderr.write(
+                      `cat: ${result.reason}: No such file or directory\n`,
+                    );
+                    break;
+                  case 'EISDIR':
+                    // Attempt to cat a directory
+                    process.stderr.write(
+                      `cat: ${result.reason}: Is a directory\n`,
+                    );
+                    break;
+                  default:
+                    // No other code should be thrown
+                    throw result;
+                }
+                break;
+              case 'SuccessMessage':
+                process.stdout.write(result.secretContent);
+                break;
+              default:
+                never(
+                  `Expected "SuccessMessage" or "ContentMessage", got ${type}`,
+                );
             }
           }
           return hasErrored;

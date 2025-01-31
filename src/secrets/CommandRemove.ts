@@ -79,7 +79,7 @@ class CommandRemove extends CommandPolykey {
           // Check if any errors were raised
           let hasErrored = false;
           for await (const result of response.readable) {
-            if (result.type === 'error') {
+            if (result.type === 'ErrorMessage') {
               hasErrored = true;
               switch (result.code) {
                 case 'ENOTEMPTY':
@@ -105,6 +105,8 @@ class CommandRemove extends CommandPolykey {
                   throw result;
               }
             }
+            // No additional processing needs to be done if file removal was
+            // successful.
           }
           return hasErrored;
         }, meta);

@@ -27,10 +27,10 @@ class CommandEdit extends CommandPolykey {
       const secretPath = fullSecretPath[1] ?? '/';
       const os = await import('os');
       const { spawn } = await import('child_process');
-      const vaultsErrors = await import('polykey/dist/vaults/errors');
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
+      const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -65,40 +65,58 @@ class CommandEdit extends CommandPolykey {
         const tmpFile = path.join(tmpDir, path.basename(secretPath));
         const secretExists = await binUtils.retryAuthentication(
           async (auth) => {
-            let exists = true;
-            const response = await pkClient.rpcClient.methods.vaultsSecretsGet({
+            let exists = false;
+            const response =
+              await pkClient.rpcClient.methods.vaultsSecretsCat();
+            const writer = response.writable.getWriter();
+            await writer.write({
               nameOrId: vaultName,
               secretName: secretPath,
               metadata: auth,
             });
+            await writer.close();
+            const fd = await fs.promises.open(tmpFile, 'a');
             try {
-              let rawSecretContent: string = '';
-              for await (const chunk of response) {
-                rawSecretContent += chunk.secretContent;
+              for await (const chunk of response.readable) {
+                const type = chunk.type;
+                switch (type) {
+                  case 'SuccessMessage':
+                    exists = true;
+                    await fd.write(Buffer.from(chunk.secretContent, 'binary'));
+                    break;
+                  case 'ErrorMessage':
+                    switch (chunk.code) {
+                      case 'ENOENT':
+                        // Do nothing if we get ENOENT. We need a case to avoid
+                        // this value hitting the default case.
+                        break;
+                      case 'EISDIR':
+                        // First, write the inline error to standard error like
+                        // other secrets commands do.
+                        process.stderr.write(
+                          `edit: ${secretPath}: No such file or directory\n`,
+                        );
+                        // Then, throw an error to get the non-zero exit code.
+                        // As this command is Polykey-specific, the code doesn't
+                        // really matter that much.
+                        throw new errors.ErrorPolykeyCLIEditSecret(
+                          'The specified secret cannot be edited',
+                        );
+                      default:
+                        throw new errors.ErrorPolykeyCLIEditSecret(
+                          `Unexpected error value returned: ${chunk.code}`,
+                        );
+                    }
+                    break;
+                  default:
+                    never(
+                      `Expected "SuccessMessage" or "ContentMessage", got ${type}`,
+                    );
+                }
               }
-              const secretContent = Buffer.from(rawSecretContent, 'binary');
-              await this.fs.promises.writeFile(tmpFile, secretContent);
-            } catch (e) {
-              const [cause, _] = binUtils.remoteErrorCause(e);
-              if (cause instanceof vaultsErrors.ErrorSecretsSecretUndefined) {
-                exists = false;
-              } else if (
-                cause instanceof vaultsErrors.ErrorSecretsIsDirectory
-              ) {
-                // First, write the inline error to standard error like other
-                // secrets commands do.
-                process.stderr.write(
-                  `edit: ${secretPath}: No such file or directory\n`,
-                );
-                // Then, throw an error to get the non-zero exit code. As this
-                // command is Polykey-specific, the code doesn't really matter
-                // that much.
-                throw new errors.ErrorPolykeyCLIEditSecret(
-                  'Failed to edit secret',
-                );
-              } else {
-                throw e;
-              }
+            } finally {
+              await fd.close();
+              if (!exists) await fs.promises.rm(tmpFile);
             }
             return exists;
           },
