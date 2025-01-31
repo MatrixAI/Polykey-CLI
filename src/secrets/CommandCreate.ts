@@ -1,4 +1,5 @@
 import type PolykeyClient from 'polykey/dist/PolykeyClient';
+import path from 'path';
 import * as errors from '../errors';
 import CommandPolykey from '../CommandPolykey';
 import * as binUtils from '../utils';
@@ -27,6 +28,7 @@ class CommandCreate extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/dist/PolykeyClient'
       );
+      const { never } = await import('polykey/dist/utils');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -68,16 +70,49 @@ class CommandCreate extends CommandPolykey {
             cause: e,
           });
         }
-        await binUtils.retryAuthentication(
-          (auth) =>
-            pkClient.rpcClient.methods.vaultsSecretsNew({
-              metadata: auth,
-              nameOrId: secretPath[0],
-              secretName: secretPath[1] ?? '/',
-              secretContent: content.toString('binary'),
-            }),
-          meta,
-        );
+        await binUtils.retryAuthentication(async (auth) => {
+          // Make sure the path exists
+          const response =
+            await pkClient.rpcClient.methods.vaultsSecretsMkdir();
+          const writer = response.writable.getWriter();
+          await writer.write({
+            nameOrId: secretPath[0],
+            dirName: path.dirname(secretPath[1] ?? '/'),
+            metadata: { ...auth, options: { recursive: true } },
+          });
+          await writer.close();
+          for await (const chunk of response.readable) {
+            const type = chunk.type;
+            switch (type) {
+              case 'SuccessMessage':
+                // No special action required if mkdir succeeds
+                break;
+              case 'ErrorMessage':
+                // This operation can only fail if a file already exists at the
+                // target location. No other error should happen.
+                if (chunk.code === 'EEXIST') {
+                  throw new errors.ErrorPolykeyCLIMakeDirectory(
+                    `A file already exists at path ${chunk.reason}`,
+                  );
+                } else {
+                  throw new errors.ErrorPolykeyCLIMakeDirectory(
+                    `Failed to create directory ${chunk.reason} (${chunk.code})`,
+                  );
+                }
+              default:
+                never(
+                  `Expected "SuccessMessage" or "ErrorMessage", got ${type}`,
+                );
+            }
+          }
+          // Write the contents
+          await pkClient.rpcClient.methods.vaultsSecretsWriteFile({
+            metadata: auth,
+            nameOrId: secretPath[0],
+            secretName: secretPath[1] ?? '/',
+            secretContent: content.toString('binary'),
+          });
+        }, meta);
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }

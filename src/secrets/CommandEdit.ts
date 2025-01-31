@@ -110,7 +110,7 @@ class CommandEdit extends CommandPolykey {
                     break;
                   default:
                     never(
-                      `Expected "SuccessMessage" or "ContentMessage", got ${type}`,
+                      `Expected "SuccessMessage" or "ErrorMessage", got ${type}`,
                     );
                 }
               }

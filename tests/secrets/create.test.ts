@@ -93,7 +93,7 @@ describe('commandCreateSecret', () => {
     expect(result.exitCode).not.toBe(0);
     // The root directory is already defined so we can't create a new secret
     // at path `vault:/`.
-    expect(result.stderr).toInclude('ErrorSecretsSecretDefined');
+    expect(result.stderr).toInclude('ErrorSecretsIsDirectory');
   });
   test.prop([fileNameArb, fileNameArb, envVariableArb], { numRuns: 10 })(
     'secrets handle unix style paths for secrets',
