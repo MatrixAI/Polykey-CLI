@@ -191,6 +191,11 @@ class ErrorPolykeyCLIEditSecret<T> extends ErrorPolykeyCLI<T> {
   exitCode = 1;
 }
 
+class ErrorPolykeyCLITouchSecret<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Failed to touch one or more secret';
+  exitCode = 1;
+}
+
 export {
   ErrorPolykeyCLI,
   ErrorPolykeyCLIUncaughtException,
@@ -218,4 +223,5 @@ export {
   ErrorPolykeyCLIRemoveSecret,
   ErrorPolykeyCLICatSecret,
   ErrorPolykeyCLIEditSecret,
+  ErrorPolykeyCLITouchSecret,
 };
