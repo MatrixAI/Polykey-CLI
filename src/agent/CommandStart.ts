@@ -117,6 +117,7 @@ class CommandStart extends CommandPolykey {
         clientServicePort: options.clientPort,
         agentServiceHost: options.agentHost,
         agentServicePort: options.agentPort,
+        network: options.network,
         seedNodes: seedNodes_,
         workers: options.workers,
         keys: {
