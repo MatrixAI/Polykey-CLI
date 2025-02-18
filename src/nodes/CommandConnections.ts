@@ -53,6 +53,7 @@ class CommandAdd extends CommandPolykey {
               port: connection.port,
               timeout: connection.timeout,
               usageCount: connection.usageCount,
+              authenticated: connection.authenticated,
             });
           }
           return connectionEntries;
@@ -77,6 +78,7 @@ class CommandAdd extends CommandPolykey {
                 'port',
                 'timeout',
                 'usageCount',
+                'authenticated',
               ],
               includeHeaders: true,
             },
