@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-const process = require('process');
-const childProcess = require('child_process');
-const { default: config } = require('polykey/dist/config');
+import process from 'node:process';
+import childProcess from 'node:child_process';
+import config from 'polykey/dist/config.js';
+
 const versionTarget = config.version;
 async function main(argv = process.argv) {
   // Test getting the hash

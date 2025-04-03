@@ -1,12 +1,12 @@
-import type { VaultName } from 'polykey/dist/vaults/types';
-import type { GestaltNodeInfo } from 'polykey/dist/gestalts/types';
-import path from 'path';
-import fs from 'fs';
+import type { VaultName } from 'polykey/vaults/types.js';
+import type { GestaltNodeInfo } from 'polykey/gestalts/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as ids from 'polykey/dist/ids';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as ids from 'polykey/ids/index.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('commandRemoveVault', () => {
   const password = 'password';

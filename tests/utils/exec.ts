@@ -1,16 +1,16 @@
-import type { ChildProcess } from 'child_process';
-import type ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import childProcess from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import process from 'process';
+import type { ChildProcess } from 'node:child_process';
+import type ErrorPolykey from 'polykey/ErrorPolykey.js';
+import childProcess from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
 import readline from 'readline';
 import * as mockProcess from 'jest-mock-process';
 import mockedEnv from 'mocked-env';
 import nexpect from 'nexpect';
 import Logger from '@matrixai/logger';
-import main from '@/polykey';
-import * as utils from '@/utils/utils';
+import main from '#polykey.js';
+import * as utils from '#utils/utils.js';
 
 type ExecOpts = {
   env: Record<string, string | undefined>;
@@ -24,7 +24,7 @@ const tsConfigPath = path.resolve(
 );
 
 const polykeyPath = path.resolve(
-  path.join(globalThis.projectDir ?? '', 'src/polykey.ts'),
+  path.join(globalThis.projectDir ?? '', 'dist/polykey.js'),
 );
 
 const generateDockerArgs = (mountPath: string) => [
@@ -208,7 +208,7 @@ async function pkStdio(
     () => process,
   );
   const mockCwd = mockProcess.spyOnImplementing(process, 'cwd', () => cwd!);
-  const envRestore = mockedEnv(opts.env);
+  const envRestore = mockedEnv.default(opts.env);
   const mockedStdout = mockProcess.mockProcessStdout();
   const mockedStderr = mockProcess.mockProcessStderr();
   const exitCode = await pk(args);
@@ -297,16 +297,12 @@ async function pkExecWithoutShell(
   return new Promise((resolve, reject) => {
     let stdout = '',
       stderr = '';
-    const subprocess = childProcess.spawn(
-      'ts-node',
-      ['--project', tsConfigPath, polykeyPath, ...args],
-      {
-        env,
-        cwd,
-        windowsHide: true,
-        shell: opts.shell ? opts.shell : false,
-      },
-    );
+    const subprocess = childProcess.spawn('node', [polykeyPath, ...args], {
+      env,
+      cwd,
+      windowsHide: true,
+      shell: opts.shell ? opts.shell : false,
+    });
     subprocess.stdout.on('data', (data) => {
       stdout += data.toString();
     });
@@ -385,17 +381,13 @@ async function pkSpawnWithoutShell(
     ...process.env,
     ...opts.env,
   };
-  const subprocess = childProcess.spawn(
-    'ts-node',
-    ['--project', tsConfigPath, polykeyPath, ...args],
-    {
-      env,
-      cwd,
-      stdio: ['pipe', 'pipe', 'pipe'],
-      windowsHide: true,
-      shell: opts.shell ? opts.shell : false,
-    },
-  );
+  const subprocess = childProcess.spawn('node', [polykeyPath, ...args], {
+    env,
+    cwd,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    windowsHide: true,
+    shell: opts.shell ? opts.shell : false,
+  });
   // The readline library will trim newlines
   const rlOut = readline.createInterface(subprocess.stdout!);
   rlOut.on('line', (l) => logger.info(l));
@@ -485,15 +477,11 @@ async function pkExpect({
     ...env,
   };
   // Expect chain runs against stdout and stderr
-  let expectChain = nexpect.spawn(
-    'ts-node',
-    ['--project', tsConfigPath, polykeyPath, ...args],
-    {
-      env,
-      cwd,
-      stream: 'all',
-    },
-  );
+  let expectChain = nexpect.spawn('node', [polykeyPath, ...args], {
+    env,
+    cwd,
+    stream: 'all',
+  });
   // Augment the expect chain
   expectChain = expect(expectChain);
   return new Promise((resolve, reject) => {

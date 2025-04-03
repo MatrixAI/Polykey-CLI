@@ -5,24 +5,32 @@
  * This will call `npmDepsHash.js` to make sure it's correct after updating the version.
  */
 
-const path = require('path');
-const os = require('os');
-const childProcess = require('child_process');
+import os from 'node:os';
+import path from 'node:path';
+import childProcess from 'node:child_process';
+import url from 'node:url';
+
+const projectPath = path.dirname(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+);
 
 const platform = os.platform();
 
 /* eslint-disable no-console */
 async function main() {
-  const projectRoot = path.join(__dirname, '..');
-  const npmDepsHashPath = path.join(projectRoot, 'npmDepsHash');
+  const npmDepsHashPath = path.join(projectPath, 'npmDepsHash');
 
   console.error('Updating the npmDepsHash after version change');
-  childProcess.execFileSync(path.join(__dirname, 'npmDepsHash.js'), [], {
-    stdio: ['inherit', 'inherit', 'inherit'],
-    windowsHide: true,
-    encoding: 'utf-8',
-    shell: platform === 'win32' ? true : false,
-  });
+  childProcess.execFileSync(
+    path.join(projectPath, 'scripts/npmDepsHash.js'),
+    [],
+    {
+      stdio: ['inherit', 'inherit', 'inherit'],
+      windowsHide: true,
+      encoding: 'utf-8',
+      shell: platform === 'win32' ? true : false,
+    },
+  );
 
   console.error('Staging npmDepsHash');
   childProcess.execFileSync('git', ['add', npmDepsHashPath], {

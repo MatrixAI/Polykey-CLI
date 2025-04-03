@@ -1,9 +1,9 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Session from 'polykey/dist/sessions/Session';
-import config from 'polykey/dist/config';
-import * as testUtils from '../utils';
+import Session from 'polykey/sessions/Session.js';
+import config from 'polykey/config.js';
+import * as testUtils from '../utils/index.js';
 
 describe('unlock', () => {
   const logger = new Logger('unlock test', LogLevel.WARN, [

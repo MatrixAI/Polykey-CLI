@@ -1,10 +1,10 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import { vaultOps } from 'polykey/dist/vaults';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import { vaultOps } from 'polykey/vaults/index.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('commandTouch', () => {
   const password = 'password';

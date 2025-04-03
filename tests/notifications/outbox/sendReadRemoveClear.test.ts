@@ -1,11 +1,11 @@
-import type { NodeId } from 'polykey/dist/ids/types';
-import type { Notification } from 'polykey/dist/notifications/types';
-import type { StatusLive } from 'polykey/dist/status/types';
-import path from 'path';
-import fs from 'fs';
+import type { NodeId } from 'polykey/ids/types.js';
+import type { Notification } from 'polykey/notifications/types.js';
+import type { StatusLive } from 'polykey/status/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as testUtils from '../../utils';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import * as testUtils from '../../utils/index.js';
 
 describe('send/read/claim', () => {
   const logger = new Logger(

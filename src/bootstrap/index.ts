@@ -1,1 +1,1 @@
-export { default } from './CommandBootstrap';
+export { default } from './CommandBootstrap.js';

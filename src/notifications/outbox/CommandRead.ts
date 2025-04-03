@@ -1,10 +1,10 @@
-import type { Notification } from 'polykey/dist/notifications/types';
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { NotificationOutboxMessage } from 'polykey/dist/client/types';
-import CommandPolykey from '../../CommandPolykey';
-import * as binUtils from '../../utils';
-import * as binOptions from '../../utils/options';
-import * as binProcessors from '../../utils/processors';
+import type { Notification } from 'polykey/notifications/types.js';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { NotificationOutboxMessage } from 'polykey/client/types.js';
+import CommandPolykey from '../../CommandPolykey.js';
+import * as binUtils from '../../utils/index.js';
+import * as binOptions from '../../utils/options.js';
+import * as binProcessors from '../../utils/processors.js';
 
 class CommandRead extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -25,11 +25,9 @@ class CommandRead extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
-      const notificationsUtils = await import(
-        'polykey/dist/notifications/utils'
-      );
+      const notificationsUtils = await import('polykey/notifications/utils.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

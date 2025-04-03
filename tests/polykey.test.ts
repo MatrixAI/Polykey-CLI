@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as testUtils from './utils';
+import * as testUtils from './utils/index.js';
 
 describe('polykey', () => {
   test('default help display', async () => {

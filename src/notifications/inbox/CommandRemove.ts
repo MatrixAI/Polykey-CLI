@@ -1,10 +1,10 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import * as notificationsUtils from 'polykey/dist/notifications/utils';
-import CommandPolykey from '../../CommandPolykey';
-import * as binUtils from '../../utils';
-import * as binOptions from '../../utils/options';
-import * as binProcessors from '../../utils/processors';
-import * as binParsers from '../../utils/parsers';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import * as notificationsUtils from 'polykey/notifications/utils.js';
+import CommandPolykey from '../../CommandPolykey.js';
+import * as binUtils from '../../utils/index.js';
+import * as binOptions from '../../utils/options.js';
+import * as binProcessors from '../../utils/processors.js';
+import * as binParsers from '../../utils/parsers.js';
 
 class CommandRemove extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -21,7 +21,7 @@ class CommandRemove extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (notificationId, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

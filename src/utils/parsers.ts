@@ -1,13 +1,13 @@
-import type { Host, Hostname, Port } from 'polykey/dist/network/types';
-import type { SeedNodes } from 'polykey/dist/nodes/types';
-import type { ParsedSecretPathValue } from '../types';
-import commander from 'commander';
-import * as validationUtils from 'polykey/dist/validation/utils';
-import * as validationErrors from 'polykey/dist/validation/errors';
-import * as ids from 'polykey/dist/ids';
-import * as gestaltsUtils from 'polykey/dist/gestalts/utils';
-import * as networkUtils from 'polykey/dist/network/utils';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
+import type { Host, Hostname, Port } from 'polykey/network/types.js';
+import type { SeedNodes } from 'polykey/nodes/types.js';
+import type { ParsedSecretPathValue } from '../types.js';
+import { InvalidArgumentError } from 'commander';
+import * as validationUtils from 'polykey/validation/utils.js';
+import * as validationErrors from 'polykey/validation/errors.js';
+import * as ids from 'polykey/ids/index.js';
+import * as gestaltsUtils from 'polykey/gestalts/utils.js';
+import * as networkUtils from 'polykey/network/utils.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
 
 const vaultNameRegex = /^(?!.*[:])[ -~\t\n]*$/s;
 const secretPathRegex = /^(?!.*[=])[ -~\t\n]*$/s;
@@ -25,7 +25,7 @@ function validateParserToArgParser<T>(
       return validate(data);
     } catch (e) {
       if (e instanceof validationErrors.ErrorParse) {
-        throw new commander.InvalidArgumentError(e.message);
+        throw new InvalidArgumentError(e.message);
       } else {
         throw e;
       }
@@ -45,7 +45,7 @@ function validateParserToArgListParser<T>(
       return data.split(' ').map(validate);
     } catch (e) {
       if (e instanceof validationErrors.ErrorParse) {
-        throw new commander.InvalidArgumentError(e.message);
+        throw new InvalidArgumentError(e.message);
       } else {
         throw e;
       }
@@ -69,9 +69,7 @@ function parseCoreCount(v: string): number | undefined {
 
 function parseVaultName(vaultName: string): string {
   if (!vaultNameRegex.test(vaultName)) {
-    throw new commander.InvalidArgumentError(
-      `${vaultName} is not a valid vault name`,
-    );
+    throw new InvalidArgumentError(`${vaultName} is not a valid vault name`);
   }
   return vaultName;
 }
@@ -107,7 +105,7 @@ function parseSecretPath(inputPath: string): ParsedSecretPathValue {
   // If secretPath exists but it doesn't pass the regex test, then the path is
   // malformed.
   if (secretPath != null && !secretPathRegex.test(secretPath)) {
-    throw new commander.InvalidArgumentError(
+    throw new InvalidArgumentError(
       `${inputPath} is not of the format <vaultName>[:<secretPath>][=<value>]`,
     );
   }
@@ -120,9 +118,7 @@ function parseSecretPath(inputPath: string): ParsedSecretPathValue {
 function parseSecretPathValue(secretPath: string): ParsedSecretPathValue {
   const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
   if (value != null && !secretPathValueRegex.test(value)) {
-    throw new commander.InvalidArgumentError(
-      `${value} is not a valid value name`,
-    );
+    throw new InvalidArgumentError(`${value} is not a valid value name`);
   }
   return [vaultName, directoryPath, value];
 }
@@ -130,7 +126,7 @@ function parseSecretPathValue(secretPath: string): ParsedSecretPathValue {
 function parseSecretPathEnv(secretPath: string): ParsedSecretPathValue {
   const [vaultName, directoryPath, value] = parseSecretPath(secretPath);
   if (value != null && !environmentVariableRegex.test(value)) {
-    throw new commander.InvalidArgumentError(
+    throw new InvalidArgumentError(
       `${value} is not a valid environment variable name`,
     );
   }

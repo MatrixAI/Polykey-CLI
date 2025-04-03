@@ -1,16 +1,17 @@
-import type { GestaltIdEncoded } from 'polykey/dist/gestalts/types';
-import path from 'path';
-import fs from 'fs';
+import type { GestaltIdEncoded } from 'polykey/gestalts/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
+import { jest } from '@jest/globals';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as identitiesUtils from 'polykey/dist/identities/utils';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as discoveryEvents from 'polykey/dist/discovery/events';
-import { sleep } from 'polykey/dist/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as discoveryEvents from 'polykey/discovery/events.js';
+import { sleep } from 'polykey/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
-// @ts-ignore: stub out method
-identitiesUtils.browser = () => {};
+jest.unstable_mockModule('polykey/identities/utils.js', () => ({
+  browser: jest.fn().mockImplementation(() => {}),
+}));
 
 describe('audit', () => {
   const logger = new Logger('audit test', LogLevel.WARN, [new StreamHandler()]);

@@ -1,1 +1,1 @@
-export { default } from './CommandSecrets';
+export { default } from './CommandSecrets.js';

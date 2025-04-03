@@ -1,5 +1,5 @@
-export * from './utils';
-export * as options from './options';
-export * as parsers from './parsers';
-export * as processors from './processors';
-export { default as ExitHandlers } from './ExitHandlers';
+export * from './utils.js';
+export * as options from './options.js';
+export * as parsers from './parsers.js';
+export * as processors from './processors.js';
+export { default as ExitHandlers } from './ExitHandlers.js';

@@ -1,10 +1,10 @@
-import type { IdentityId, ProviderId } from 'polykey/dist/identities/types';
-import path from 'path';
-import fs from 'fs';
+import type { IdentityId, ProviderId } from 'polykey/identities/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('discovery queue', () => {
   const logger = new Logger('discovery queue test', LogLevel.WARN, [

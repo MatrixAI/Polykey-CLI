@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 
-import type { AgentChildProcessInput, AgentChildProcessOutput } from './types';
-import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import fs from 'fs';
-import process from 'process';
+import type {
+  AgentChildProcessInput,
+  AgentChildProcessOutput,
+} from './types.js';
+import type { PolykeyAgent } from 'polykey';
+import fs from 'node:fs';
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 /**
  * Hack for wiping out the threads signal handlers
  * See: https://github.com/andywer/threads.js/issues/388
@@ -12,7 +16,7 @@ import process from 'process';
  * in the entire codebase for this hack to work
  * If the worker manager is used, it must be stopped gracefully with the PolykeyAgent
  */
-import 'threads';
+import url from 'node:url';
 process.removeAllListeners('SIGINT');
 process.removeAllListeners('SIGTERM');
 
@@ -21,7 +25,8 @@ process.removeAllListeners('SIGTERM');
  * This can be referred to globally.
  * For ESM, change to using `import.meta.url`.
  */
-globalThis.PK_MAIN_EXECUTABLE = __filename;
+const filename = fileURLToPath(import.meta.url);
+globalThis.PK_MAIN_EXECUTABLE = filename;
 
 async function polykeyAgentMain(): Promise<number> {
   const {
@@ -29,12 +34,12 @@ async function polykeyAgentMain(): Promise<number> {
     StreamHandler,
     formatting,
   } = await import('@matrixai/logger');
-  const { default: PolykeyAgent } = await import('polykey/dist/PolykeyAgent');
-  const { default: ErrorPolykey } = await import('polykey/dist/ErrorPolykey');
-  const nodesUtils = await import('polykey/dist/nodes/utils');
-  const polykeyUtils = await import('polykey/dist/utils');
-  const binUtils = await import('./utils');
-  const binErrors = await import('./errors');
+  const { default: PolykeyAgent } = await import('polykey/PolykeyAgent.js');
+  const { default: ErrorPolykey } = await import('polykey/ErrorPolykey.js');
+  const nodesUtils = await import('polykey/nodes/utils.js');
+  const polykeyUtils = await import('polykey/utils/index.js');
+  const binUtils = await import('./utils/index.js');
+  const binErrors = await import('./errors.js');
   const logger = new Logger('polykey-agent', undefined, [new StreamHandler()]);
   const exitHandlers = new binUtils.ExitHandlers();
   const processSend = polykeyUtils.promisify(process.send!.bind(process));
@@ -142,20 +147,22 @@ async function polykeyAgentMain(): Promise<number> {
 }
 
 async function polykeyMain(argv: Array<string>): Promise<number> {
-  const { default: commander } = await import('commander');
-  const { default: ErrorPolykey } = await import('polykey/dist/ErrorPolykey');
-  const { default: CommandBootstrap } = await import('./bootstrap');
-  const { default: CommandAgent } = await import('./agent');
-  const { default: CommandAudit } = await import('./audit');
-  const { default: CommandVaults } = await import('./vaults');
-  const { default: CommandSecrets } = await import('./secrets');
-  const { default: CommandKeys } = await import('./keys');
-  const { default: CommandNodes } = await import('./nodes');
-  const { default: CommandIdentities } = await import('./identities');
-  const { default: CommandNotifications } = await import('./notifications');
-  const { default: CommandPolykey } = await import('./CommandPolykey');
-  const binUtils = await import('./utils');
-  const binErrors = await import('./errors');
+  const { CommanderError } = await import('commander');
+  const { default: ErrorPolykey } = await import('polykey/ErrorPolykey.js');
+  const { default: CommandBootstrap } = await import('./bootstrap/index.js');
+  const { default: CommandAgent } = await import('./agent/index.js');
+  const { default: CommandAudit } = await import('./audit/index.js');
+  const { default: CommandVaults } = await import('./vaults/index.js');
+  const { default: CommandSecrets } = await import('./secrets/index.js');
+  const { default: CommandKeys } = await import('./keys/index.js');
+  const { default: CommandNodes } = await import('./nodes/index.js');
+  const { default: CommandIdentities } = await import('./identities/index.js');
+  const { default: CommandNotifications } = await import(
+    './notifications/index.js'
+  );
+  const { default: CommandPolykey } = await import('./CommandPolykey.js');
+  const binUtils = await import('./utils/index.js');
+  const binErrors = await import('./errors.js');
   // Registers signal and process error handler
   // Any resource cleanup must be resolved within their try-catch block
   // Leaf commands may register exit handlers in case of signal exits
@@ -188,7 +195,7 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
     process.exitCode = 0;
   } catch (e) {
     const errFormat = rootCommand.opts().format === 'json' ? 'json' : 'error';
-    if (e instanceof commander.CommanderError) {
+    if (e instanceof CommanderError) {
       // Commander writes help and error messages on stderr automatically
       if (
         e.code === 'commander.help' ||
@@ -249,8 +256,11 @@ async function main(argv = process.argv): Promise<number> {
   }
 }
 
-if (require.main === module) {
-  void main();
+if (import.meta.url.startsWith('file:')) {
+  const modulePath = url.fileURLToPath(import.meta.url);
+  if (process.argv[1] === modulePath) {
+    void main();
+  }
 }
 
 export default main;

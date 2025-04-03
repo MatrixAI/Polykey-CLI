@@ -1,11 +1,11 @@
-import type { StatusLive } from 'polykey/dist/status/types';
+import type { StatusLive } from 'polykey/status/types.js';
 import type Logger from '@matrixai/logger';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import readline from 'readline';
-import * as utils from 'polykey/dist/utils/utils';
-import * as ids from 'polykey/dist/ids';
-import * as execUtils from './exec';
+import * as utils from 'polykey/utils/utils.js';
+import * as ids from 'polykey/ids/index.js';
+import * as execUtils from './exec.js';
 
 async function setupTestAgent(logger: Logger) {
   const agentDir = await fs.promises.mkdtemp(

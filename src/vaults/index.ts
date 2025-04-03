@@ -1,1 +1,1 @@
-export { default } from './CommandVaults';
+export { default } from './CommandVaults.js';

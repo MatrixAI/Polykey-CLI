@@ -1,1 +1,1 @@
-export { default } from './CommandIdentities';
+export { default } from './CommandIdentities.js';

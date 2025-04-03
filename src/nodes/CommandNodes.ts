@@ -1,10 +1,10 @@
-import CommandAdd from './CommandAdd';
-import CommandClaim from './CommandClaim';
-import CommandFind from './CommandFind';
-import CommandPing from './CommandPing';
-import CommandGetAll from './CommandGetAll';
-import CommandConnections from './CommandConnections';
-import CommandPolykey from '../CommandPolykey';
+import CommandAdd from './CommandAdd.js';
+import CommandClaim from './CommandClaim.js';
+import CommandFind from './CommandFind.js';
+import CommandPing from './CommandPing.js';
+import CommandGetAll from './CommandGetAll.js';
+import CommandConnections from './CommandConnections.js';
+import CommandPolykey from '../CommandPolykey.js';
 
 class CommandNodes extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {

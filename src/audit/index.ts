@@ -1,1 +1,1 @@
-export { default } from './CommandAudit';
+export { default } from './CommandAudit.js';

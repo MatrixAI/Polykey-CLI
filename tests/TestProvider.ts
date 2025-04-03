@@ -1,4 +1,4 @@
-import type { POJO } from 'polykey/dist/types';
+import type { POJO } from 'polykey/types.js';
 import type {
   ProviderId,
   IdentityId,
@@ -6,17 +6,17 @@ import type {
   IdentityData,
   ProviderAuthenticateRequest,
   ProviderPaginationToken,
-} from 'polykey/dist/identities/types';
+} from 'polykey/identities/types.js';
 import type {
   IdentitySignedClaim,
   ProviderIdentityClaimId,
-} from 'polykey/dist/identities/types';
-import type { SignedClaim } from 'polykey/dist/claims/types';
-import type { ClaimLinkIdentity } from 'polykey/dist/claims/payloads';
-import { Provider } from 'polykey/dist/identities';
-import * as identitiesUtils from 'polykey/dist/identities/utils';
-import * as identitiesErrors from 'polykey/dist/identities/errors';
-import * as tokenUtils from 'polykey/dist/tokens/utils';
+} from 'polykey/identities/types.js';
+import type { SignedClaim } from 'polykey/claims/types.js';
+import type { ClaimLinkIdentity } from 'polykey/claims/payloads/index.js';
+import { Provider } from 'polykey/identities/index.js';
+import * as identitiesUtils from 'polykey/identities/utils.js';
+import * as identitiesErrors from 'polykey/identities/errors.js';
+import * as tokenUtils from 'polykey/tokens/utils.js';
 
 class TestProvider extends Provider {
   public readonly id: ProviderId;

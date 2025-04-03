@@ -1,14 +1,14 @@
-import type { Host, Port } from 'polykey/dist/network/types';
-import path from 'path';
-import ErrorPolykey from 'polykey/dist/ErrorPolykey';
+import type { Host, Port } from 'polykey/network/types.js';
+import path from 'node:path';
+import ErrorPolykey from 'polykey/ErrorPolykey.js';
 import { test } from '@fast-check/jest';
-import * as ids from 'polykey/dist/ids';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as polykeyErrors from 'polykey/dist/errors';
+import * as ids from 'polykey/ids/index.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import * as polykeyErrors from 'polykey/errors.js';
 import * as fc from 'fast-check';
-import * as binUtils from '@/utils/utils';
-import * as binParsers from '@/utils/parsers';
-import * as testUtils from './utils';
+import * as testUtils from './utils/index.js';
+import * as binUtils from '#utils/utils.js';
+import * as binParsers from '#utils/parsers.js';
 
 describe('outputFormatters', () => {
   const nonPrintableCharArb = fc
@@ -18,9 +18,12 @@ describe('outputFormatters', () => {
     )
     .map((code) => String.fromCharCode(code));
 
-  const stringWithNonPrintableCharsArb = fc.stringOf(
-    fc.oneof(fc.char(), nonPrintableCharArb),
-  );
+  const stringWithNonPrintableCharsArb = fc.string({
+    unit: fc.oneof(
+      fc.string({ minLength: 1, maxLength: 1 }),
+      nonPrintableCharArb,
+    ),
+  });
 
   test('list in human and json format', () => {
     // List
@@ -330,18 +333,26 @@ describe('outputFormatters', () => {
 });
 
 describe('parsers', () => {
-  const singleSecretPathArb = fc.stringOf(
-    fc.char().filter((c) => binParsers.secretPathRegex.test(c)),
-    { minLength: 1, maxLength: 25 },
-  );
+  const singleSecretPathArb = fc.string({
+    unit: fc
+      .string({ minLength: 1, maxLength: 1 })
+      .filter((c) => binParsers.secretPathRegex.test(c)),
+    minLength: 1,
+    maxLength: 25,
+  });
   const secretPathArb = fc
     .array(singleSecretPathArb, { minLength: 1, maxLength: 5 })
     .map((segments) => path.join(...segments));
-  const valueFirstCharArb = fc.char().filter((c) => /^[a-zA-Z_]$/.test(c));
-  const valueRestCharArb = fc.stringOf(
-    fc.char().filter((c) => /^[\w]$/.test(c)),
-    { minLength: 1, maxLength: 100 },
-  );
+  const valueFirstCharArb = fc
+    .string({ minLength: 1, maxLength: 1 })
+    .filter((c) => /^[a-zA-Z_]$/.test(c));
+  const valueRestCharArb = fc.string({
+    unit: fc
+      .string({ minLength: 1, maxLength: 1 })
+      .filter((c) => /^[\w]$/.test(c)),
+    minLength: 1,
+    maxLength: 100,
+  });
   const valueDataArb = fc
     .tuple(valueFirstCharArb, valueRestCharArb)
     .map((components) => components.join(''));

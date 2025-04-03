@@ -1,7 +1,7 @@
-import CommandClear from './CommandClear';
-import CommandRead from './CommandRead';
-import CommandRemove from './CommandRemove';
-import CommandPolykey from '../../CommandPolykey';
+import CommandClear from './CommandClear.js';
+import CommandRead from './CommandRead.js';
+import CommandRemove from './CommandRemove.js';
+import CommandPolykey from '../../CommandPolykey.js';
 
 class CommandOutbox extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import process from 'process';
+import process from 'node:process';
 
 /**
  * Global setup for all jest tests

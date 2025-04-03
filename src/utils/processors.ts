@@ -1,22 +1,22 @@
-import type { FileSystem } from 'polykey/dist/types';
-import type { RecoveryCode } from 'polykey/dist/keys/types';
-import type { NodeId } from 'polykey/dist/ids/types';
+import type { FileSystem } from 'polykey/types.js';
+import type { RecoveryCode } from 'polykey/keys/types.js';
+import type { NodeId } from 'polykey/ids/types.js';
 import type {
   StatusStarting,
   StatusLive,
   StatusStopping,
   StatusDead,
-} from 'polykey/dist/status/types';
-import type { ObjectEmpty } from 'polykey/dist/types';
-import type { SessionToken } from 'polykey/dist/sessions/types';
-import path from 'path';
-import prompts from 'prompts';
+} from 'polykey/status/types.js';
+import type { ObjectEmpty } from 'polykey/types.js';
+import type { SessionToken } from 'polykey/sessions/types.js';
+import path from 'node:path';
 import Logger from '@matrixai/logger';
-import Status from 'polykey/dist/status/Status';
-import * as clientUtils from 'polykey/dist/client/utils';
-import { arrayZip, promise } from 'polykey/dist/utils';
-import config from 'polykey/dist/config';
-import * as errors from '../errors';
+import Status from 'polykey/status/Status.js';
+import * as clientUtils from 'polykey/client/utils.js';
+import { arrayZip, promise } from 'polykey/utils/index.js';
+import config from 'polykey/config.js';
+import * as utils from './utils.js';
+import * as errors from '../errors.js';
 
 /**
  * Prompts for existing password
@@ -24,6 +24,7 @@ import * as errors from '../errors';
  * When SIGINT is received this will return undefined
  */
 async function promptPassword(): Promise<string | undefined> {
+  const { default: prompts } = await import('prompts');
   let cancelled = false;
   // Creating promise for end of stdin
   const { p: endP, resolveP: endResolveP } = promise<ObjectEmpty>();
@@ -70,6 +71,7 @@ async function promptPassword(): Promise<string | undefined> {
  * When SIGINT is received this will return undefined
  */
 async function promptNewPassword(): Promise<string | undefined> {
+  const { default: prompts } = await import('prompts');
   while (true) {
     let cancelled = false;
     // Creating promise for end of stdin
@@ -133,7 +135,7 @@ async function promptNewPassword(): Promise<string | undefined> {
  */
 async function processPassword(
   passwordFile?: string,
-  fs: FileSystem = require('fs'),
+  fs: FileSystem = require('node:fs'),
 ): Promise<string> {
   let password: string | undefined;
   if (passwordFile != null) {
@@ -175,9 +177,10 @@ async function processPassword(
  */
 async function processNewPassword(
   passwordNewFile?: string,
-  fs: FileSystem = require('fs'),
+  fs?: FileSystem,
   existing: boolean = false,
 ): Promise<string> {
+  fs = await utils.importFS(fs);
   let passwordNew: string | undefined;
   if (passwordNewFile != null) {
     try {
@@ -217,8 +220,9 @@ async function processNewPassword(
  */
 async function processRecoveryCode(
   recoveryCodeFile?: string,
-  fs: FileSystem = require('fs'),
+  fs?: FileSystem,
 ): Promise<RecoveryCode | undefined> {
+  fs = await utils.importFS(fs);
   let recoveryCode: string | undefined;
   if (recoveryCodeFile != null) {
     try {
@@ -258,13 +262,14 @@ async function processClientOptions(
   nodeId?: NodeId,
   clientHost?: string,
   clientPort?: number,
-  fs = require('fs'),
+  fs?: FileSystem,
   logger = new Logger(processClientOptions.name),
 ): Promise<{
   nodeId: NodeId;
   clientHost: string;
   clientPort: number;
 }> {
+  fs = await utils.importFS(fs);
   if (nodeId != null && clientHost != null && clientPort != null) {
     return {
       nodeId,
@@ -321,7 +326,7 @@ async function processClientStatus(
   nodeId?: NodeId,
   clientHost?: string,
   clientPort?: number,
-  fs = require('fs'),
+  fs?: FileSystem,
   logger = new Logger(processClientStatus.name),
 ): Promise<
   | {
@@ -346,6 +351,7 @@ async function processClientStatus(
       clientPort: number;
     }
 > {
+  fs = await utils.importFS(fs);
   if (nodeId != null && clientHost != null && clientPort != null) {
     return {
       statusInfo: undefined,
@@ -426,8 +432,9 @@ async function processClientStatus(
  */
 async function processAuthentication(
   passwordFile?: string,
-  fs: FileSystem = require('fs'),
+  fs?: FileSystem,
 ): Promise<{ authorization?: string }> {
+  fs = await utils.importFS(fs);
   if (passwordFile != null) {
     let password;
     try {

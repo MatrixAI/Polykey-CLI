@@ -1,11 +1,11 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import { sleep } from 'polykey/dist/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import { sleep } from 'polykey/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('reset', () => {
   const logger = new Logger('reset test', LogLevel.WARN, [new StreamHandler()]);

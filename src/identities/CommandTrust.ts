@@ -1,10 +1,10 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { GestaltId } from 'polykey/dist/gestalts/types';
-import CommandPolykey from '../CommandPolykey';
-import * as binOptions from '../utils/options';
-import * as binUtils from '../utils';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { GestaltId } from 'polykey/gestalts/types.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binOptions from '../utils/options.js';
+import * as binUtils from '../utils/index.js';
+import * as binParsers from '../utils/parsers.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandTrust extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -21,10 +21,10 @@ class CommandTrust extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (gestaltId: GestaltId, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
-      const utils = await import('polykey/dist/utils');
-      const nodesUtils = await import('polykey/dist/nodes/utils');
+      const utils = await import('polykey/utils/index.js');
+      const nodesUtils = await import('polykey/nodes/utils.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

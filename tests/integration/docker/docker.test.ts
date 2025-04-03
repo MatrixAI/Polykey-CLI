@@ -1,12 +1,12 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import readline from 'readline';
-import { sleep } from 'polykey/dist/utils';
-import Status from 'polykey/dist/status/Status';
-import config from 'polykey/dist/config';
+import { sleep } from 'polykey/utils/index.js';
+import Status from 'polykey/status/Status.js';
+import config from 'polykey/config.js';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { encodeNodeId } from 'polykey/dist/ids';
-import * as testUtils from '../../utils';
+import { encodeNodeId } from 'polykey/ids/index.js';
+import * as testUtils from '../../utils/index.js';
 
 /**
  * These tests run against a docker image of a PolykeyAgent.

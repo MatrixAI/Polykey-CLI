@@ -1,19 +1,19 @@
-import os from 'os';
-import path from 'path';
-import fs from 'fs';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from 'polykey/dist/status/Status';
-import config from 'polykey/dist/config';
-import * as testNatUtils from './utils';
-import * as testUtils from '../utils';
+import Status from 'polykey/status/Status.js';
+import config from 'polykey/config.js';
+import * as testNatUtils from './utils.js';
+import * as testUtils from '../utils/index.js';
 import {
   isPlatformLinux,
   hasIp,
   hasIptables,
   hasNsenter,
   hasUnshare,
-} from '../utils/platform';
+} from '../utils/platform.js';
 
 const _supportsNatTesting =
   isPlatformLinux && hasIp && hasIptables && hasNsenter && hasUnshare;

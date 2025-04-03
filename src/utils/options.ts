@@ -5,9 +5,9 @@
  * but not the default value
  * @module
  */
-import commander from 'commander';
-import config from 'polykey/dist/config';
-import * as binParsers from '../utils/parsers';
+import { Option, InvalidArgumentError } from 'commander';
+import config from 'polykey/config.js';
+import * as binParsers from '../utils/parsers.js';
 
 /**
  * Node path is the path to node state
@@ -16,23 +16,20 @@ import * as binParsers from '../utils/parsers';
  * platform-specific default node path
  * On unknown platforms the default is undefined
  */
-const nodePath = new commander.Option(
-  '-np, --node-path <path>',
-  'Path to Node State',
-)
+const nodePath = new Option('-np, --node-path <path>', 'Path to Node State')
   .env('PK_NODE_PATH')
   .default(config.defaultsUser.nodePath);
 
 /**
  * Formatting choice of human, json, defaults to human
  */
-const format = new commander.Option('-f, --format <format>', 'Output Format')
+const format = new Option('-f, --format <format>', 'Output Format')
   .choices(['human', 'json'])
   .default('human');
 /**
  * Sets log level, defaults to 0, multiple uses will increase verbosity level
  */
-const verbose = new commander.Option('-v, --verbose', 'Log Verbose Messages')
+const verbose = new Option('-v, --verbose', 'Log Verbose Messages')
   .argParser((_, p: number) => {
     return p + 1;
   })
@@ -41,7 +38,7 @@ const verbose = new commander.Option('-v, --verbose', 'Log Verbose Messages')
 /**
  * Ignore any existing state during side-effectual construction
  */
-const fresh = new commander.Option(
+const fresh = new Option(
   '--fresh',
   'Ignore existing state during construction',
 ).default(false);
@@ -49,14 +46,14 @@ const fresh = new commander.Option(
 /**
  * Node ID used for connecting to a remote agent
  */
-const nodeId = new commander.Option('-ni, --node-id <id>')
+const nodeId = new Option('-ni, --node-id <id>')
   .env('PK_NODE_ID')
   .argParser(binParsers.parseNodeId);
 
 /**
  * Client host used for connecting to remote agent
  */
-const clientHost = new commander.Option(
+const clientHost = new Option(
   '-ch, --client-host <host>',
   'Client Host Address',
 )
@@ -66,24 +63,21 @@ const clientHost = new commander.Option(
 /**
  * Client port used for connecting to remote agent
  */
-const clientPort = new commander.Option(
-  '-cp, --client-port <port>',
-  'Client Port',
-)
+const clientPort = new Option('-cp, --client-port <port>', 'Client Port')
   .env('PK_CLIENT_PORT')
   .argParser(binParsers.parsePort);
 
-const agentHost = new commander.Option('-ah, --agent-host <host>', 'Agent host')
+const agentHost = new Option('-ah, --agent-host <host>', 'Agent host')
   .env('PK_AGENT_HOST')
   .argParser(binParsers.parseHost)
   .default(config.defaultsUser.agentServiceHost);
 
-const agentPort = new commander.Option('-ap, --agent-port <port>', 'Agent Port')
+const agentPort = new Option('-ap, --agent-port <port>', 'Agent Port')
   .env('PK_AGENT_PORT')
   .argParser(binParsers.parsePort)
   .default(config.defaultsUser.agentServicePort);
 
-const dnsServers = new commander.Option(
+const dnsServers = new Option(
   '--dns-servers [addresses...]',
   'List of dns servers used for dns resolution',
 )
@@ -91,49 +85,49 @@ const dnsServers = new commander.Option(
   .argParser(binParsers.parseAddresses)
   .default(undefined);
 
-const connConnectTime = new commander.Option(
+const connConnectTime = new Option(
   '--connection-timeout <ms>',
   'Timeout value for connection establishment between nodes',
 )
   .argParser(binParsers.parseInteger)
   .default(config.defaultsSystem.nodesConnectionConnectTimeoutTime);
 
-const passwordFile = new commander.Option(
+const passwordFile = new Option(
   '-pf, --password-file <path>',
   'Path to Password',
 );
 
-const passwordNewFile = new commander.Option(
+const passwordNewFile = new Option(
   '-pnf, --password-new-file <path>',
   'Path to new Password',
 );
 
-const recoveryCodeFile = new commander.Option(
+const recoveryCodeFile = new Option(
   '-rcf, --recovery-code-file <path>',
   'Path to a file used to load the Recovery Code from',
 );
 
-const recoveryCodeOutFile = new commander.Option(
+const recoveryCodeOutFile = new Option(
   '-rcof, --recovery-code-out-file <path>',
   'Path used to write the Recovery Code if one was generated, if none was generated then this is ignored',
 );
 
-const background = new commander.Option(
+const background = new Option(
   '-b, --background',
   'Starts the agent as a background process',
 );
 
-const backgroundOutFile = new commander.Option(
+const backgroundOutFile = new Option(
   '-bof, --background-out-file <path>',
   'Path to STDOUT for agent process',
 );
 
-const backgroundErrFile = new commander.Option(
+const backgroundErrFile = new Option(
   '-bef, --background-err-file <path>',
   'Path to STDERR for agent process',
 );
 
-const seedNodes = new commander.Option(
+const seedNodes = new Option(
   '-sn, --seed-nodes [nodeId1@host:port;nodeId2@host:port;...]',
   'Seed node address mappings',
 )
@@ -141,33 +135,31 @@ const seedNodes = new commander.Option(
   .env('PK_SEED_NODES')
   .default([{}, true]);
 
-const network = new commander.Option(
+const network = new Option(
   '-n --network <hostname>',
   'Hostname of the desired default network.',
 )
   .env('PK_NETWORK')
   .default(config.network.mainnet);
 
-const workers = new commander.Option(
+const workers = new Option(
   '-w --workers <count>',
   'Number of workers to use, defaults to number of cores with `all`, 0 means all cores, `false`|`null`|`none`|`no` means no multi-threading',
 )
   .argParser(binParsers.parseCoreCount)
   .default(0, 'all');
 
-const pullVault = new commander.Option(
+const pullVault = new Option(
   '-pv, --pull-vault <pullVaultNameOrId>',
   'Name or Id of the vault to pull from',
 );
 
-const forceNodeAdd = new commander.Option(
+const forceNodeAdd = new Option(
   '--force',
   'Force adding node to nodeGraph',
 ).default(false);
 
-const noPing = new commander.Option('--no-ping', 'Skip ping step').default(
-  true,
-);
+const noPing = new Option('--no-ping', 'Skip ping step').default(true);
 
 // We can't reference the object here, so we recreate the list of choices
 const passwordLimitChoices = [
@@ -178,7 +170,7 @@ const passwordLimitChoices = [
   'sensitive',
 ];
 
-const passwordOpsLimit = new commander.Option(
+const passwordOpsLimit = new Option(
   '--password-ops-limit <passwordOpsLimit>',
   'Limit the password generation operations',
 )
@@ -186,7 +178,7 @@ const passwordOpsLimit = new commander.Option(
   .env('PK_PASSWORD_OPS_LIMIT')
   .default('moderate');
 
-const passwordMemLimit = new commander.Option(
+const passwordMemLimit = new Option(
   '--password-mem-limit <passwordMemLimit>',
   'Limit the password generation memory',
 )
@@ -194,29 +186,29 @@ const passwordMemLimit = new commander.Option(
   .env('PK_PASSWORD_MEM_LIMIT')
   .default('moderate');
 
-const privateKeyFile = new commander.Option(
+const privateKeyFile = new Option(
   '--private-key-file <privateKeyFile>',
   'Override key creation with a private key JWE from a file',
 );
 
-const depth = new commander.Option(
+const depth = new Option(
   '-d, --depth [depth]',
   'The number of commits to retrieve',
 ).argParser(parseInt);
 
-const commitId = new commander.Option(
+const commitId = new Option(
   '-ci, --commit-id [commitId]',
   'Id for a specific commit to read from',
 );
 
-const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
+const envVariables = new Option('-e --env <envs...>', 'specify envs')
   .makeOptionMandatory(true)
   .argParser(
     (value: string, previous: Array<[string, string, string?]> | undefined) => {
       const acc = previous ?? [];
       const [vault, secret, val] = binParsers.parseSecretPathEnv(value);
       if (secret == null) {
-        throw new commander.InvalidArgumentError(
+        throw new InvalidArgumentError(
           'You must provide at least one secret path',
         );
       }
@@ -225,33 +217,33 @@ const envVariables = new commander.Option('-e --env <envs...>', 'specify envs')
     },
   );
 
-const envFormat = new commander.Option(
+const envFormat = new Option(
   '-ef --env-format <envFormat>',
   'Select how the env variables are formatted on stdout if no command is specified',
 )
   .choices(['auto', 'json', 'unix', 'cmd', 'powershell'])
   .default('auto');
 
-const envInvalid = new commander.Option(
+const envInvalid = new Option(
   '-ei --env-invalid <envInvalid>',
   'How invalid env variable names are handled when retrieving secrets. `error` will throw, `warn` will log a warning and drop and `ignore` will silently drop.',
 )
   .choices(['error', 'warn', 'ignore'])
   .default('error');
 
-const envDuplicate = new commander.Option(
+const envDuplicate = new Option(
   '-ed --env-duplicate <envDuplicate>',
   'How duplicate env variable names are handled. `keep` will keep the exising secret, `overwrite` will overwrite existing with the new secret, `warn` will log a warning and overwrite and `error` will throw.',
 )
   .choices(['keep', 'overwrite', 'warn', 'error'])
   .default('overwrite');
 
-const envExport = new commander.Option(
+const envExport = new Option(
   '-ee --env-export',
   'If enabled, exports the set environment variables to child environments',
 ).default(false);
 
-const discoveryMonitor = new commander.Option(
+const discoveryMonitor = new Option(
   '--monitor',
   'Enabling monitoring will cause discover to output discovery events as they happen and will exit once all children are processed',
 ).default(false);
@@ -263,26 +255,23 @@ const parseDate = (value: string): number => {
   return date;
 };
 
-const seekStart = new commander.Option(
+const seekStart = new Option(
   '--seek-start [seekStart]',
   `time to start seeking from`,
 )
   .argParser(parseDate)
   .default(0);
 
-const seekEnd = new commander.Option(
-  '--seek-end [seekEnd]',
-  `time to seek until`,
-)
+const seekEnd = new Option('--seek-end [seekEnd]', `time to seek until`)
   .argParser(parseDate)
   .default(undefined);
 
-const follow = new commander.Option(
+const follow = new Option(
   '--follow',
   'If enabled, future events will be outputted as they happen',
 ).default(false);
 
-const events = new commander.Option(
+const events = new Option(
   '--events [events...]',
   'Filter for specified event paths',
 )
@@ -299,31 +288,28 @@ const events = new commander.Option(
   )
   .default(undefined);
 
-const limit = new commander.Option(
+const limit = new Option(
   '--limit [limit]',
   'Limit the number of emitted events',
 )
   .argParser(parseInt)
   .default(undefined);
 
-const order = new commander.Option(
-  '--order [order]',
-  'Filter for specified events',
-)
+const order = new Option('--order [order]', 'Filter for specified events')
   .choices(['asc', 'desc'])
   .default('asc');
 
-const recursive = new commander.Option(
+const recursive = new Option(
   '--recursive',
   'If enabled, specified operation will be applied recursively to the directory and its contents',
 ).default(false);
 
-const parents = new commander.Option(
+const parents = new Option(
   '--parents',
   'If enabled, create all parent directories as well. If the directories exist, do nothing.',
 ).default(false);
 
-const preserveNewline = new commander.Option(
+const preserveNewline = new Option(
   '--preserve-newline <path>',
   'Preserve the last trailing newline for the secret content',
 )

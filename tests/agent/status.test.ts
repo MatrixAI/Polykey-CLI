@@ -1,10 +1,10 @@
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from 'polykey/dist/status/Status';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import config from 'polykey/dist/config';
-import * as testUtils from '../utils';
+import Status from 'polykey/status/Status.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import config from 'polykey/config.js';
+import * as testUtils from '../utils/index.js';
 
 describe('status', () => {
   const logger = new Logger('status test', LogLevel.WARN, [

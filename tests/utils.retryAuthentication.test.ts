@@ -1,21 +1,32 @@
-import prompts from 'prompts';
+import { jest } from '@jest/globals';
 import mockedEnv from 'mocked-env';
-import * as clientUtils from 'polykey/dist/client/utils';
-import * as clientErrors from 'polykey/dist/client/errors';
-import * as binUtils from '@/utils';
+import * as clientUtils from 'polykey/client/utils.js';
+import * as clientErrors from 'polykey/client/errors.js';
+import * as binUtils from '#utils/index.js';
 
-jest.mock('prompts');
+jest.unstable_mockModule('prompts', () => ({
+  default: jest.fn(),
+}));
+const { default: prompts } = await import('prompts');
+
+type TestAuthFunction = (meta: { authorization?: string }) => Promise<string>;
 
 describe('bin/utils retryAuthentication', () => {
+  beforeEach(() => {
+    prompts.mockClear();
+  });
+
   test('no retry on success', async () => {
-    const mockCallSuccess = jest.fn().mockResolvedValue('hello world');
+    const mockCallSuccess = jest
+      .fn<TestAuthFunction>()
+      .mockResolvedValue('hello world');
     const result = await binUtils.retryAuthentication(mockCallSuccess);
     expect(mockCallSuccess.mock.calls.length).toBe(1);
     expect(result).toBe('hello world');
   });
   test('no retry on generic error', async () => {
     const error = new Error('oh no');
-    const mockCallFail = jest.fn().mockRejectedValue(error);
+    const mockCallFail = jest.fn<TestAuthFunction>().mockRejectedValue(error);
     await expect(binUtils.retryAuthentication(mockCallFail)).rejects.toThrow(
       /oh no/,
     );
@@ -23,9 +34,9 @@ describe('bin/utils retryAuthentication', () => {
   });
   test('no retry on unattended call with PK_TOKEN and PK_PASSWORD', async () => {
     const mockCallFail = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValue(new clientErrors.ErrorClientAuthMissing());
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: 'hello',
       PK_PASSWORD: 'world',
     });
@@ -37,9 +48,9 @@ describe('bin/utils retryAuthentication', () => {
   });
   test('no retry on unattended call with PK_TOKEN', async () => {
     const mockCallFail = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValue(new clientErrors.ErrorClientAuthMissing());
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: 'hello',
       PK_PASSWORD: undefined,
     });
@@ -51,9 +62,9 @@ describe('bin/utils retryAuthentication', () => {
   });
   test('no retry on unattended call with PK_PASSWORD', async () => {
     const mockCallFail = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValue(new clientErrors.ErrorClientAuthMissing());
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: undefined,
       PK_PASSWORD: 'world',
     });
@@ -71,11 +82,11 @@ describe('bin/utils retryAuthentication', () => {
     });
     // Call will reject with ErrorClientAuthMissing then succeed
     const mockCall = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthMissing())
       .mockResolvedValue('hello world');
     // Make this an attended call
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: undefined,
       PK_PASSWORD: undefined,
     });
@@ -91,23 +102,21 @@ describe('bin/utils retryAuthentication', () => {
     const auth = mockCall.mock.calls[1][0].authorization;
     expect(auth).toBeDefined();
     expect(auth).toBe(clientUtils.encodeAuthFromPassword(password));
-    prompts.mockClear();
   });
   test('retry 2 times on clientErrors.ErrorClientAuthDenied', async () => {
     const password1 = 'first password';
     const password2 = 'second password';
-    prompts.mockClear();
     prompts
       .mockResolvedValueOnce({ password: password1 })
       .mockResolvedValue({ password: password2 });
     // Call will reject with ErrorClientAuthMissing then succeed
     const mockCall = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthMissing())
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthDenied())
       .mockResolvedValue('hello world');
     // Make this an attended call
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: undefined,
       PK_PASSWORD: undefined,
     });
@@ -124,25 +133,23 @@ describe('bin/utils retryAuthentication', () => {
     expect(auth).toBeDefined();
     // Second password succeeded
     expect(auth).toBe(clientUtils.encodeAuthFromPassword(password2));
-    prompts.mockClear();
   });
   test('retry 2+ times on clientErrors.ErrorClientAuthDenied until generic error', async () => {
     const password1 = 'first password';
     const password2 = 'second password';
-    prompts.mockClear();
     prompts
       .mockResolvedValueOnce({ password: password1 })
       .mockResolvedValue({ password: password2 });
     // Call will reject with ErrorClientAuthMissing then succeed
     const mockCall = jest
-      .fn()
+      .fn<TestAuthFunction>()
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthMissing())
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthDenied())
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthDenied())
       .mockRejectedValueOnce(new clientErrors.ErrorClientAuthDenied())
       .mockRejectedValue(new Error('oh no'));
     // Make this an attended call
-    const envRestore = mockedEnv({
+    const envRestore = mockedEnv.default({
       PK_TOKEN: undefined,
       PK_PASSWORD: undefined,
     });
@@ -156,6 +163,5 @@ describe('bin/utils retryAuthentication', () => {
     expect(auth).toBeDefined();
     // Second password was the last used
     expect(auth).toBe(clientUtils.encodeAuthFromPassword(password2));
-    prompts.mockClear();
   });
 });

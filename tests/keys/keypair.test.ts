@@ -1,5 +1,5 @@
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as testUtils from '../utils';
+import * as testUtils from '../utils/index.js';
 
 describe('keypair', () => {
   const logger = new Logger('keypair test', LogLevel.WARN, [

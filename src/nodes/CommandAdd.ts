@@ -1,11 +1,11 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { NodeId } from 'polykey/dist/ids/types';
-import type { Host, Port } from 'polykey/dist/network/types';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils/utils';
-import * as binProcessors from '../utils/processors';
-import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { NodeId } from 'polykey/ids/types.js';
+import type { Host, Port } from 'polykey/network/types.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/utils.js';
+import * as binProcessors from '../utils/processors.js';
+import * as binOptions from '../utils/options.js';
+import * as binParsers from '../utils/parsers.js';
 
 class CommandAdd extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -22,9 +22,9 @@ class CommandAdd extends CommandPolykey {
     this.addOption(binOptions.noPing);
     this.action(async (nodeId: NodeId, host: Host, port: Port, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
-      const nodesUtils = await import('polykey/dist/nodes/utils');
+      const nodesUtils = await import('polykey/nodes/utils.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

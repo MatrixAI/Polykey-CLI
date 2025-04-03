@@ -1,6 +1,6 @@
 import type { Class } from '@matrixai/errors';
 import { AbstractError } from '@matrixai/errors';
-import sysexits from 'polykey/dist/utils/sysexits';
+import sysexits from 'polykey/utils/sysexits.js';
 
 /**
  * Root error for Polykey CLI.

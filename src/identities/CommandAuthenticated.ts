@@ -1,9 +1,9 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import CommandPolykey from '../CommandPolykey';
-import * as binOptions from '../utils/options';
-import * as binUtils from '../utils';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binOptions from '../utils/options.js';
+import * as binUtils from '../utils/index.js';
+import * as binParsers from '../utils/parsers.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandAuthenticated extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -20,7 +20,7 @@ class CommandAuthenticated extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

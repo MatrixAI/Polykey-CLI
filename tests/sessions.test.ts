@@ -3,17 +3,20 @@
  * This is just for testing the CLI Authentication Retry Loop
  * @module
  */
-import path from 'path';
-import fs from 'fs';
-import prompts from 'prompts';
+import path from 'node:path';
+import fs from 'node:fs';
+import { jest } from '@jest/globals';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { Session } from 'polykey/dist/sessions';
-import { sleep } from 'polykey/dist/utils';
-import config from 'polykey/dist/config';
-import * as clientErrors from 'polykey/dist/client/errors';
-import * as testUtils from './utils';
+import { Session } from 'polykey/sessions/index.js';
+import { sleep } from 'polykey/utils/index.js';
+import config from 'polykey/config.js';
+import * as clientErrors from 'polykey/client/errors.js';
+import * as testUtils from './utils/index.js';
 
-jest.mock('prompts');
+jest.unstable_mockModule('prompts', () => ({
+  default: jest.fn(),
+}));
+const { default: prompts } = await import('prompts');
 
 describe('sessions', () => {
   const logger = new Logger('sessions test', LogLevel.WARN, [

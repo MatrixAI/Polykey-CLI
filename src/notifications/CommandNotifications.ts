@@ -1,7 +1,7 @@
-import CommandInbox from './inbox';
-import CommandOutbox from './outbox';
-import CommandSend from './CommandSend';
-import CommandPolykey from '../CommandPolykey';
+import CommandInbox from './inbox/index.js';
+import CommandOutbox from './outbox/index.js';
+import CommandSend from './CommandSend.js';
+import CommandPolykey from '../CommandPolykey.js';
 
 class CommandNotifications extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {

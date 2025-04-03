@@ -1,7 +1,7 @@
-import process from 'process';
-import ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import * as binUtils from './utils';
-import * as errors from '../errors';
+import process from 'node:process';
+import ErrorPolykey from 'polykey/ErrorPolykey.js';
+import * as binUtils from './utils.js';
+import * as errors from '../errors.js';
 
 class ExitHandlers {
   /**

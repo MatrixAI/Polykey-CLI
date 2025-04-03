@@ -1,10 +1,10 @@
-import type { ChildProcess } from 'child_process';
-import os from 'os';
-import fs from 'fs';
-import path from 'path';
+import type { ChildProcess } from 'node:child_process';
+import os from 'node:os';
+import fs from 'node:fs';
+import path from 'node:path';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as testUtils from '../utils';
+import * as testUtils from '../utils/index.js';
 
 type NATType = 'eim' | 'edm' | 'dmz';
 

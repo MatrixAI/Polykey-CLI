@@ -1,13 +1,13 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { IdentityInfoMessage } from 'polykey/dist/client/types';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { IdentityInfoMessage } from 'polykey/client/types.js';
 import type { ReadableStream } from 'stream/web';
-import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
+import type { ClientRPCResponseResult } from 'polykey/client/types.js';
 import { TransformStream } from 'stream/web';
-import CommandPolykey from '../CommandPolykey';
-import * as binOptions from '../utils/options';
-import * as binUtils from '../utils';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binOptions from '../utils/options.js';
+import * as binUtils from '../utils/index.js';
+import * as binParsers from '../utils/parsers.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandSearch extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -46,7 +46,7 @@ class CommandSearch extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (searchTerms, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

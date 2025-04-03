@@ -1,1 +1,1 @@
-export { default } from './CommandNotifications';
+export { default } from './CommandNotifications.js';

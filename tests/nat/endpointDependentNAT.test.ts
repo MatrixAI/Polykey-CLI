@@ -1,9 +1,9 @@
-import os from 'os';
-import path from 'path';
-import fs from 'fs';
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as testNatUtils from './utils';
-import * as testUtils from '../utils';
+import * as testNatUtils from './utils.js';
+import * as testUtils from '../utils/index.js';
 
 const _supportsNatTesting =
   testUtils.isPlatformLinux &&
