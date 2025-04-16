@@ -22,7 +22,7 @@ async function main() {
 
   console.error('Updating the npmDepsHash after version change');
   childProcess.execFileSync(
-    path.join(projectPath, 'scripts/npmDepsHash.js'),
+    path.join(projectPath, 'scripts/npmDepsHash.mjs'),
     [],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
