@@ -1,13 +1,14 @@
-import type { Host, Port } from 'polykey/dist/network/types';
-import path from 'path';
-import fs from 'fs';
+import type { Host, Port } from 'polykey/network/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as ids from 'polykey/dist/ids';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import sysexits from 'polykey/dist/utils/sysexits';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as ids from 'polykey/ids/index.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import sysexits from 'polykey/utils/sysexits.js';
+import { jest } from '@jest/globals';
+import * as testUtils from '../utils/index.js';
 
 describe('add', () => {
   const logger = new Logger('add test', LogLevel.WARN, [new StreamHandler()]);
@@ -20,7 +21,9 @@ describe('add', () => {
   let dataDir: string;
   let nodePath: string;
   let pkAgent: PolykeyAgent;
-  let mockedPingNode: jest.SpyInstance;
+  let mockedPingNode: jest.SpiedFunction<
+    typeof pkAgent.nodeManager.pingNodeAddress
+  >;
   beforeEach(async () => {
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
@@ -44,7 +47,12 @@ describe('add', () => {
     mockedPingNode = jest.spyOn(pkAgent.nodeManager, 'pingNodeAddress');
     await pkAgent.nodeGraph.stop();
     await pkAgent.nodeGraph.start({ fresh: true });
-    mockedPingNode.mockImplementation(() => true);
+    mockedPingNode.mockImplementation(
+      () =>
+        Promise.resolve(true) as ReturnType<
+          typeof pkAgent.nodeManager.pingNodeAddress
+        >,
+    );
   });
   afterEach(async () => {
     await pkAgent.stop();
@@ -138,7 +146,12 @@ describe('add', () => {
     ).toBeDefined();
   });
   test('fails to add node when ping fails', async () => {
-    mockedPingNode.mockImplementation(() => false);
+    mockedPingNode.mockImplementation(
+      () =>
+        Promise.resolve(false) as ReturnType<
+          typeof pkAgent.nodeManager.pingNodeAddress
+        >,
+    );
     const { exitCode } = await testUtils.pkStdio(
       [
         'nodes',
@@ -158,7 +171,12 @@ describe('add', () => {
     expect(exitCode).toBe(sysexits.NOHOST);
   });
   test('adds a node with --no-ping flag', async () => {
-    mockedPingNode.mockImplementation(() => false);
+    mockedPingNode.mockImplementation(
+      () =>
+        Promise.resolve(false) as ReturnType<
+          typeof pkAgent.nodeManager.pingNodeAddress
+        >,
+    );
     const { exitCode } = await testUtils.pkStdio(
       [
         'nodes',

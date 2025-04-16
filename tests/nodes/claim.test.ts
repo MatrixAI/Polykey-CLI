@@ -1,11 +1,11 @@
-import type { NodeId, NodeIdEncoded } from 'polykey/dist/ids/types';
-import path from 'path';
-import fs from 'fs';
+import type { NodeId, NodeIdEncoded } from 'polykey/ids/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('claim', () => {
   const logger = new Logger('claim test', LogLevel.WARN, [new StreamHandler()]);

@@ -1,10 +1,10 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
-import { ErrorPolykeyCLIMakeDirectory } from '../errors';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/index.js';
+import * as binOptions from '../utils/options.js';
+import * as binParsers from '../utils/parsers.js';
+import * as binProcessors from '../utils/processors.js';
+import { ErrorPolykeyCLIMakeDirectory } from '../errors.js';
 
 class CommandMkdir extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -26,7 +26,7 @@ class CommandMkdir extends CommandPolykey {
         binParsers.parseSecretPath(path),
       );
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

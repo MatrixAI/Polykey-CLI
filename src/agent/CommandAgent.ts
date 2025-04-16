@@ -1,10 +1,10 @@
-import CommandLock from './CommandLock';
-import CommandLockAll from './CommandLockAll';
-import CommandStart from './CommandStart';
-import CommandStatus from './CommandStatus';
-import CommandStop from './CommandStop';
-import CommandUnlock from './CommandUnlock';
-import CommandPolykey from '../CommandPolykey';
+import CommandLock from './CommandLock.js';
+import CommandLockAll from './CommandLockAll.js';
+import CommandStart from './CommandStart.js';
+import CommandStatus from './CommandStatus.js';
+import CommandStop from './CommandStop.js';
+import CommandUnlock from './CommandUnlock.js';
+import CommandPolykey from '../CommandPolykey.js';
 
 class CommandAgent extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {

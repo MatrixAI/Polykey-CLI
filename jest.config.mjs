@@ -1,26 +1,18 @@
-const os = require('os');
-const path = require('path');
-const fs = require('fs');
-const process = require('process');
-const { pathsToModuleNameMapper } = require('ts-jest');
-const { compilerOptions } = require('./tsconfig');
+import path from 'node:path';
+import url from 'node:url';
+import os from 'node:os';
+import process from 'node:process';
+import tsconfigJSON from './tsconfig.json' assert { type: "json" };
 
-const moduleNameMapper = pathsToModuleNameMapper(compilerOptions.paths, {
-  prefix: '<rootDir>/src/',
-});
+const projectPath = path.dirname(url.fileURLToPath(import.meta.url));
 
 // Global variables that are shared across the jest worker pool
 // These variables must be static and serializable
-if ((process.env.PK_TEST_PLATFORM != null) !== (process.env.PK_TEST_COMMAND != null)) throw Error('Both PK_TEST_PLATFORM and PK_TEST_COMMAND must be set together.')
 const globals = {
   // Absolute directory to the project root
-  projectDir: __dirname,
+  projectDir: projectPath,
   // Absolute directory to the test root
-  testDir: path.join(__dirname, 'tests'),
-  // Default global data directory
-  dataDir: fs.mkdtempSync(
-    path.join(os.tmpdir(), 'polykey-test-global-'),
-  ),
+  testDir: path.join(projectPath, 'tests'),
   // Default asynchronous test timeout
   defaultTimeout: 20000,
   failedConnectionTimeout: 50000,
@@ -31,10 +23,11 @@ const globals = {
 
 // The `globalSetup` and `globalTeardown` cannot access the `globals`
 // They run in their own process context
-// They can receive process environment
+// They can however receive the process environment
+// Use `process.env` to set variables
 process.env['GLOBAL_DATA_DIR'] = globals.dataDir;
 
-module.exports = {
+const config = {
   testEnvironment: 'node',
   verbose: true,
   collectCoverage: false,
@@ -46,15 +39,15 @@ module.exports = {
     "^.+\\.(t|j)sx?$": [
       "@swc/jest",
       {
-        "jsc": {
-          "parser": {
-            "syntax": "typescript",
-            "dynamicImport": true,
-            "tsx": true,
-            "decorators": compilerOptions.experimentalDecorators,
+        jsc: {
+          parser: {
+            syntax: "typescript",
+            tsx: true,
+            decorators: tsconfigJSON.compilerOptions.experimentalDecorators,
+            dynamicImport: true,
           },
-          "target": compilerOptions.target.toLowerCase(),
-          "keepClassNames": true,
+          target: tsconfigJSON.compilerOptions.target.toLowerCase(),
+          keepClassNames: true,
         },
       }
     ],
@@ -87,5 +80,10 @@ module.exports = {
     'jest-extended/all',
     '<rootDir>/tests/setupAfterEnv.ts'
   ],
-  moduleNameMapper: moduleNameMapper,
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx', '.mts'],
 };
+
+export default config;

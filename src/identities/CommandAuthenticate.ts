@@ -1,13 +1,12 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { ClientRPCResponseResult } from 'polykey/dist/client/types';
-import type { AuthProcessMessage } from 'polykey/dist/client/types';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { ClientRPCResponseResult } from 'polykey/client/types.js';
+import type { AuthProcessMessage } from 'polykey/client/types.js';
 import type { ReadableStream } from 'stream/web';
-import * as identitiesUtils from 'polykey/dist/identities/utils';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
-import * as binProcessors from '../utils/processors';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/index.js';
+import * as binOptions from '../utils/options.js';
+import * as binParsers from '../utils/parsers.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandAuthenticate extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -24,9 +23,10 @@ class CommandAuthenticate extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (providerId, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
-      const { never } = await import('polykey/dist/utils');
+      const { never } = await import('polykey/utils/index.js');
+      const identitiesUtils = await import('polykey/identities/utils.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

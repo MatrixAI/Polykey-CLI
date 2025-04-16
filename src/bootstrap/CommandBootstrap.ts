@@ -1,9 +1,9 @@
-import process from 'process';
-import fs from 'fs';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
+import process from 'node:process';
+import fs from 'node:fs';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/index.js';
+import * as binOptions from '../utils/options.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandBootstrap extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -17,8 +17,8 @@ class CommandBootstrap extends CommandPolykey {
     this.addOption(binOptions.passwordOpsLimit);
     this.addOption(binOptions.passwordMemLimit);
     this.action(async (options) => {
-      const bootstrapUtils = await import('polykey/dist/bootstrap/utils');
-      const keysUtils = await import('polykey/dist/keys/utils');
+      const bootstrapUtils = await import('polykey/bootstrap/utils.js');
+      const keysUtils = await import('polykey/keys/utils/index.js');
       const password = await binProcessors.processNewPassword(
         options.passwordFile,
         this.fs,

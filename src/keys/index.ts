@@ -1,1 +1,1 @@
-export { default } from './CommandKeys';
+export { default } from './CommandKeys.js';

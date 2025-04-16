@@ -1,6 +1,6 @@
-import path from 'path';
-import config from 'polykey/dist/config';
-import CommandPolykey from '../CommandPolykey';
+import path from 'node:path';
+import config from 'polykey/config.js';
+import CommandPolykey from '../CommandPolykey.js';
 
 class CommandLock extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -8,9 +8,7 @@ class CommandLock extends CommandPolykey {
     this.name('lock');
     this.description('Lock the Client and Clear the Existing Token');
     this.action(async (options) => {
-      const { default: Session } = await import(
-        'polykey/dist/sessions/Session'
-      );
+      const { default: Session } = await import('polykey/sessions/Session.js');
       const session = new Session({
         sessionTokenPath: path.join(options.nodePath, config.paths.tokenBase),
         fs: this.fs,

@@ -2,19 +2,20 @@ import type {
   IdentityData,
   IdentityId,
   ProviderId,
-} from 'polykey/dist/identities/types';
-import path from 'path';
-import fs from 'fs';
+} from 'polykey/identities/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
+import { jest } from '@jest/globals';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import { sysexits } from 'polykey/dist/utils';
-import * as identitiesUtils from 'polykey/dist/identities/utils';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import TestProvider from '../TestProvider';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import { sysexits } from 'polykey/utils/index.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import TestProvider from '../TestProvider.js';
+import * as testUtils from '../utils/index.js';
 
-// @ts-ignore: stub out method
-identitiesUtils.browser = () => {};
+jest.unstable_mockModule('polykey/identities/utils.js', () => ({
+  browser: jest.fn().mockImplementation(() => {}),
+}));
 
 describe('search', () => {
   const logger = new Logger('search test', LogLevel.WARN, [

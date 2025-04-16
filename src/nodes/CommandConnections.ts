@@ -1,8 +1,8 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { NodeConnectionMessage } from 'polykey/dist/client/types';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils/utils';
-import * as binProcessors from '../utils/processors';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { NodeConnectionMessage } from 'polykey/client/types.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/utils.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandAdd extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -11,7 +11,7 @@ class CommandAdd extends CommandPolykey {
     this.description('list all active node connections');
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,

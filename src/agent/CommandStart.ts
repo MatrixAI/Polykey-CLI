@@ -1,27 +1,27 @@
-import type { StdioOptions } from 'child_process';
+import type { StdioOptions } from 'node:child_process';
 import type {
   AgentStatusLiveData,
   AgentChildProcessInput,
   AgentChildProcessOutput,
-} from '../types';
+} from '../types.js';
 import type {
   default as PolykeyAgent,
   PolykeyAgentOptions,
-} from 'polykey/dist/PolykeyAgent';
-import type { DeepPartial } from 'polykey/dist/types';
-import type { RecoveryCode } from 'polykey/dist/keys/types';
-import childProcess from 'child_process';
-import process from 'process';
-import fs from 'fs';
-import config from 'polykey/dist/config';
-import * as keysErrors from 'polykey/dist/keys/errors';
-import * as polykeyEvents from 'polykey/dist/events';
-import * as polykeyUtils from 'polykey/dist/utils';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
-import * as errors from '../errors';
+} from 'polykey/PolykeyAgent.js';
+import type { DeepPartial } from 'polykey/types.js';
+import type { RecoveryCode } from 'polykey/keys/types.js';
+import childProcess from 'node:child_process';
+import process from 'node:process';
+import fs from 'node:fs';
+import config from 'polykey/config.js';
+import * as keysErrors from 'polykey/keys/errors.js';
+import * as polykeyEvents from 'polykey/events.js';
+import * as polykeyUtils from 'polykey/utils/index.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/index.js';
+import * as binOptions from '../utils/options.js';
+import * as binProcessors from '../utils/processors.js';
+import * as errors from '../errors.js';
 
 class CommandStart extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -51,11 +51,9 @@ class CommandStart extends CommandPolykey {
         options.clientHost ?? config.defaultsUser.clientServiceHost;
       options.clientPort =
         options.clientPort ?? config.defaultsUser.clientServicePort;
-      const { default: PolykeyAgent } = await import(
-        'polykey/dist/PolykeyAgent'
-      );
-      const nodesUtils = await import('polykey/dist/nodes/utils');
-      const keysUtils = await import('polykey/dist/keys/utils');
+      const { default: PolykeyAgent } = await import('polykey/PolykeyAgent.js');
+      const nodesUtils = await import('polykey/nodes/utils.js');
+      const keysUtils = await import('polykey/keys/utils/index.js');
       let password: string | undefined;
       if (options.fresh) {
         // If fresh, then get a new password

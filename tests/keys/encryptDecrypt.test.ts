@@ -1,11 +1,11 @@
-import type { StatusLive } from 'polykey/dist/status/types';
-import path from 'path';
-import fs from 'fs';
+import type { StatusLive } from 'polykey/status/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import sysexits from 'polykey/dist/utils/sysexits';
-import * as testUtils from '../utils';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import sysexits from 'polykey/utils/sysexits.js';
+import * as testUtils from '../utils/index.js';
 
 describe('encrypt-decrypt', () => {
   const logger = new Logger('encrypt-decrypt test', LogLevel.WARN, [

@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const childProcess = require('child_process');
+import fs from 'node:fs';
+import path from 'node:path';
+import childProcess from 'node:child_process';
+import url from 'node:url';
+
+const projectPath = path.dirname(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+);
 
 async function main(_argv = process.argv) {
-  const projectRoot = path.join(__dirname, '..');
   try {
     const hash = childProcess.execFileSync(
       'prefetch-npm-deps',
@@ -15,7 +19,7 @@ async function main(_argv = process.argv) {
         encoding: 'utf-8',
       },
     );
-    await fs.promises.writeFile(path.join(projectRoot, 'npmDepsHash'), hash);
+    await fs.promises.writeFile(path.join(projectPath, 'npmDepsHash'), hash);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(

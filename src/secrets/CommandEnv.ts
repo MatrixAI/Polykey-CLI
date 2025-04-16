@@ -1,15 +1,15 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { ParsedSecretPathValue } from '../types';
-import path from 'path';
-import os from 'os';
-import commander from 'commander';
-import * as utils from 'polykey/dist/utils';
-import CommandPolykey from '../CommandPolykey';
-import * as binProcessors from '../utils/processors';
-import * as binUtils from '../utils';
-import * as binErrors from '../errors';
-import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { ParsedSecretPathValue } from '../types.js';
+import path from 'node:path';
+import os from 'node:os';
+import { InvalidArgumentError } from 'commander';
+import * as utils from 'polykey/utils/index.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binProcessors from '../utils/processors.js';
+import * as binUtils from '../utils/index.js';
+import * as binErrors from '../errors.js';
+import * as binOptions from '../utils/options.js';
+import * as binParsers from '../utils/parsers.js';
 
 class CommandEnv extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -32,7 +32,7 @@ class CommandEnv extends CommandPolykey {
     );
     this.action(async (args, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const {
         envInvalid,
@@ -86,7 +86,7 @@ class CommandEnv extends CommandPolykey {
       if (envVariables.length === 0) {
         this.addHelpText('before', 'You must provide at least 1 secret path');
         this.outputHelp();
-        throw new commander.InvalidArgumentError(
+        throw new InvalidArgumentError(
           'You must provide at least 1 secret path',
         );
       }
@@ -257,7 +257,7 @@ class CommandEnv extends CommandPolykey {
               }
               break;
             default: {
-              const { spawnSync } = await import('child_process');
+              const { spawnSync } = await import('node:child_process');
               const result = spawnSync(cmd, argv, {
                 env: {
                   ...process.env,

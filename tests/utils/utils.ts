@@ -1,7 +1,7 @@
-import type PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import { promise } from 'polykey/dist/utils/utils';
+import type PolykeyAgent from 'polykey/PolykeyAgent.js';
+import { promise } from 'polykey/utils/utils.js';
 import fc from 'fast-check';
-import * as binParsers from '@/utils/parsers';
+import * as binParsers from '#utils/parsers.js';
 
 function testIf(condition: boolean) {
   return condition ? test : test.skip;
@@ -88,10 +88,11 @@ async function nodesConnect(localNode: PolykeyAgent, remoteNode: PolykeyAgent) {
   );
 }
 
-const vaultNameArb = fc
-  .string({ minLength: 1, maxLength: 100 })
-  .filter((str) => binParsers.vaultNameRegex.test(str))
-  .filter((str) => !str.startsWith('-'))
-  .noShrink();
+const vaultNameArb = fc.noShrink(
+  fc
+    .string({ minLength: 1, maxLength: 100 })
+    .filter((str) => binParsers.vaultNameRegex.test(str))
+    .filter((str) => !str.startsWith('-')),
+);
 
 export { testIf, describeIf, trackTimers, nodesConnect, vaultNameArb };

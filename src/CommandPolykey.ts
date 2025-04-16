@@ -1,14 +1,15 @@
-import type { FileSystem } from 'polykey/dist/types';
-import commander from 'commander';
+import type { FileSystem } from 'polykey/types.js';
+import type { OptionValues } from 'commander';
+import { Command } from 'commander';
 import Logger, {
   StreamHandler,
   formatting,
   levelToString,
   evalLogDataValue,
 } from '@matrixai/logger';
-import * as binUtils from './utils';
-import * as binOptions from './utils/options';
-import * as errors from './errors';
+import * as binUtils from './utils/index.js';
+import * as binOptions from './utils/options.js';
+import * as errors from './errors.js';
 
 /**
  * Singleton logger constructed once for all commands
@@ -18,17 +19,17 @@ const logger = new Logger('polykey', undefined, [new StreamHandler()]);
 /**
  * Base class for all commands
  */
-class CommandPolykey extends commander.Command {
+class CommandPolykey extends Command {
   protected logger: Logger = logger;
   protected fs: FileSystem;
   protected exitHandlers: binUtils.ExitHandlers;
 
   public constructor({
     exitHandlers,
-    fs = require('fs'),
+    fs,
   }: {
     exitHandlers: binUtils.ExitHandlers;
-    fs?: FileSystem;
+    fs: FileSystem;
   }) {
     super();
     this.fs = fs;
@@ -51,7 +52,7 @@ class CommandPolykey extends commander.Command {
   /**
    * Overrides opts to return all options set in the command hierarchy
    */
-  public opts<T extends commander.OptionValues>(): T {
+  public opts<T extends OptionValues>(): T {
     const opts = super.opts<T>();
     if (this.parent != null) {
       // Override the current options with parent options

@@ -1,19 +1,17 @@
-import type { RecoveryCode } from 'polykey/dist/keys/types';
-import type { StatusLive } from 'polykey/dist/status/types';
-import type { NodeId } from 'polykey/dist/ids/types';
-import type { Host, Port } from 'polykey/dist/network/types';
-import path from 'path';
-import fs from 'fs';
+import type { RecoveryCode } from 'polykey/keys/types.js';
+import type { StatusLive } from 'polykey/status/types.js';
+import type { NodeId } from 'polykey/ids/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import readline from 'readline';
-import process from 'process';
+import process from 'node:process';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import Status from 'polykey/dist/status/Status';
-import * as statusErrors from 'polykey/dist/status/errors';
-import config from 'polykey/dist/config';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import { promise } from 'polykey/dist/utils';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import * as testUtils from '../utils';
+import Status from 'polykey/status/Status.js';
+import * as statusErrors from 'polykey/status/errors.js';
+import config from 'polykey/config.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import { promise } from 'polykey/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('start', () => {
   const logger = new Logger('start test', LogLevel.WARN, [new StreamHandler()]);
@@ -420,7 +418,6 @@ describe('start', () => {
           'none',
           '--seed-nodes',
           '',
-          '--verbose',
         ],
         {
           env: {
@@ -438,7 +435,19 @@ describe('start', () => {
         rlOut.once('line', resolve);
         rlOut.once('close', () => reject(Error('closed early')));
       });
+      const status = new Status({
+        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
+        statusLockPath: path.join(
+          dataDir,
+          'polykey',
+          config.paths.statusLockBase,
+        ),
+        fs,
+        logger,
+      });
+      await status.waitFor('LIVE');
       agentProcess1.kill('SIGHUP');
+      await status.waitFor('DEAD');
       const agentProcess2 = await testUtils.pkSpawn(
         [
           'agent',
@@ -464,16 +473,6 @@ describe('start', () => {
         },
         logger,
       );
-      const status = new Status({
-        statusPath: path.join(dataDir, 'polykey', config.paths.statusBase),
-        statusLockPath: path.join(
-          dataDir,
-          'polykey',
-          config.paths.statusLockBase,
-        ),
-        fs,
-        logger,
-      });
       await status.waitFor('LIVE');
       agentProcess2.kill('SIGHUP');
       // Check for graceful exit
@@ -881,9 +880,9 @@ describe('start', () => {
     let seedNodeId1: NodeId;
     let seedNodeHost1: string;
     let seedNodePort1: number;
-    let seedNodeId2: NodeId;
-    let seedNodeHost2: string;
-    let seedNodePort2: number;
+    let _seedNodeId2: NodeId;
+    let _seedNodeHost2: string;
+    let _seedNodePort2: number;
     beforeEach(async () => {
       // Additional seed node
       agentDataDir = await fs.promises.mkdtemp(
@@ -896,9 +895,9 @@ describe('start', () => {
       seedNodeId1 = agent1Status.data.nodeId;
       seedNodeHost1 = agent1Status.data.agentHost;
       seedNodePort1 = agent1Status.data.agentPort;
-      seedNodeId2 = agent2Status.data.nodeId;
-      seedNodeHost2 = agent2Status.data.agentHost;
-      seedNodePort2 = agent2Status.data.agentPort;
+      _seedNodeId2 = agent2Status.data.nodeId;
+      _seedNodeHost2 = agent2Status.data.agentHost;
+      _seedNodePort2 = agent2Status.data.agentPort;
     });
     afterEach(async () => {
       await agent1Close();
@@ -921,16 +920,6 @@ describe('start', () => {
           fs,
           logger,
         });
-        const mockedResolveSeedNodes = jest.spyOn(
-          nodesUtils,
-          'resolveSeednodes',
-        );
-        mockedResolveSeedNodes.mockResolvedValue({
-          [nodesUtils.encodeNodeId(seedNodeId2)]: [
-            seedNodeHost2 as Host,
-            seedNodePort2 as Port,
-          ],
-        });
         // Record<NodeIdEncoded, NodeAddress>
         await testUtils.pkStdio(
           [
@@ -943,7 +932,7 @@ describe('start', () => {
             '--workers',
             'none',
             '--seed-nodes',
-            `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1};<defaults>`,
+            `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1};`,
             '--seed-nodes',
             '',
             '--verbose',
@@ -967,7 +956,6 @@ describe('start', () => {
           },
           cwd: dataDir,
         });
-        mockedResolveSeedNodes.mockRestore();
         await status.waitFor('DEAD');
       },
       globalThis.defaultTimeout * 2,
@@ -985,16 +973,6 @@ describe('start', () => {
           fs,
           logger,
         });
-        const mockedResolveSeedNodes = jest.spyOn(
-          nodesUtils,
-          'resolveSeednodes',
-        );
-        mockedResolveSeedNodes.mockResolvedValue({
-          [nodesUtils.encodeNodeId(seedNodeId2)]: [
-            seedNodeHost2 as Host,
-            seedNodePort2 as Port,
-          ],
-        });
         await testUtils.pkStdio(
           [
             'agent',
@@ -1015,7 +993,7 @@ describe('start', () => {
               PK_PASSWORD: password,
               PK_PASSWORD_OPS_LIMIT: 'min',
               PK_PASSWORD_MEM_LIMIT: 'min',
-              PK_SEED_NODES: `<defaults>;${seedNodeId1}@${seedNodeHost1}:${seedNodePort1}`,
+              PK_SEED_NODES: `${seedNodeId1}@${seedNodeHost1}:${seedNodePort1}`,
               PK_NETWORK: 'testnet',
             },
             cwd: dataDir,
@@ -1030,7 +1008,6 @@ describe('start', () => {
           },
           cwd: dataDir,
         });
-        mockedResolveSeedNodes.mockRestore();
         await status.waitFor('DEAD');
       },
       globalThis.defaultTimeout * 2,

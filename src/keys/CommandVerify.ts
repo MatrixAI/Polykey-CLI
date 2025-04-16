@@ -1,10 +1,10 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import type { PublicKeyJWK } from 'polykey/dist/keys/types';
-import * as errors from '../errors';
-import CommandPolykey from '../CommandPolykey';
-import * as binUtils from '../utils';
-import * as binOptions from '../utils/options';
-import * as binProcessors from '../utils/processors';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { PublicKeyJWK } from 'polykey/keys/types.js';
+import * as errors from '../errors.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binUtils from '../utils/index.js';
+import * as binOptions from '../utils/options.js';
+import * as binProcessors from '../utils/processors.js';
 
 class CommandVerify extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -25,10 +25,10 @@ class CommandVerify extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (filePath, signaturePath, nodeIdOrJwkFile, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
-      const nodesUtils = await import('polykey/dist/nodes/utils');
-      const keysUtils = await import('polykey/dist/keys/utils');
+      const nodesUtils = await import('polykey/nodes/utils.js');
+      const keysUtils = await import('polykey/keys/utils/index.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,

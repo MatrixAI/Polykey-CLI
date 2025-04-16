@@ -1,9 +1,9 @@
 import type { LogLevel } from '@matrixai/logger';
-import type { PolykeyAgentOptions } from 'polykey/dist/PolykeyAgent';
-import type { POJO, DeepPartial } from 'polykey/dist/types';
-import type { RecoveryCode } from 'polykey/dist/keys/types';
-import type { StatusLive } from 'polykey/dist/status/types';
-import type { NodeIdEncoded } from 'polykey/dist/ids/types';
+import type { PolykeyAgentOptions } from 'polykey/PolykeyAgent.js';
+import type { POJO, DeepPartial } from 'polykey/types.js';
+import type { RecoveryCode } from 'polykey/keys/types.js';
+import type { StatusLive } from 'polykey/status/types.js';
+import type { NodeIdEncoded } from 'polykey/ids/types.js';
 
 type TableRow = Record<string, any>;
 

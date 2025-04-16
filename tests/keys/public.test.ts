@@ -1,5 +1,5 @@
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import * as testUtils from '../utils';
+import * as testUtils from '../utils/index.js';
 
 describe('public', () => {
   const logger = new Logger('public test', LogLevel.WARN, [

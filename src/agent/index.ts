@@ -1,1 +1,1 @@
-export { default } from './CommandAgent';
+export { default } from './CommandAgent.js';

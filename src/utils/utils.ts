@@ -1,22 +1,23 @@
-import type { POJO } from 'polykey/dist/types';
+import type { FileSystem } from 'polykey/types.js';
+import type { POJO } from 'polykey/types.js';
 import type {
   TableRow,
   TableOptions,
   DictOptions,
   PromiseDeconstructed,
-} from '../types';
-import process from 'process';
+} from '../types.js';
+import process from 'node:process';
 import { LogLevel } from '@matrixai/logger';
-import ErrorPolykey from 'polykey/dist/ErrorPolykey';
-import * as clientUtils from 'polykey/dist/client/utils';
-import * as clientErrors from 'polykey/dist/client/errors';
-import * as networkErrors from 'polykey/dist/network/errors';
-import * as utils from 'polykey/dist/utils';
-import polykeyConfig from 'polykey/dist/config';
-import * as binProcessors from './processors';
-import * as errors from '../errors';
+import ErrorPolykey from 'polykey/ErrorPolykey.js';
+import * as clientUtils from 'polykey/client/utils.js';
+import * as clientErrors from 'polykey/client/errors.js';
+import * as networkErrors from 'polykey/network/errors.js';
+import * as utils from 'polykey/utils/index.js';
+import polykeyConfig from 'polykey/config.js';
+import * as binProcessors from './processors.js';
+import * as errors from '../errors.js';
 // @ts-ignore package.json is outside rootDir
-import { version as versionCLI } from '../../package.json';
+import packageJson from '../../package.json' assert { type: 'json' };
 
 /**
  * Convert verbosity to LogLevel
@@ -606,7 +607,7 @@ const validEnvRegex = /[a-zA-Z_]+[a-zA-Z0-9_]*/;
  */
 function generateVersionString(): string {
   const version = [
-    versionCLI,
+    packageJson.version,
     polykeyConfig.sourceVersion,
     `${polykeyConfig.networkVersion}`,
     `${polykeyConfig.stateVersion}`,
@@ -628,6 +629,12 @@ function promise<T = void>(): PromiseDeconstructed<T> {
     resolveP,
     rejectP,
   };
+}
+
+async function importFS(fs?: FileSystem): Promise<FileSystem> {
+  if (fs != null) return fs;
+  const { default: fsImported } = await import('node:fs');
+  return fsImported;
 }
 
 export {
@@ -652,6 +659,7 @@ export {
   validEnvRegex,
   generateVersionString,
   promise,
+  importFS,
 };
 
 export type { OutputObject };

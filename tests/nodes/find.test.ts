@@ -1,13 +1,13 @@
-import type { Host, Port } from 'polykey/dist/network/types';
-import type { NodeId } from 'polykey/dist/ids/types';
-import path from 'path';
-import fs from 'fs';
+import type { Host, Port } from 'polykey/network/types.js';
+import type { NodeId } from 'polykey/ids/types.js';
+import path from 'node:path';
+import fs from 'node:fs';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import PolykeyAgent from 'polykey/dist/PolykeyAgent';
-import * as nodesUtils from 'polykey/dist/nodes/utils';
-import { sysexits } from 'polykey/dist/errors';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from '../utils';
+import PolykeyAgent from 'polykey/PolykeyAgent.js';
+import * as nodesUtils from 'polykey/nodes/utils.js';
+import { sysexits } from 'polykey/errors.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from '../utils/index.js';
 
 describe('find', () => {
   const logger = new Logger('find test', LogLevel.WARN, [new StreamHandler()]);

@@ -1,23 +1,27 @@
 #!/usr/bin/env node
 
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
-const childProcess = require('child_process');
-const esbuild = require('esbuild');
-const polykey = require('polykey');
-const packageJSON = require('../package.json');
+import os from 'node:os';
+import fs from 'node:fs';
+import path from 'node:path';
+import url from 'node:url';
+import process from 'node:process';
+import childProcess from 'node:child_process';
+import esbuild from 'esbuild';
+import config from 'polykey/config.js';
+import packageJSON from '../package.json' assert { type: 'json' };
+
+const projectPath = path.dirname(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+);
 
 const platform = os.platform();
 
 /* eslint-disable no-console */
 async function main(argv = process.argv) {
   argv = argv.slice(2);
-  const projectRoot = path.join(__dirname, '..');
-  const buildPath = path.join(projectRoot, 'build');
-  const distPath = path.join(projectRoot, 'dist');
-  const gitPath = process.env.GIT_DIR ?? path.join(projectRoot, '.git');
+  const buildPath = path.join(projectPath, 'build');
+  const distPath = path.join(projectPath, 'dist');
+  const gitPath = process.env.GIT_DIR ?? path.join(projectPath, '.git');
   await fs.promises.rm(distPath, {
     recursive: true,
     force: true,
@@ -48,10 +52,10 @@ async function main(argv = process.argv) {
     versionMetadata: {
       version: packageJSON.version,
       commitHash: gitHead,
-      libVersion: polykey.config.version,
-      libSourceVersion: polykey.config.sourceVersion,
-      libStateVersion: polykey.config.stateVersion.toString(),
-      libNetworkVersion: polykey.config.networkVersion.toString(),
+      libVersion: config.version,
+      libSourceVersion: config.sourceVersion,
+      libStateVersion: config.stateVersion.toString(),
+      libNetworkVersion: config.networkVersion.toString(),
     },
   };
   console.error('Writing build metadata (build.json):');
@@ -67,7 +71,7 @@ async function main(argv = process.argv) {
     // 2 entrypoints, the main script and the worker script
     entryPoints: [
       path.join(buildPath, 'polykey.js'),
-      path.join(buildPath, 'polykeyWorker.js'),
+      path.join(buildPath, 'polykeyWorkerManifest.js'),
     ],
     sourceRoot: buildPath,
     bundle: true,
@@ -78,8 +82,11 @@ async function main(argv = process.argv) {
     // External source map for debugging
     sourcemap: true,
     // Minify and keep the original names
-    minify: true,
+    minify: false,
     keepNames: true,
+    // Supporting ESM
+    format: 'esm',
+    inject: [path.join(projectPath, './shims/require-shim.mjs')],
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);

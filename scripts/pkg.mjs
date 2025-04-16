@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 
-const os = require('os');
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
-const childProcess = require('child_process');
-const packageJSON = require('../package.json');
+import os from 'node:os';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import childProcess from 'node:child_process';
+import url from 'node:url';
+import packageJSON from '../package.json' assert { type: 'json' };
+
+const projectPath = path.dirname(
+  path.dirname(url.fileURLToPath(import.meta.url)),
+);
 
 /**
  * Supported platforms
@@ -95,7 +100,7 @@ async function main(argv = process.argv) {
   os.arch = () => arch;
   // Ensure that `node-gyp-build` only finds prebuilds
   process.env.PREBUILDS_ONLY = '1';
-  const nodeGypBuild = require('node-gyp-build');
+  const nodeGypBuild = await import('node-gyp-build');
   const pkgConfig = packageJSON.pkg ?? {};
   pkgConfig.assets = pkgConfig.assets ?? {};
   const npmLsOut = childProcess.execFileSync(
@@ -108,7 +113,6 @@ async function main(argv = process.argv) {
     },
   );
   const nodePackages = npmLsOut.trim().split('\n');
-  const projectRoot = path.join(__dirname, '..');
   // This will only find native addons that is using `node-gyp-build`
   for (const nodePackage of nodePackages) {
     // If `build` or `prebuilds` directory exists with a `.node` file
@@ -122,7 +126,7 @@ async function main(argv = process.argv) {
       let nativeAddonPath = nodeGypBuild.path(nodePackage);
       // Must use relative paths
       // so that assets are added relative to the project
-      nativeAddonPath = path.relative(projectRoot, nativeAddonPath);
+      nativeAddonPath = path.relative(projectPath, nativeAddonPath);
       pkgConfig.assets.push(nativeAddonPath);
     }
   }
@@ -130,7 +134,7 @@ async function main(argv = process.argv) {
   console.error(pkgConfig);
   // The pkg config must be in the same directory as the `package.json`
   // otherwise the relative paths won't work
-  const pkgConfigPath = path.join(projectRoot, 'pkg.json');
+  const pkgConfigPath = path.join(projectPath, 'pkg.json');
   await fs.promises.writeFile(pkgConfigPath, JSON.stringify(pkgConfig));
   const pkgPlatform = platforms[platform];
   const pkgArch = archs[arch];

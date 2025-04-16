@@ -1,12 +1,12 @@
 import type { IChain } from 'nexpect';
-import path from 'path';
-import fs from 'fs';
+import path from 'node:path';
+import fs from 'node:fs';
 import readline from 'readline';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
-import { errors as statusErrors } from 'polykey/dist/status';
-import { errors as bootstrapErrors } from 'polykey/dist/bootstrap';
-import * as keysUtils from 'polykey/dist/keys/utils';
-import * as testUtils from './utils';
+import { errors as statusErrors } from 'polykey/status/index.js';
+import { errors as bootstrapErrors } from 'polykey/bootstrap/index.js';
+import * as keysUtils from 'polykey/keys/utils/index.js';
+import * as testUtils from './utils/index.js';
 
 describe('bootstrap', () => {
   const logger = new Logger('bootstrap test', LogLevel.WARN, [

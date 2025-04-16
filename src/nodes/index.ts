@@ -1,1 +1,1 @@
-export { default } from './CommandNodes';
+export { default } from './CommandNodes.js';

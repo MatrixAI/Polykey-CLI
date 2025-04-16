@@ -1,9 +1,9 @@
-import type PolykeyClient from 'polykey/dist/PolykeyClient';
-import * as binProcessors from '../utils/processors';
-import * as binUtils from '../utils';
-import CommandPolykey from '../CommandPolykey';
-import * as binOptions from '../utils/options';
-import * as binParsers from '../utils/parsers';
+import type PolykeyClient from 'polykey/PolykeyClient.js';
+import * as binProcessors from '../utils/processors.js';
+import * as binUtils from '../utils/index.js';
+import CommandPolykey from '../CommandPolykey.js';
+import * as binOptions from '../utils/options.js';
+import * as binParsers from '../utils/parsers.js';
 
 class CommandPermissions extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -17,7 +17,7 @@ class CommandPermissions extends CommandPolykey {
     this.addOption(binOptions.clientPort);
     this.action(async (vaultName, options) => {
       const { default: PolykeyClient } = await import(
-        'polykey/dist/PolykeyClient'
+        'polykey/PolykeyClient.js'
       );
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
