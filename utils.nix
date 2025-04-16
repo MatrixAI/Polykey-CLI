@@ -29,27 +29,27 @@ rec {
     "3.5" = {
       "linux-x64" = fetchurl {
         url =
-          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-linux-x64";
+          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.18.2-linux-x64";
         sha256 =
-          "0f065bb2ccfdedaa7889e04604516604c2d0c0a0d9d13869578a6b3916b9a93e";
+          "c811a87d18fbbd3893848360b4ad0c8e48bf265146c7f1881f4dae5220866b88";
       };
       "win32-x64" = fetchurl {
         url =
-          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-win-x64";
+          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.18.2-win-x64";
         sha256 =
-          "140c377c2c91751832e673cb488724cbd003f01aa237615142cd2907f34fa1a2";
+          "fe7ea820ac3ef081bc97efeb67fc746272bb6d1eeca1690886356effbbd31350";
       };
       "macos-x64" = fetchurl {
         url =
-          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-macos-x64";
+          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.18.2-macos-x64";
         sha256 =
-          "1558a49dfea01ae42702a71eaa1c7a6479abde8b2778bc7cb4f9a65d65a0afa6";
+          "68f69f407965a15adc3bf58fdb052f455c0ab7c836883372e00d15f70cbc5c1b";
       };
       "macos-arm64" = fetchurl {
         url =
-          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.11.1-macos-arm64";
+          "https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.18.2-macos-arm64";
         sha256 =
-          "1fa7f9e233820cfc5668ba21b70c463214f981fc69f1b8175b25dfa871451e26";
+          "92faed49ad7c38c6374f1f421266ea4a09ed8d9830baebc1a5bcf2f3d90f107b";
       };
     };
   };
