@@ -100,7 +100,7 @@ async function main(argv = process.argv) {
   os.arch = () => arch;
   // Ensure that `node-gyp-build` only finds prebuilds
   process.env.PREBUILDS_ONLY = '1';
-  const nodeGypBuild = await import('node-gyp-build');
+  const { default: nodeGypBuild } = await import('node-gyp-build');
   const pkgConfig = packageJSON.pkg ?? {};
   pkgConfig.assets = pkgConfig.assets ?? {};
   const npmLsOut = childProcess.execFileSync(
