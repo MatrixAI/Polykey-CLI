@@ -144,6 +144,7 @@ async function main(argv = process.argv) {
     `--targets=node${nodeVersion}-${pkgPlatform}-${pkgArch}`,
     '--no-bytecode',
     '--no-native-build',
+    '--options=experimental-require-module',
     '--public',
     "--public-packages='*'",
     `--output=${outPath}`,
