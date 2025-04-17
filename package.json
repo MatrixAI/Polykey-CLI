@@ -105,7 +105,7 @@
       "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node"
     ],
     "scripts": [
-      "dist/polykeyWorkerManifest.mjs"
+      "dist/polykeyWorkerManifest.js"
     ]
   },
   "scripts": {

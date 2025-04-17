@@ -92,6 +92,28 @@ async function main(argv = process.argv) {
   console.error('Running esbuild:');
   console.error(esbuildOptions);
   await esbuild.build(esbuildOptions);
+  // Rename worker script
+  console.error('Renaming worker script');
+  childProcess.execFileSync(
+    'mv',
+    ['dist/polykeyWorkerManifest.mjs', 'dist/polykeyWorkerManifest.js'],
+    {
+      stdio: ['inherit', 'inherit', 'inherit'],
+      windowsHide: true,
+      encoding: 'utf-8',
+      shell: platform === 'win32' ? true : false,
+    },
+  );
+  childProcess.execFileSync(
+    'mv',
+    ['dist/polykeyWorkerManifest.mjs.map', 'dist/polykeyWorkerManifest.js.map'],
+    {
+      stdio: ['inherit', 'inherit', 'inherit'],
+      windowsHide: true,
+      encoding: 'utf-8',
+      shell: platform === 'win32' ? true : false,
+    },
+  );
 }
 /* eslint-enable no-console */
 
