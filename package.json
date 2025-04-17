@@ -102,7 +102,8 @@
       "node_modules/sodium-native/prebuilds/darwin-arm64/node.napi.node",
       "node_modules/sodium-native/prebuilds/darwin-x64/node.napi.node",
       "node_modules/sodium-native/prebuilds/linux-x64/node.napi.node",
-      "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node"
+      "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node",
+      "node_modules/sodium-native/index.js"
     ],
     "scripts": [
       "dist/polykeyWorkerManifest.js"
