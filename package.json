@@ -75,8 +75,8 @@
     "#*": "./build/*"
   },
   "bin": {
-    "polykey": "dist/polykey.js",
-    "pk": "dist/polykey.js"
+    "polykey": "dist/polykey.mjs",
+    "pk": "dist/polykey.mjs"
   },
   "pkg": {
     "assets": [
@@ -105,7 +105,7 @@
       "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node"
     ],
     "scripts": [
-      "dist/polykeyWorkerManifest.js"
+      "dist/polykeyWorkerManifest.mjs"
     ]
   },
   "scripts": {
@@ -121,9 +121,8 @@
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
     "pkg": "node ./scripts/pkg.mjs",
-    "polykey": "ts-node src/polykey.ts",
-    "start": "ts-node src/polykey.ts -- agent start --verbose",
-    "dev": "nodemon src/polykey.ts -- agent start --verbose"
+    "polykey": "node dist/polykey.mjs",
+    "start": "node dist/polykey.mjs -- agent start --verbose"
   },
   "optionalDependencies": {
     "@matrixai/db": "*",
@@ -165,7 +164,6 @@
     "mocked-env": "^1.3.5",
     "nexpect": "^0.6.0",
     "node-gyp-build": "^4.8.4",
-    "nodemon": "^3.0.1",
     "polykey": "^2.0.4",
     "prettier": "^3.0.0",
     "shelljs": "^0.8.5",

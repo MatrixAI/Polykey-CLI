@@ -24,7 +24,7 @@ const tsConfigPath = path.resolve(
 );
 
 const polykeyPath = path.resolve(
-  path.join(globalThis.projectDir ?? '', 'dist/polykey.js'),
+  path.join(globalThis.projectDir ?? '', 'dist/polykey.mjs'),
 );
 
 const generateDockerArgs = (mountPath: string) => [

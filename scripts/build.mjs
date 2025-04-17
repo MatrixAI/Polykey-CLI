@@ -87,6 +87,7 @@ async function main(argv = process.argv) {
     // Supporting ESM
     format: 'esm',
     inject: [path.join(projectPath, './shims/require-shim.mjs')],
+    outExtension: { '.js': '.mjs' },
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);
