@@ -60,7 +60,7 @@
           postBuild = ''
             npm run pkg -- \
               --output=out \
-              --bin=dist/polykey.mjs \
+              --bin=dist/polykey.cjs \
               --node-version=${utils.nodeVersion} \
               --platform=${platform} \
               --arch=${arch}

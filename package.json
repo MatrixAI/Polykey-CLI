@@ -102,8 +102,7 @@
       "node_modules/sodium-native/prebuilds/darwin-arm64/node.napi.node",
       "node_modules/sodium-native/prebuilds/darwin-x64/node.napi.node",
       "node_modules/sodium-native/prebuilds/linux-x64/node.napi.node",
-      "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node",
-      "node_modules/sodium-native/index.js"
+      "node_modules/sodium-native/prebuilds/win32-x64/node.napi.node"
     ],
     "scripts": [
       "dist/polykeyWorkerManifest.js"
@@ -121,7 +120,7 @@
     "lintfix": "eslint '{src,tests,scripts,benches}/**/*.{js,mjs,ts,mts,jsx,tsx}' --fix",
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
-    "pkg": "node ./scripts/pkg.mjs",
+    "pkg": "node ./scripts/build.mjs --pkg && node ./scripts/pkg.mjs",
     "polykey": "node dist/polykey.mjs",
     "start": "node dist/polykey.mjs -- agent start --verbose"
   },

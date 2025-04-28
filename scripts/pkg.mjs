@@ -103,6 +103,7 @@ async function main(argv = process.argv) {
   const { default: nodeGypBuild } = await import('node-gyp-build');
   const pkgConfig = packageJSON.pkg ?? {};
   pkgConfig.assets = pkgConfig.assets ?? {};
+
   const npmLsOut = childProcess.execFileSync(
     'npm',
     ['ls', '--all', '--omit=dev', '--parseable'],
@@ -143,7 +144,6 @@ async function main(argv = process.argv) {
     `--config=${pkgConfigPath}`,
     `--targets=node${nodeVersion}-${pkgPlatform}-${pkgArch}`,
     '--no-bytecode',
-    '--no-native-build',
     '--options=experimental-require-module',
     '--public',
     "--public-packages='*'",
