@@ -39,7 +39,7 @@ const nativeNodeModulesPlugin = {
           loader: 'js',
         };
       }
-      if (args.path.endsWith('fd-lock/index.js')) {
+      if (args.path.endsWith(path.join('fd-lock', 'index.js'))) {
         return {
           contents: `
             const path = require('path');
@@ -59,7 +59,7 @@ const nativeNodeModulesPlugin = {
           loader: 'js',
         };
       }
-      if (args.path.endsWith('sodium-native/index.js')) {
+      if (args.path.endsWith(path.join('sodium-native', 'index.js'))) {
         return {
           contents: `
             const path = require('path');
@@ -132,7 +132,7 @@ async function main(argv = process.argv) {
     ? {
         external: [],
         format: 'cjs',
-        inject: [path.join(projectPath, './shims/import-meta-url-shim.mjs')],
+        inject: [path.join(projectPath, 'shims', 'import-meta-url-shim.mjs')],
         // Fix import.meta.url in CJS output
         define: {
           'import.meta.url': '__import_meta_url',
@@ -142,7 +142,7 @@ async function main(argv = process.argv) {
     : {
         // External: externalDependencies,
         format: 'esm',
-        inject: [path.join(projectPath, './shims/require-shim.mjs')],
+        inject: [path.join(projectPath, 'shims', 'require-shim.mjs')],
         outExtension: { '.js': '.mjs' },
       };
 
@@ -174,8 +174,8 @@ async function main(argv = process.argv) {
   childProcess.execFileSync(
     'mv',
     [
-      `dist/polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}`,
-      'dist/polykeyWorkerManifest.js',
+      path.join('dist', `polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}`),
+      path.join('dist', 'polykeyWorkerManifest.js'),
     ],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
@@ -187,8 +187,8 @@ async function main(argv = process.argv) {
   childProcess.execFileSync(
     'mv',
     [
-      `dist/polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}.map`,
-      'dist/polykeyWorkerManifest.js.map',
+      path.join('dist', `polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}.map`),
+      path.join('dist', 'polykeyWorkerManifest.js.map'),
     ],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
