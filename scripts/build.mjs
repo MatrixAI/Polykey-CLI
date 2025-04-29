@@ -177,7 +177,6 @@ async function main(argv = process.argv) {
       `dist/polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}`,
       'dist/polykeyWorkerManifest.js',
     ],
-    // ['dist/polykeyWorkerManifest.mjs', 'dist/polykeyWorkerManifest.js'],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
       windowsHide: true,
