@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import process from 'node:process';
 import childProcess from 'node:child_process';
-import config from 'polykey/dist/config.js';
+import config from 'polykey/config.js';
 
 const versionTarget = config.version;
 async function main(argv = process.argv) {
