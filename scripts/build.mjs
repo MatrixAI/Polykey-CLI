@@ -16,9 +16,69 @@ const projectPath = path.dirname(
 
 const platform = os.platform();
 
+/**
+ * This plugin intercepts loading of certain imports and replaces their contents.
+ * It overrides the import paths for native imports for rocksdb, fd-lock and sodium-native
+ */
+const nativeNodeModulesPlugin = {
+  name: 'native-node-modules',
+  setup(build) {
+    build.onLoad({ filter: /\.*/, namespace: 'file' }, (args) => {
+      const filename = path.basename(args.path);
+      if (filename === 'rocksdb.js') {
+        return {
+          contents: `
+            import path from 'node:path';
+            import url from 'node:url';
+            import nodeGypBuild from 'node-gyp-build';
+            const projectPath = path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..', 'node_modules', '@matrixai', 'db');
+            const rocksdb = nodeGypBuild(projectPath);
+            export default rocksdb;
+            //# sourceMappingURL=rocksdb.js.map
+         `,
+          loader: 'js',
+        };
+      }
+      if (args.path.endsWith('fd-lock/index.js')) {
+        return {
+          contents: `
+            const path = require('path');
+            const binding = require('node-gyp-build')(path.join(__dirname, '..', 'node_modules', 'fd-lock'))
+            
+            lock.unlock = unlock
+            module.exports = lock
+            
+            function lock (fd) {
+              return !!binding.fd_lock(fd)
+            }
+            
+            function unlock (fd) {
+              return !!binding.fd_unlock(fd)
+            }
+          `,
+          loader: 'js',
+        };
+      }
+      if (args.path.endsWith('sodium-native/index.js')) {
+        return {
+          contents: `
+            const path = require('path');
+            module.exports = require('node-gyp-build')(path.join(__dirname, '..', 'node_modules', 'sodium-native'))
+          `,
+          loader: 'js',
+        };
+      }
+      return;
+    });
+  },
+};
+
 /* eslint-disable no-console */
 async function main(argv = process.argv) {
   argv = argv.slice(2);
+  const pkgIndex = argv.findIndex((v) => v === '--pkg');
+  if (pkgIndex >= 0) argv.splice(pkgIndex, 1);
+  const isPkg = pkgIndex >= 0;
   const buildPath = path.join(projectPath, 'build');
   const distPath = path.join(projectPath, 'dist');
   const gitPath = process.env.GIT_DIR ?? path.join(projectPath, '.git');
@@ -64,9 +124,29 @@ async function main(argv = process.argv) {
     path.join(buildPath, 'build.json'),
     JSON.stringify(buildJSON, null, 2),
   );
+
   // This specifies import paths that is left as an external require
   // This is kept to packages that have a native binding
-  const externalDependencies = Object.keys(packageJSON.optionalDependencies);
+  /** @type { import('esbuild').BuildOptions } */
+  const isPkgSwitchedOptions = isPkg
+    ? {
+        external: [],
+        format: 'cjs',
+        inject: [path.join(projectPath, './shims/import-meta-url-shim.mjs')],
+        // Fix import.meta.url in CJS output
+        define: {
+          'import.meta.url': '__import_meta_url',
+        },
+        outExtension: { '.js': '.cjs' },
+      }
+    : {
+        // External: externalDependencies,
+        format: 'esm',
+        inject: [path.join(projectPath, './shims/require-shim.mjs')],
+        outExtension: { '.js': '.mjs' },
+      };
+
+  /** @type { import('esbuild').BuildOptions } */
   const esbuildOptions = {
     // 2 entrypoints, the main script and the worker script
     entryPoints: [
@@ -77,17 +157,14 @@ async function main(argv = process.argv) {
     bundle: true,
     platform: 'node',
     outdir: distPath,
-    external: externalDependencies,
     treeShaking: true,
     // External source map for debugging
     sourcemap: true,
     // Minify and keep the original names
     minify: false,
     keepNames: true,
-    // Supporting ESM
-    format: 'esm',
-    inject: [path.join(projectPath, './shims/require-shim.mjs')],
-    outExtension: { '.js': '.mjs' },
+    plugins: [nativeNodeModulesPlugin],
+    ...isPkgSwitchedOptions,
   };
   console.error('Running esbuild:');
   console.error(esbuildOptions);
@@ -96,7 +173,10 @@ async function main(argv = process.argv) {
   console.error('Renaming worker script');
   childProcess.execFileSync(
     'mv',
-    ['dist/polykeyWorkerManifest.mjs', 'dist/polykeyWorkerManifest.js'],
+    [
+      `dist/polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}`,
+      'dist/polykeyWorkerManifest.js',
+    ],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
       windowsHide: true,
@@ -106,7 +186,10 @@ async function main(argv = process.argv) {
   );
   childProcess.execFileSync(
     'mv',
-    ['dist/polykeyWorkerManifest.mjs.map', 'dist/polykeyWorkerManifest.js.map'],
+    [
+      `dist/polykeyWorkerManifest.${isPkg ? 'cjs' : 'mjs'}.map`,
+      'dist/polykeyWorkerManifest.js.map',
+    ],
     {
       stdio: ['inherit', 'inherit', 'inherit'],
       windowsHide: true,
