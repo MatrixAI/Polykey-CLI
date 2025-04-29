@@ -219,7 +219,7 @@ jobs:
               $env:version = $(node -p "require('./package.json').version")
               npm run pkg -- `
                 --output=builds\polykey-cli-$env:version-win32-x64 `
-                --bin=dist\polykey.js `
+                --bin=dist\polykey.cjs `
                 --node-version=20 `
                 --platform=win32 `
                 --arch=x64
@@ -232,7 +232,7 @@ jobs:
               npm ci
               npm run pkg -- \
                 --output=builds/polykey-cli-$version-darwin-universal \
-                --bin=dist/polykey.js \
+                --bin=dist/polykey.cjs \
                 --node-version=20 \
                 --platform=darwin \
                 --arch=arm64
@@ -342,7 +342,7 @@ jobs:
           '
           echo 'Waiting for Testnet Deployment'
           nix develop .#ci --command bash -c $'
-          ./scripts/wait-for-deploy.js testnet.polykey.com
+          ./scripts/wait-for-deploy.mjs testnet.polykey.com
           '
 
   integration-test:
@@ -415,7 +415,7 @@ jobs:
           '
           echo 'Waiting for Mainnet Deployment'
           nix develop .#ci --command bash -c $'
-          ./scripts/wait-for-deploy.js mainnet.polykey.com
+          ./scripts/wait-for-deploy.mjs mainnet.polykey.com
           '
           rm -f "$REGISTRY_AUTH_FILE"
 
