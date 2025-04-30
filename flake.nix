@@ -44,7 +44,24 @@
               "$packageOut"/tsconfig.json \
               "$packageOut"/LICENSE \
               "$packageOut"/ADDITIONAL_TERMS \
-              "$packageOut"/README.md;
+              "$packageOut"/README.md \
+              "$packageOut"/shims \
+              "$packageOut"/flake.lock \
+              "$packageOut"/jest.config.mjs \
+              "$packageOut"/npmDepsHash;
+            mkdir "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/db/prebuilds/linux-x64 "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/exec-linux-x64/node.napi.node "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/exec-linux-x64/package.json "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/mdns-linux-x64/node.napi.node "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/mdns-linux-x64/package.json "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/quic-linux-x64/node.napi.node "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/@matrixai/quic-linux-x64/package.json "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/fd-lock/prebuilds/linux-x64 "$packageOut"/tempModules;
+            cp -r --parents "$packageOut"/node_modules/sodium-native/prebuilds/linux-x64 "$packageOut"/tempModules;
+            rm -rf "$packageOut"/node_modules;
+            mv "$packageOut"/tempModules/"$packageOut"/node_modules "$packageOut"/
+            rm -rf "$packageOut"/tempModules;
           '';
         };
 
