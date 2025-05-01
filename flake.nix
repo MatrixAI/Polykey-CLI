@@ -103,6 +103,7 @@
             Entrypoint = [ "polykey" ];
             Labels = buildJSON.versionMetadata;
           };
+          includeNixDB = false;
         };
 
         shell = { ci ? false }:
@@ -157,6 +158,7 @@
           default = polykey-cli;
           executable = polykey-cli-executable;
           docker = docker;
+          test = polykey-cli;
         };
 
         devShells = {
