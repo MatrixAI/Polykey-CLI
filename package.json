@@ -121,8 +121,8 @@
     "lint-shell": "find ./src ./tests ./scripts -type f -regextype posix-extended -regex '.*\\.(sh)' -exec shellcheck {} +",
     "docs": "shx rm -rf ./docs && typedoc --gitRevision master --tsconfig ./tsconfig.build.json --out ./docs src",
     "pkg": "node ./scripts/build.mjs --pkg && node ./scripts/pkg.mjs",
-    "polykey": "node dist/polykey.mjs",
-    "start": "node dist/polykey.mjs -- agent start --verbose"
+    "polykey": "node ./scripts/build.mjs && node dist/polykey.mjs",
+    "start": "node ./scripts/build.mjs && node dist/polykey.mjs -- agent start --verbose"
   },
   "optionalDependencies": {
     "@matrixai/db": "*",
