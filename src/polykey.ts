@@ -8,7 +8,6 @@ import type { PolykeyAgent } from 'polykey';
 import fs from 'node:fs';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { tracer } from '@matrixai/logger';
 /**
  * Hack for wiping out the threads signal handlers
  * See: https://github.com/andywer/threads.js/issues/388
@@ -24,7 +23,6 @@ process.removeAllListeners('SIGTERM');
 /**
  * Set the main entrypoint filepath.
  * This can be referred to globally.
- * For ESM, change to using `import.meta.url`.
  */
 const filename = fileURLToPath(import.meta.url);
 globalThis.PK_MAIN_EXECUTABLE = filename;
@@ -246,33 +244,14 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
 }
 
 async function main(argv = process.argv): Promise<number> {
-  const fs = await import('node:fs');
-  const p = (async () => {
-    const spanFile = await fs.promises.open('span.jsonl', 'w');
-    const gen = tracer.streamEvents();
-    for await (const event of gen) {
-      await spanFile.write(JSON.stringify(event) + '\n');
-    }
-    await spanFile.close();
-  })();
   if (argv[argv.length - 1] === '--agent-mode') {
     // This is an internal mode for running `PolykeyAgent` as a child process
     // This is not supposed to be used directly by the user
     process.title = 'polykey-agent';
-    return (async () => {
-      const retval = await polykeyAgentMain();
-      // tracer.endTracing();
-      await p;
-      return retval;
-    })();
+    return polykeyAgentMain();
   } else {
     process.title = 'polykey';
-    return (async () => {
-      const retval = await polykeyMain(argv);
-      // tracer.endTracing();
-      await p;
-      return retval;
-    })();
+    return polykeyMain(argv);
   }
 }
 

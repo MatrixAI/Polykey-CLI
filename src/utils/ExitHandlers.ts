@@ -1,4 +1,5 @@
 import process from 'node:process';
+import { tracer } from '@matrixai/logger';
 import ErrorPolykey from 'polykey/ErrorPolykey.js';
 import * as binUtils from './utils.js';
 import * as errors from '../errors.js';
@@ -11,6 +12,11 @@ class ExitHandlers {
   public handlers: Array<(signal?: NodeJS.Signals) => Promise<void>>;
   protected _exiting: boolean = false;
   protected _errFormat: 'json' | 'error';
+  protected tracerProm: Promise<void> | undefined;
+
+  public setTracerProm(prom: Promise<void>) {
+    this.tracerProm = prom;
+  }
 
   /**
    * Handles termination signals
@@ -49,6 +55,8 @@ class ExitHandlers {
     } finally {
       // Uninstall all handlers to prevent signal loop
       this.uninstall();
+      tracer.endTracing();
+      if (this.tracerProm) await this.tracerProm;
       // Propagate signal to NodeJS VM handlers
       process.kill(process.pid, signal);
     }
@@ -75,6 +83,8 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
+    tracer.endTracing();
+    if (this.tracerProm) await this.tracerProm;
     process.exit();
   };
 
@@ -99,6 +109,8 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
+    tracer.endTracing();
+    if (this.tracerProm) await this.tracerProm;
     process.exit();
   };
 

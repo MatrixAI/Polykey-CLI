@@ -6,6 +6,7 @@ import Logger, {
   formatting,
   levelToString,
   evalLogDataValue,
+  tracer,
 } from '@matrixai/logger';
 import * as binUtils from './utils/index.js';
 import * as binOptions from './utils/options.js';
@@ -23,6 +24,7 @@ class CommandPolykey extends Command {
   protected logger: Logger = logger;
   protected fs: FileSystem;
   protected exitHandlers: binUtils.ExitHandlers;
+  protected tracerProm: Promise<void> | undefined;
 
   public constructor({
     exitHandlers,
@@ -93,6 +95,19 @@ class CommandPolykey extends Command {
       // this means there is an unknown platform
       if (opts.nodePath == null) {
         throw new errors.ErrorPolykeyCLINodePath();
+      }
+      // If verbose level has been enabled, then we want to start tracing
+      if (opts.verbose && !this.tracerProm) {
+        this.tracerProm = (async () => {
+          const fs = await import('node:fs');
+          const spanFile = await fs.promises.open('span.jsonl', 'w');
+          const gen = tracer.streamEvents();
+          for await (const event of gen) {
+            await spanFile.write(JSON.stringify(event) + '\n');
+          }
+          await spanFile.close();
+        })();
+        this.exitHandlers.setTracerProm(this.tracerProm);
       }
       await fn(...args);
     });
