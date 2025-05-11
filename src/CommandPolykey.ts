@@ -97,7 +97,7 @@ class CommandPolykey extends Command {
         throw new errors.ErrorPolykeyCLINodePath();
       }
       // If verbose level has been enabled, then we want to start tracing
-      if (opts.verbose && !this.tracerProm) {
+      if (opts.verbose && this.tracerProm == null) {
         this.tracerProm = (async () => {
           const fs = await import('node:fs');
           const spanFile = await fs.promises.open('span.jsonl', 'w');
@@ -108,6 +108,8 @@ class CommandPolykey extends Command {
           await spanFile.close();
         })();
         this.exitHandlers.setTracerProm(this.tracerProm);
+      } else {
+        tracer.disableTracing();
       }
       await fn(...args);
     });

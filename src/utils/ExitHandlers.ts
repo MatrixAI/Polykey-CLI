@@ -55,8 +55,10 @@ class ExitHandlers {
     } finally {
       // Uninstall all handlers to prevent signal loop
       this.uninstall();
-      tracer.endTracing();
-      if (this.tracerProm) await this.tracerProm;
+        tracer.endTracing();
+      if (this.tracerProm) {
+        await this.tracerProm;
+      }
       // Propagate signal to NodeJS VM handlers
       process.kill(process.pid, signal);
     }
@@ -83,8 +85,10 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
-    tracer.endTracing();
-    if (this.tracerProm) await this.tracerProm;
+    if (this.tracerProm) {
+      tracer.endTracing();
+      await this.tracerProm;
+    }
     process.exit();
   };
 
@@ -109,8 +113,10 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
-    tracer.endTracing();
-    if (this.tracerProm) await this.tracerProm;
+    if (this.tracerProm) {
+      tracer.endTracing();
+      await this.tracerProm;
+    }
     process.exit();
   };
 
