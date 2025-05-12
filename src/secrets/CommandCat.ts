@@ -119,7 +119,9 @@ class CommandGet extends CommandPolykey {
                 }
                 break;
               case 'SuccessMessage':
-                process.stdout.write(result.secretContent);
+                process.stdout.write(
+                  Buffer.from(result.secretContent, 'binary'),
+                );
                 break;
               default:
                 never(
