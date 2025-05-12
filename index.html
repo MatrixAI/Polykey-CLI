@@ -5,41 +5,139 @@
     <title>Span Visualiser</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <script type="module">
-      import * as d3 from 'https://cdn.skypack.dev/d3@7';
       import { bases } from 'https://cdn.skypack.dev/multiformats/basics';
 
-      //— multibase → timestamp utilities (same as your snippet) —
-      const unixtsSize = 36,
-        msecSize = 12,
-        msecPrecision = 3,
-        indentPx = 1000;
-      const basesByPrefix = {};
-      for (const c of Object.values(bases)) basesByPrefix[c.prefix] = c;
+      /**
+       * @typedef {{
+       *   name: string,
+       *   prefix: string,
+       *   encode: (input: Uint8Array) => string,
+       *   decode: (input: string) => Uint8Array
+       * }} Codec
+       */
+
+      const unixtsSize = 36;
+      const msecSize = 12;
+      const msecPrecision = 3;
+
+      /**
+       * Encodes Uint8Array into bit string
+       * @param {Uint8Array} bytes
+       * @return {string}
+       */
       function bytes2bits(bytes) {
-        return Array.from(bytes)
-          .map((b) => b.toString(2).padStart(8, '0'))
-          .join('');
-      }
-      function fromMultibase(str) {
-        const codec = basesByPrefix[str[0]];
-        if (!codec) return;
-        try {
-          return codec.decode(str);
-        } catch {
-          return;
-        }
-      }
-      function extractTs(idStr) {
-        const bytes = fromMultibase(idStr);
-        if (!bytes) return 0;
-        const tsBytes = bytes.subarray(0, (unixtsSize + msecSize) / 8);
-        const bits = bytes2bits(tsBytes);
-        const u = parseInt(bits.slice(0, unixtsSize), 2);
-        const m = parseInt(bits.slice(unixtsSize, unixtsSize + msecSize), 2);
-        return u * 1000 + (m / 2 ** msecSize) * 1000;
+        return [...bytes].map((n) => dec2bits(n, 8)).join('');
       }
 
-      //— load JSONL either via fetch or via file input fallback —
+      /**
+       * Encodes positive base 10 numbers to bit string
+       * Will output bits in big-endian order
+       * @param {number} dec
+       * @param {number|undefined} size
+       * @return {string}
+       */
+      function dec2bits(dec, size) {
+        if (dec < 0) throw RangeError('`dec` must be positive');
+        if (size != null) {
+          if (size < 0) throw RangeError('`size` must be positive');
+          if (size === 0) return '';
+          dec %= 2 ** size;
+        } else {
+          size = 0;
+        }
+        return dec.toString(2).padStart(size, '0');
+      }
+
+      /** @type {Record<string,Codec>} */
+      const basesByPrefix = {};
+      for (const k in bases) {
+        /** @type {Codec} */
+        const codec = bases[k];
+        basesByPrefix[codec.prefix] = codec;
+      }
+
+      /**
+       * Decodes a multibase encoded ID
+       * Do not use this for generic multibase strings
+       * @param {string} idString
+       * @return {Uint8Array|undefined}
+       */
+      function fromMultibase(idString) {
+        const prefix = idString[0];
+        const codec = basesByPrefix[prefix];
+        if (codec == null) {
+          return;
+        }
+        /** @type {Uint8Array} */
+        let buffer;
+        try {
+          buffer = codec.decode(idString);
+        } catch (e) {
+          return;
+        }
+        return buffer;
+      }
+
+      /**
+       * Converts fixed point tuple to floating point number
+       * Size is number of bits allocated for the fractional
+       * Precision dictates a fixed number of decimal places for the fractional
+       * @param {[number,number]} [integer, fractionalFixed]
+       * @param {number} size
+       * @param {number|undefined} precision
+       * @return number
+       */
+      function fromFixedPoint([integer, fractionalFixed], size, precision) {
+        /** @type {number} */
+        let fractional;
+        if (precision == null) {
+          fractional = fractionalFixed / 2 ** size;
+        } else {
+          fractional = roundPrecise(fractionalFixed / 2 ** size, precision);
+        }
+        return integer + fractional;
+      }
+
+      /**
+       * Round to number of decimal points
+       * @param {number} num
+       * @param {number} digits
+       * @param {number} base
+       * @return {number}
+       */
+      function roundPrecise(num, digits = 0, base = 10) {
+        const pow = Math.pow(base, digits);
+        return Math.round((num + Number.EPSILON) * pow) / pow;
+      }
+
+      /**
+       * @param {Uint8Array} idBytes
+       * @return {number}
+       */
+      function extractTs(idBytes) {
+        // Decode the timestamp from the last id
+        // the timestamp bits is 48 bits or 6 bytes
+        // this creates a new zero-copy view
+        const idTsBytes = idBytes.subarray(0, (unixtsSize + msecSize) / 8);
+        const idTsBits = bytes2bits(idTsBytes);
+        const unixtsBits = idTsBits.substr(0, unixtsSize);
+        const msecBits = idTsBits.substr(unixtsSize, unixtsSize + msecSize);
+        const unixts = parseInt(unixtsBits, 2);
+        const msec = parseInt(msecBits, 2);
+        // Converting from second and subseconds
+        return fromFixedPoint([unixts, msec], msecSize, msecPrecision);
+      }
+
+      globalThis.idUtils = {
+        fromMultibase,
+        extractTs,
+      };
+    </script>
+    <script type="module">
+      /**
+       * Loads JSONL by asking the user to upload a file
+       * @return {Promise<Array<string>>} Array of lines
+       */
       function loadLines() {
         return new Promise((resolve) => {
           const input = document.createElement('input');
@@ -59,52 +157,61 @@
         });
       }
 
-      //— main —
-      (async () => {
-        const rawLines = await loadLines();
+      globalThis.utils = {
+        loadLines,
+      };
+    </script>
+    <script type="module">
+      import * as d3 from 'https://cdn.skypack.dev/d3@7';
+
+      const main = async () => {
+        const rawLines = await utils.loadLines();
         const events = rawLines.map((l) => JSON.parse(l));
 
-        // 1) group by spanId
-        const evBySpan = new Map();
+        // 1) Group by spanId
+        const eventBySpan = new Map();
         for (const e of events) {
-          const sid = e.type === 'start' ? e.id : e.startId;
-          if (!evBySpan.has(sid)) evBySpan.set(sid, []);
-          evBySpan.get(sid).push(e);
+          const spanId = e.type === 'start' ? e.id : e.startId;
+          if (!eventBySpan.has(spanId)) eventBySpan.set(spanId, []);
+          eventBySpan.get(spanId).push(e);
         }
 
-        // 2) for each span, sort events, pick start/end, record parent
+        // 2) For each span, sort events, pick start/end, record parent
         const spanInfo = {};
-        for (const [sid, evts] of evBySpan.entries()) {
+        for (const [sid, evts] of eventBySpan.entries()) {
           evts.sort(
             (a, b) =>
-              extractTs(a.id || a.startId) - extractTs(b.id || b.startId),
+              idUtils.extractTs(idUtils.fromMultibase(a.id || a.startId)) -
+              idUtils.extractTs(idUtils.fromMultibase(b.id || b.startId)),
           );
           const startEvt = evts.find((e) => e.type === 'start');
-          const stopEvt = evts.find(
-            (e) => e.type === 'stop' || e.type === 'end',
-          );
+          const stopEvt = evts.find((e) => e.type === 'stop');
           spanInfo[sid] = {
             id: sid,
             name: startEvt?.name || sid,
-            ts0: startEvt ? extractTs(startEvt.id) : Infinity,
-            ts1: stopEvt ? extractTs(stopEvt.id) : -Infinity,
+            ts0: startEvt
+              ? idUtils.extractTs(idUtils.fromMultibase(startEvt.id)) * 1000
+              : Infinity,
+            ts1: stopEvt
+              ? idUtils.extractTs(idUtils.fromMultibase(stopEvt.id)) * 1000
+              : -Infinity,
             parent: startEvt?.parentSpanId || startEvt?.parentId || null,
             hasEnd: !!stopEvt,
           };
         }
 
-        // 3) fix open spans → draw to maxTime
-        const allStarts = Object.values(spanInfo).map((d) => d.ts0);
+        // 2.1) [optional] Fix open spans by drawing to maxTime
+        const allStarts = Object.values(spanInfo).map((e) => e.ts0);
         const allEnds = Object.values(spanInfo)
-          .map((d) => d.ts1)
-          .filter((d) => d > 0);
+          .map((e) => e.ts1)
+          .filter((t) => t > 0);
         const minT = Math.min(...allStarts);
         const maxT = Math.max(...allEnds);
         for (const s of Object.values(spanInfo)) {
           if (s.ts1 < 0) s.ts1 = maxT;
         }
 
-        // 4) build tree & compute depths
+        // 3) Build tree & compute depths
         const children = {};
         for (const sid of Object.keys(spanInfo)) children[sid] = [];
         for (const s of Object.values(spanInfo)) {
@@ -170,30 +277,16 @@
           yPos += verticalSpacing;
 
           if (node.children) {
-            node.children.forEach(child => layoutTree(child, depth + 1));
+            node.children.forEach((child) => layoutTree(child, depth + 1));
           }
         }
-        rootNodes.forEach(node => layoutTree(node));
+        rootNodes.forEach((node) => layoutTree(node));
 
         // 7) Set up scales
-        const x = d3.scaleLinear()
+        const x = d3
+          .scaleLinear()
           .domain([minT, maxT])
           .range([margin.left, W - margin.right]);
-
-        // arrowhead
-        svg
-          .append('defs')
-          .append('marker')
-          .attr('id', 'arrowHead')
-          .attr('viewBox', '-5 -5 10 10')
-          .attr('refX', 0)
-          .attr('refY', 0)
-          .attr('markerWidth', 6)
-          .attr('markerHeight', 6)
-          .attr('orient', 'auto')
-          .append('path')
-          .attr('d', 'M-5,-5L5,0L-5,5')
-          .attr('fill', '#339');
 
         // pan/zoom
         const g = svg.append('g');
@@ -206,20 +299,19 @@
           if (node.parent && nodeMap.has(node.parent)) {
             const parentY = nodePositions.get(node.parent);
             const childY = nodePositions.get(node.id);
-          g.append('line')
+            g.append('line')
               .attr('x1', x(node.ts0))
               .attr('y1', parentY)
               .attr('x2', x(node.ts0))
               .attr('y2', childY)
-              .attr('stroke', '#ccc')
-              .attr('stroke-width', 1);
+              .attr('stroke', '#aaa')
+              .attr('stroke-width', 2);
           }
         });
 
         // Draw span bars on top of connections
         nodeMap.forEach((node) => {
           const yPos = nodePositions.get(node.id);
-          // console.log(node);
 
           // Timeline bar
           g.append('line')
@@ -228,8 +320,7 @@
             .attr('x2', x(node.ts1))
             .attr('y2', yPos)
             .attr('stroke', node.hasEnd ? '#258' : '#911')
-            .attr('stroke-width', 4)
-            // .attr('stroke-dasharray', node.hasEnd ? null : "4,4");
+            .attr('stroke-width', 4);
 
           // Label
           g.append('text')
@@ -242,7 +333,7 @@
 
         const xAxis = d3
           .axisBottom(x)
-          .ticks(10)
+          .ticks(20)
           .tickFormat((d) => new Date(d).toISOString().slice(11, 23));
 
         g.append('g')
@@ -250,7 +341,9 @@
           .call(xAxis)
           .selectAll('path, line')
           .attr('stroke', '#666');
-      })();
+      };
+
+      main();
     </script>
     <style>
       body {
@@ -264,7 +357,6 @@
     </style>
   </head>
   <body>
-    <!-- if fetch fails, a file-picker will be injected by the script -->
     <svg></svg>
   </body>
 </html>
