@@ -244,15 +244,25 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
 }
 
 async function main(argv = process.argv): Promise<number> {
-  if (argv[argv.length - 1] === '--agent-mode') {
-    // This is an internal mode for running `PolykeyAgent` as a child process
-    // This is not supposed to be used directly by the user
-    process.title = 'polykey-agent';
-    return polykeyAgentMain();
-  } else {
-    process.title = 'polykey';
-    return polykeyMain(argv);
-  }
+  const { spanContext } = await import('@matrixai/async-init/utils.js');
+  const { tracer } = await import('@matrixai/logger');
+
+  const rootSpanId = tracer.startSpan('polykeyRoot');
+  return spanContext.run({ currentSpanId: rootSpanId }, async () => {
+    try {
+      if (argv[argv.length - 1] === '--agent-mode') {
+        // This is an internal mode for running `PolykeyAgent` as a child process
+        // This is not supposed to be used directly by the user
+        process.title = 'polykey-agent';
+        return await polykeyAgentMain();
+      } else {
+        process.title = 'polykey';
+        return await polykeyMain(argv);
+      }
+    } finally {
+      tracer.endSpan(rootSpanId);
+    }
+  });
 }
 
 if (import.meta.url.startsWith('file:')) {
