@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <title>Span Visualiser</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
     <script type="module">
       import { bases } from 'https://cdn.skypack.dev/multiformats/basics';
 
@@ -135,11 +139,24 @@
     </script>
     <script type="module">
       /**
-       * Loads JSONL by asking the user to upload a file
+       * Loads JSONL by asking the user to upload a file. If a localhost server
+       * is serving the file, then the server is used to automatically fetch
+       * the file instead.
+       *
+       * The server can be run via `python -m http.server 8000` in project
+       * root.
+       *
        * @return {Promise<Array<string>>} Array of lines
        */
-      function loadLines() {
-        return new Promise((resolve) => {
+      async function loadLines() {
+        if (location.protocol === 'http:' || location.protocol === 'https:') {
+          const res = await fetch('span.jsonl');
+          if (res.ok) {
+            const text = await res.text();
+            return text.trim().split('\n');
+          }
+        }
+        const prom = new Promise((resolve) => {
           const input = document.createElement('input');
           input.type = 'file';
           input.accept = '.jsonl';
@@ -149,214 +166,385 @@
             reader.onload = () => {
               const lines = reader.result.trim().split('\n');
               resolve(lines);
-              input.remove(); // clean up
+              input.remove();
             };
             reader.readAsText(input.files[0]);
           };
           document.body.appendChild(input);
         });
+        return await prom;
+      }
+
+      /**
+       * Extracts a Date-compatible timestamp from an idSortable.
+       * @param {string} id
+       * @returns {number}
+       */
+      function tsFromId(id) {
+        return idUtils.extractTs(idUtils.fromMultibase(id)) * 1000;
       }
 
       globalThis.utils = {
         loadLines,
+        tsFromId,
       };
     </script>
     <script type="module">
       import * as d3 from 'https://cdn.skypack.dev/d3@7';
 
-      const main = async () => {
+      let spacing = 1;
+      let mode = 'logical';
+      let yDomain = [0, 1];
+      let zoomTransform = d3.zoomIdentity;
+
+      // document.addEventListener('keydown', (e) => {
+      //   if (e.key === '+' || e.key === '=') zoomAtCursor(0.5, e);
+      //   else if (e.key === '-') zoomAtCursor(2, e);
+      // });
+
+      const svg = d3
+        .select('svg')
+        .attr('width', window.innerWidth)
+        .attr('height', window.innerHeight);
+      const g = svg.append('g');
+      svg.call(d3.zoom().on('zoom', (e) => g.attr('transform', e.transform)));
+      document.querySelector('#zoom-value').innerHTML = spacing;
+
+      function zoomIn() {
+        spacing *= 0.5;
+        document.querySelector('#zoom-value').innerHTML = spacing;
+        render();
+      }
+
+      function zoomOut() {
+        spacing /= 0.5;
+        document.querySelector('#zoom-value').innerHTML = spacing;
+        render();
+      }
+
+      let stickyHighlightedSpan = null;
+
+      // Reusable function to update visual state
+      function setHighlight(spanId, isActive) {
+        const match = (el) => el.dataset.spanId === spanId;
+        const fadeLevel = 0.2;
+
+        const highlightConfig = [
+          { selector: '.span-bar', attr: 'stroke-opacity' },
+          { selector: '.span-text', attr: 'opacity' },
+          { selector: '.span-connector', attr: 'stroke-opacity' },
+        ];
+
+        for (const { selector, attr } of highlightConfig) {
+          d3.selectAll(selector).attr(attr, function () {
+            return match(this) ? 1 : fadeLevel;
+          });
+        }
+      }
+
+      function resetHighlight() {
+        const highlightConfig = [
+          { selector: '.span-bar', attr: 'stroke-opacity' },
+          { selector: '.span-text', attr: 'opacity' },
+          { selector: '.span-connector', attr: 'stroke-opacity' },
+        ];
+
+        for (const { selector, attr } of highlightConfig) {
+          d3.selectAll(selector).attr(attr, 1);
+        }
+      }
+
+      function highlightSpan(spanId) {
+        if (stickyHighlightedSpan) return;
+        setHighlight(spanId, true);
+      }
+
+      function clearHighlight() {
+        if (stickyHighlightedSpan) return;
+        resetHighlight();
+      }
+
+      function toggleStickyHighlight(spanId) {
+        if (stickyHighlightedSpan === spanId) {
+          stickyHighlightedSpan = null;
+          resetHighlight();
+        } else {
+          stickyHighlightedSpan = spanId;
+          setHighlight(spanId, true);
+        }
+      }
+
+      // function zoomAtCursor(factor, event) {
+      //   const svgNode = svg.node();
+      //   const bbox = svgNode.getBoundingClientRect();
+
+      //   // pick cursor or center
+      //   const cy =
+      //     event.clientY >= bbox.top && event.clientY <= bbox.bottom
+      //       ? event.clientY
+      //       : bbox.top + bbox.height / 2;
+
+      //   // map screen→SVG
+      //   const [, svgY] = d3.pointer({ clientX: 0, clientY: cy }, svgNode);
+
+      //   // invert via current pan transform → logical Y
+      //   const [, logicalY] = zoomTransform.invert([0, svgY]);
+
+      //   // apply your spacing change
+      //   spacing = Math.max(0.01, Math.min(spacing * factor, 100));
+      //   document.querySelector('#zoom-value').innerHTML = spacing;
+
+      //   // rebuild y‐scale with the now‐correct yDomain
+      //   const y = d3
+      //     .scaleLinear()
+      //     .domain(yDomain)
+      //     .range([50, (yDomain[1] - yDomain[0]) / spacing]);
+
+      //   // compute how much to shift *vertically* so logicalY stays under cy
+      //   const newSvgY = y(logicalY);
+      //   const dy = newSvgY - svgY;
+
+      //   // only pan in Y
+      //   zoomTransform = zoomTransform.translate(0, -dy);
+      //   g.attr('transform', zoomTransform);
+
+      //   render();
+      // }
+
+      async function render() {
+        // Get events from input lines
         const rawLines = await utils.loadLines();
-        const events = rawLines.map((l) => JSON.parse(l));
+        const events = rawLines.map(JSON.parse);
 
-        // 1) Group by spanId
-        const eventBySpan = new Map();
+        // Clear previous state
+        g.selectAll('*').remove();
+        document.querySelector('#navbar').style.display = 'flex';
+
+        // 1) Pair start/stop events and assign step indices
+        const spanMap = new Map(); // [spanId]: { startEvt, stopEvt }
+        const eventSteps = [];
+
+        let stepCounter = 0;
         for (const e of events) {
-          const spanId = e.type === 'start' ? e.id : e.startId;
-          if (!eventBySpan.has(spanId)) eventBySpan.set(spanId, []);
-          eventBySpan.get(spanId).push(e);
+          const sid = e.type === 'start' ? e.id : e.startId;
+          if (!spanMap.has(sid)) spanMap.set(sid, {});
+          spanMap.get(sid)[e.type] = e;
+          eventSteps.push({
+            spanId: sid,
+            type: e.type,
+            step: stepCounter++,
+            event: e,
+          });
         }
 
-        // 2) For each span, sort events, pick start/end, record parent
-        const spanInfo = {};
-        for (const [sid, evts] of eventBySpan.entries()) {
-          evts.sort(
-            (a, b) =>
-              idUtils.extractTs(idUtils.fromMultibase(a.id || a.startId)) -
-              idUtils.extractTs(idUtils.fromMultibase(b.id || b.startId)),
-          );
-          const startEvt = evts.find((e) => e.type === 'start');
-          const stopEvt = evts.find((e) => e.type === 'stop');
-          spanInfo[sid] = {
-            id: sid,
-            name: startEvt?.name || sid,
-            ts0: startEvt
-              ? idUtils.extractTs(idUtils.fromMultibase(startEvt.id)) * 1000
-              : Infinity,
-            ts1: stopEvt
-              ? idUtils.extractTs(idUtils.fromMultibase(stopEvt.id)) * 1000
-              : -Infinity,
-            parent: startEvt?.parentSpanId || startEvt?.parentId || null,
-            hasEnd: !!stopEvt,
-          };
+        const eventStepMap = new Map(); // [spanId]: { startStep, stopStep }
+        for (const { spanId, type, step } of eventSteps) {
+          if (!eventStepMap.has(spanId)) eventStepMap.set(spanId, {});
+          eventStepMap.get(spanId)[
+            type === 'start' ? 'startStep' : 'stopStep'
+          ] = step;
         }
 
-        // 2.1) [optional] Fix open spans by drawing to maxTime
-        const allStarts = Object.values(spanInfo).map((e) => e.ts0);
-        const allEnds = Object.values(spanInfo)
-          .map((e) => e.ts1)
-          .filter((t) => t > 0);
-        const minT = Math.min(...allStarts);
-        const maxT = Math.max(...allEnds);
-        for (const s of Object.values(spanInfo)) {
-          if (s.ts1 < 0) s.ts1 = maxT;
-        }
+        // 2) Build render-ready span objects
+        const renderSpans = [];
+        let minT = Infinity;
+        let maxT = -Infinity;
 
-        // 3) Build tree & compute depths
-        const children = {};
-        for (const sid of Object.keys(spanInfo)) children[sid] = [];
-        for (const s of Object.values(spanInfo)) {
-          if (s.parent && spanInfo[s.parent]) children[s.parent].push(s.id);
-        }
-        const depths = {};
-        function assignDepth(sid, d = 0) {
-          if (depths[sid] != null && depths[sid] <= d) return;
-          depths[sid] = d;
-          for (const c of children[sid]) assignDepth(c, d + 1);
-        }
-        for (const sid of Object.keys(spanInfo)) {
-          if (!spanInfo[sid].parent || !spanInfo[spanInfo[sid].parent]) {
-            assignDepth(sid, 0);
+        for (const [sid, { start, stop }] of spanMap.entries()) {
+          if (!start) continue;
+
+          const startTs = utils.tsFromId(start.id);
+          const stopTs = stop ? utils.tsFromId(stop.id) : undefined;
+          const startStep = eventStepMap.get(sid)?.startStep;
+          const stopStep = eventStepMap.get(sid)?.stopStep ?? eventSteps.length;
+
+          if (mode === 'time') {
+            if (startTs < minT) minT = startTs;
+            if (stopTs && stopTs > maxT) maxT = stopTs;
           }
+
+          renderSpans.push({
+            spanId: sid,
+            name: start.name || sid,
+            startTs: mode === 'time' ? startTs : undefined,
+            stopTs: mode === 'time' ? stopTs ?? maxT : undefined,
+            startStep: mode === 'logical' ? startStep : undefined,
+            stopStep: mode === 'logical' ? stopStep : undefined,
+            hasEnd: !!stop,
+            parent: start.parentId || null,
+          });
         }
-        // any orphan not yet depth-assigned → root
-        for (const sid of Object.keys(spanInfo)) {
-          if (depths[sid] == null) assignDepth(sid, 0);
-        }
-        const maxD = Math.max(...Object.values(depths));
 
-        // 5) set up SVG & scales
-        const svg = d3
-          .select('svg')
-          .attr('width', window.innerWidth)
-          .attr('height', window.innerHeight);
+        // 3) Build parent-child tree relationships
+        const nodeMap = new Map(renderSpans.map((s) => [s.spanId, s]));
+        const roots = [];
 
-        const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const W = +svg.attr('width') - margin.left - margin.right;
-        const H = +svg.attr('height') - margin.top - margin.bottom;
-
-        // 5) Build hierarchical tree structure
-        const rootNodes = [];
-        const nodeMap = new Map(Object.entries(spanInfo));
-
-        nodeMap.forEach((node) => {
-          if (!node.parent || !nodeMap.has(node.parent)) {
-            rootNodes.push(node);
+        for (const s of renderSpans) {
+          if (!s.parent || !nodeMap.has(s.parent)) {
+            roots.push(s);
           } else {
-            const parent = nodeMap.get(node.parent);
-            parent.children = parent.children || [];
-            parent.children.push(node);
-          }
-        });
-
-        // Sort tree branches by start time
-        function sortTree(node) {
-          if (node.children) {
-            node.children.sort((a, b) => a.ts0 - b.ts0);
-            node.children.forEach(sortTree);
+            const p = nodeMap.get(s.parent);
+            p.children = p.children || [];
+            p.children.push(s);
           }
         }
-        rootNodes.forEach(sortTree);
 
-        // 6) Calculate vertical positions using tree structure
-        const nodePositions = new Map();
-        let yPos = margin.top;
-        const verticalSpacing = 30;
-
-        function layoutTree(node, depth = 0) {
-          nodePositions.set(node.id, yPos);
-          yPos += verticalSpacing;
-
-          if (node.children) {
-            node.children.forEach((child) => layoutTree(child, depth + 1));
+        const sortTree = (n) => {
+          if (n.children) {
+            n.children.sort((a, b) => {
+              return mode === 'time'
+                ? (a.startTs ?? 0) - (b.startTs ?? 0)
+                : (a.startStep ?? 0) - (b.startStep ?? 0);
+            });
+            n.children.forEach(sortTree);
           }
-        }
-        rootNodes.forEach((node) => layoutTree(node));
+        };
+        roots.forEach(sortTree);
 
-        // 7) Set up scales
-        const x = d3
+        // 4) Assign horizontal (x) and indentation (y) positions
+        const pos = new Map();
+        let xCursor = 0;
+        const spacingX = 30;
+        const spacingY = 50;
+
+        const layout = (n, depth = 0) => {
+          pos.set(n.spanId, {
+            x: xCursor++ * spacingX,
+            y: depth * spacingY,
+          });
+          if (n.children) n.children.forEach((c) => layout(c, depth + 1));
+        };
+        roots.forEach((n) => layout(n));
+
+        // 5) Configure Y-axis scaling (time or logical steps)
+        yDomain = mode === 'time' ? [minT, maxT] : [0, eventSteps.length];
+        const y = d3
           .scaleLinear()
-          .domain([minT, maxT])
-          .range([margin.left, W - margin.right]);
+          .domain(yDomain)
+          .range([50, (yDomain[1] - yDomain[0]) / spacing]);
 
-        // pan/zoom
-        const g = svg.append('g');
-        svg.call(d3.zoom().on('zoom', (e) => g.attr('transform', e.transform)));
+        // 6) Render lines and vertical bars
+        for (const span of renderSpans) {
+          const { x } = pos.get(span.spanId);
+          const startY = y(mode === 'time' ? span.startTs : span.startStep);
+          const stopY = y(mode === 'time' ? span.stopTs : span.stopStep);
 
-        // 8) Draw elements
+          if (span.parent && pos.has(span.parent)) {
+            const { x: px } = pos.get(span.parent);
+            const rise = 0;
+            const run = 20;
 
-        // Draw connection lines first
-        nodeMap.forEach((node) => {
-          if (node.parent && nodeMap.has(node.parent)) {
-            const parentY = nodePositions.get(node.parent);
-            const childY = nodePositions.get(node.id);
             g.append('line')
-              .attr('x1', x(node.ts0))
-              .attr('y1', parentY)
-              .attr('x2', x(node.ts0))
-              .attr('y2', childY)
+              .attr('class', 'span-connector')
+              .attr('data-span-id', span.spanId)
+              .attr('x1', px)
+              .attr('y1', startY - rise)
+              .attr('x2', x)
+              .attr('y2', startY)
               .attr('stroke', '#aaa')
-              .attr('stroke-width', 2);
+              .attr('stroke-width', 1.5);
           }
-        });
 
-        // Draw span bars on top of connections
-        nodeMap.forEach((node) => {
-          const yPos = nodePositions.get(node.id);
-
-          // Timeline bar
           g.append('line')
-            .attr('x1', x(node.ts0))
-            .attr('y1', yPos)
-            .attr('x2', x(node.ts1))
-            .attr('y2', yPos)
-            .attr('stroke', node.hasEnd ? '#258' : '#911')
-            .attr('stroke-width', 4);
+            .attr('class', 'span-bar')
+            .attr('data-span-id', span.spanId)
+            .attr('x1', x)
+            .attr('y1', startY)
+            .attr('x2', x)
+            .attr('y2', stopY)
+            .attr('stroke', span.hasEnd ? '#258' : '#911')
+            .attr('stroke-width', 4)
+            .on('mouseover', () => highlightSpan(span.spanId))
+            .on('mouseout', () => clearHighlight())
+            .on('click', () => toggleStickyHighlight(span.spanId));
 
-          // Label
           g.append('text')
-            .attr('x', x(node.ts0) + 5)
-            .attr('y', yPos + 16)
-            .text(node.name)
-            .attr('fill', '#333')
-            .attr('font-size', '12px');
-        });
+            .attr('class', 'span-text')
+            .attr('data-span-id', span.spanId)
+            .attr('x', x + 8)
+            .attr('y', startY + 10)
+            .text(span.name)
+            .attr('font-size', '12px')
+            .attr('fill', '#333');
+        }
 
-        const xAxis = d3
-          .axisBottom(x)
-          .ticks(20)
-          .tickFormat((d) => new Date(d).toISOString().slice(11, 23));
+        // 7) Draw Y-axis
+        const axis = d3
+          .axisRight(y)
+          .ticks(10 / spacing)
+          .tickFormat((d) =>
+            mode === 'time'
+              ? new Date(d).toISOString().slice(11, 23)
+              : String(d),
+          );
 
         g.append('g')
-          .attr('transform', `translate(0,${margin.top - 48})`)
-          .call(xAxis)
+          .attr('transform', `translate(-128,0)`)
+          .call(axis)
           .selectAll('path, line')
           .attr('stroke', '#666');
-      };
+      }
 
-      main();
+      render();
+
+      globalThis.main = {
+        zoomIn,
+        zoomOut,
+      };
     </script>
     <style>
       body {
         margin: 0;
+        padding: 0;
         font-family: monospace;
+        overflow: hidden;
       }
       svg {
         display: block;
         background: #fff;
       }
+      .top-bar {
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        padding: 0;
+        margin: 0;
+        height: 32px;
+        background-color: lightgray;
+        display: flex;
+      }
+      .top-zoom {
+        margin-left: 8px;
+        align-self: center;
+      }
+      .top-zoom button {
+        transition: background-color 75ms ease-in-out;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: unset;
+        box-shadow: unset;
+        background-color: dimgray;
+        color: white;
+      }
+      .top-zoom button:hover {
+        background-color: gray;
+      }
     </style>
   </head>
   <body>
+    <div class="top-bar" id="navbar" style="display: none">
+      <div class="top-zoom">
+        <button onClick="main.zoomIn()">
+          <i class="fa-solid fa-magnifying-glass-plus"></i>
+        </button>
+        <button onClick="main.zoomOut()">
+          <i class="fa-solid fa-magnifying-glass-minus"></i>
+        </button>
+        <span id="zoom-value"></span>
+      </div>
+    </div>
     <svg></svg>
   </body>
 </html>

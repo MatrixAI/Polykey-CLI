@@ -285,7 +285,7 @@ diff -crB dist/utils.d.ts patched/utils.d.ts
   declare const initLock: unique symbol;
 + declare const _spanId: unique symbol;
 + declare const spanId: unique symbol;
-+ declare const spanContext: AsyncLocalStorage;
++ declare const spanContext: AsyncLocalStorage<any>;
   declare const AsyncFunction: Function;
   declare const GeneratorFunction: Function;
   declare const AsyncGeneratorFunction: Function;
