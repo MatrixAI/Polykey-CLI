@@ -13,9 +13,14 @@ class ExitHandlers {
   protected _exiting: boolean = false;
   protected _errFormat: 'json' | 'error';
   protected tracerProm: Promise<void> | undefined;
+  protected preExit: () => void | Promise<void>;
 
   public setTracerProm(prom: Promise<void>) {
     this.tracerProm = prom;
+  }
+
+  public setPreExit(f: () => void | Promise<void>) {
+    this.preExit = f;
   }
 
   /**
@@ -55,8 +60,9 @@ class ExitHandlers {
     } finally {
       // Uninstall all handlers to prevent signal loop
       this.uninstall();
-        tracer.endTracing();
+      await this.preExit?.();
       if (this.tracerProm) {
+        tracer.endTracing();
         await this.tracerProm;
       }
       // Propagate signal to NodeJS VM handlers
@@ -85,6 +91,7 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
+    await this.preExit?.();
     if (this.tracerProm) {
       tracer.endTracing();
       await this.tracerProm;
@@ -113,6 +120,7 @@ class ExitHandlers {
     );
     process.exitCode = error.exitCode;
     // Fail fast pattern
+    await this.preExit?.();
     if (this.tracerProm) {
       tracer.endTracing();
       await this.tracerProm;

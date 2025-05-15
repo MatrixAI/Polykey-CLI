@@ -370,20 +370,62 @@
         };
         roots.forEach(sortTree);
 
-        // 4) Assign horizontal (x) and indentation (y) positions
+        // 4) Assign horizontal (x) and indentation (y) positions with rail allocator
         const pos = new Map();
-        let xCursor = 0;
         const spacingX = 30;
         const spacingY = 50;
 
-        const layout = (n, depth = 0) => {
-          pos.set(n.spanId, {
-            x: xCursor++ * spacingX,
+        let nextRail = 0;
+        const activeRails = []; // Array of { rail: number, occupiedUntil: number }
+
+        const assignedRail = new Map();
+
+        const getStart = (s) => (mode === 'time' ? s.startTs : s.startStep);
+        const getStop = (s) => (mode === 'time' ? s.stopTs : s.stopStep);
+
+        function findFreeRail(start) {
+          for (let i = 0; i < activeRails.length; i++) {
+            if (activeRails[i].occupiedUntil <= start) {
+              return i;
+            }
+          }
+          return -1;
+        }
+
+        function reserveRail(span) {
+          const start = getStart(span);
+          const stop = getStop(span);
+          const parentRail = span.parent
+            ? assignedRail.get(span.parent) ?? -1
+            : -1;
+          const searchStart = parentRail + 1;
+
+          // Search from just after parent
+          for (let i = searchStart; i < activeRails.length; i++) {
+            if (activeRails[i] <= start) {
+              activeRails[i] = stop;
+              assignedRail.set(span.spanId, i);
+              return i;
+            }
+          }
+
+          // No available → allocate new rail
+          const newRail = activeRails.length;
+          activeRails.push(stop);
+          assignedRail.set(span.spanId, newRail);
+          return newRail;
+        }
+
+        function layout(span, depth = 0) {
+          const rail = reserveRail(span);
+          pos.set(span.spanId, {
+            x: rail * spacingX,
             y: depth * spacingY,
           });
-          if (n.children) n.children.forEach((c) => layout(c, depth + 1));
-        };
-        roots.forEach((n) => layout(n));
+          if (span.children) span.children.forEach((c) => layout(c, depth + 1));
+        }
+
+        roots.forEach((r) => layout(r));
 
         // 5) Configure Y-axis scaling (time or logical steps)
         const yDomain = mode === 'time' ? [minT, maxT] : [0, eventSteps.length];
@@ -406,6 +448,7 @@
             g.append('line')
               .attr('class', 'span-connector')
               .attr('data-span-id', span.spanId)
+              .attr('pointer-events', 'none')
               .attr('x1', px)
               .attr('y1', startY - rise)
               .attr('x2', x)
@@ -429,6 +472,7 @@
 
           g.append('text')
             .attr('class', 'span-text')
+            .attr('pointer-events', 'none')
             .attr('data-span-id', span.spanId)
             .attr('x', x + 8)
             .attr('y', startY + 10)

@@ -27,11 +27,16 @@ process.removeAllListeners('SIGTERM');
 const filename = fileURLToPath(import.meta.url);
 globalThis.PK_MAIN_EXECUTABLE = filename;
 
+import type { SpanId } from '@matrixai/logger';
+
+let rootSpan: SpanId;
+
 async function polykeyAgentMain(): Promise<number> {
   const {
     default: Logger,
     StreamHandler,
     formatting,
+    tracer,
   } = await import('@matrixai/logger');
   const { default: PolykeyAgent } = await import('polykey/PolykeyAgent.js');
   const { default: ErrorPolykey } = await import('polykey/ErrorPolykey.js');
@@ -50,6 +55,7 @@ async function polykeyAgentMain(): Promise<number> {
   const messageIn = await messageInP;
   const errFormat = messageIn.format === 'json' ? 'json' : 'error';
   exitHandlers.errFormat = errFormat;
+  exitHandlers.setPreExit(() => tracer.endSpan(rootSpan));
   // Set the logger according to the verbosity
   logger.setLevel(messageIn.logLevel);
   // Set the logger formatter according to the format
@@ -247,9 +253,8 @@ async function main(argv = process.argv): Promise<number> {
   const { spanContext } = await import('@matrixai/async-init/utils.js');
   const { tracer } = await import('@matrixai/logger');
 
-  const rootSpanId = tracer.startSpan('polykeyRoot');
-  return spanContext.run({ currentSpanId: rootSpanId }, async () => {
-    try {
+  rootSpan = tracer.startSpan('polykeyRoot');
+  return spanContext.run({ currentSpanId: rootSpan }, async () => {
       if (argv[argv.length - 1] === '--agent-mode') {
         // This is an internal mode for running `PolykeyAgent` as a child process
         // This is not supposed to be used directly by the user
@@ -259,9 +264,6 @@ async function main(argv = process.argv): Promise<number> {
         process.title = 'polykey';
         return await polykeyMain(argv);
       }
-    } finally {
-      tracer.endSpan(rootSpanId);
-    }
   });
 }
 
