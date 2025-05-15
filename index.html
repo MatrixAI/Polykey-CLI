@@ -193,14 +193,12 @@
       import * as d3 from 'https://cdn.skypack.dev/d3@7';
 
       let spacing = 1;
-      let mode = 'logical';
-      let yDomain = [0, 1];
-      let zoomTransform = d3.zoomIdentity;
+      let mode = 'time';
 
-      // document.addEventListener('keydown', (e) => {
-      //   if (e.key === '+' || e.key === '=') zoomAtCursor(0.5, e);
-      //   else if (e.key === '-') zoomAtCursor(2, e);
-      // });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '+' || e.key === '=') zoomIn();
+        else if (e.key === '-') zoomOut();
+      });
 
       const svg = d3
         .select('svg')
@@ -209,6 +207,7 @@
       const g = svg.append('g');
       svg.call(d3.zoom().on('zoom', (e) => g.attr('transform', e.transform)));
       document.querySelector('#zoom-value').innerHTML = spacing;
+      document.querySelector('#mode').innerHTML = mode;
 
       function zoomIn() {
         spacing *= 0.5;
@@ -219,6 +218,13 @@
       function zoomOut() {
         spacing /= 0.5;
         document.querySelector('#zoom-value').innerHTML = spacing;
+        render();
+      }
+
+      function toggleMode() {
+        if (mode === 'logical') mode = 'time';
+        else mode = 'logical';
+        document.querySelector('#mode').innerHTML = mode;
         render();
       }
 
@@ -273,43 +279,6 @@
           setHighlight(spanId, true);
         }
       }
-
-      // function zoomAtCursor(factor, event) {
-      //   const svgNode = svg.node();
-      //   const bbox = svgNode.getBoundingClientRect();
-
-      //   // pick cursor or center
-      //   const cy =
-      //     event.clientY >= bbox.top && event.clientY <= bbox.bottom
-      //       ? event.clientY
-      //       : bbox.top + bbox.height / 2;
-
-      //   // map screen→SVG
-      //   const [, svgY] = d3.pointer({ clientX: 0, clientY: cy }, svgNode);
-
-      //   // invert via current pan transform → logical Y
-      //   const [, logicalY] = zoomTransform.invert([0, svgY]);
-
-      //   // apply your spacing change
-      //   spacing = Math.max(0.01, Math.min(spacing * factor, 100));
-      //   document.querySelector('#zoom-value').innerHTML = spacing;
-
-      //   // rebuild y‐scale with the now‐correct yDomain
-      //   const y = d3
-      //     .scaleLinear()
-      //     .domain(yDomain)
-      //     .range([50, (yDomain[1] - yDomain[0]) / spacing]);
-
-      //   // compute how much to shift *vertically* so logicalY stays under cy
-      //   const newSvgY = y(logicalY);
-      //   const dy = newSvgY - svgY;
-
-      //   // only pan in Y
-      //   zoomTransform = zoomTransform.translate(0, -dy);
-      //   g.attr('transform', zoomTransform);
-
-      //   render();
-      // }
 
       async function render() {
         // Get events from input lines
@@ -417,7 +386,7 @@
         roots.forEach((n) => layout(n));
 
         // 5) Configure Y-axis scaling (time or logical steps)
-        yDomain = mode === 'time' ? [minT, maxT] : [0, eventSteps.length];
+        const yDomain = mode === 'time' ? [minT, maxT] : [0, eventSteps.length];
         const y = d3
           .scaleLinear()
           .domain(yDomain)
@@ -490,6 +459,7 @@
       globalThis.main = {
         zoomIn,
         zoomOut,
+        toggleMode,
       };
     </script>
     <style>
@@ -503,6 +473,19 @@
         display: block;
         background: #fff;
       }
+      button {
+        transition: background-color 75ms ease-in-out;
+        padding: 4px;
+        border-radius: 4px;
+        border: unset;
+        box-shadow: unset;
+        background-color: dimgray;
+        color: white;
+      }
+      button:hover {
+        background-color: gray;
+      }
+
       .top-bar {
         top: 0;
         left: 0;
@@ -514,22 +497,19 @@
         background-color: lightgray;
         display: flex;
       }
-      .top-zoom {
+      .top-zoom,
+      .top-mode {
         margin-left: 8px;
         align-self: center;
       }
       .top-zoom button {
-        transition: background-color 75ms ease-in-out;
         width: 24px;
         height: 24px;
-        border-radius: 4px;
-        border: unset;
-        box-shadow: unset;
-        background-color: dimgray;
-        color: white;
       }
-      .top-zoom button:hover {
-        background-color: gray;
+      #mode {
+        text-transform: uppercase;
+        font-weight: bold;
+        padding: 6px 12px;
       }
     </style>
   </head>
@@ -543,6 +523,9 @@
           <i class="fa-solid fa-magnifying-glass-minus"></i>
         </button>
         <span id="zoom-value"></span>
+      </div>
+      <div class="top-mode">
+        <button id="mode" onClick="main.toggleMode()"></button>
       </div>
     </div>
     <svg></svg>
