@@ -81,7 +81,7 @@ class CommandMkdir extends CommandPolykey {
                 case 'ENOENT':
                   // Attempt to create a directory without existing parents
                   process.stderr.write(
-                    `mkdir: cannot create directory ${result.reason}: No such file or directory\n`,
+                    `mkdir: Cannot create directory ${result.reason}: No such file or directory\n`,
                   );
                   break;
                 case 'EEXIST':
