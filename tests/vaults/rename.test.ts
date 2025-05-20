@@ -83,7 +83,7 @@ describe('commandRenameVault', () => {
 
     const list = (await polykeyAgent.vaultManager.listVaults()).keys();
     const namesList: string[] = [];
-    for await (const name of list) {
+    for (const name of list) {
       namesList.push(name);
     }
     expect(namesList).toContain('RenamedVault');
@@ -110,7 +110,7 @@ describe('commandRenameVault', () => {
 
     const list = (await polykeyAgent.vaultManager.listVaults()).keys();
     const namesList: string[] = [];
-    for await (const name of list) {
+    for (const name of list) {
       namesList.push(name);
     }
     expect(namesList).toContain(vaultName);

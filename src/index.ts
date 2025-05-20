@@ -10,4 +10,4 @@ export * as secrets from './secrets/index.js';
 export * as vaults from './vaults/index.js';
 export * as utils from './utils/index.js';
 export * as errors from './errors.js';
-export * from './types.js';
+export type * from './types.js';

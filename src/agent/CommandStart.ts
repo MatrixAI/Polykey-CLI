@@ -230,7 +230,7 @@ class CommandStart extends CommandPolykey {
       } else {
         // Change process name to polykey-agent
         process.title = 'polykey-agent';
-        // eslint-disable-next-line prefer-const
+
         let pkAgent: PolykeyAgent;
         this.exitHandlers.handlers.push(async () => {
           await pkAgent?.stop();
