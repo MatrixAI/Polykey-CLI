@@ -85,7 +85,7 @@ describe('commandRemoveVault', () => {
 
     const list = (await polykeyAgent.vaultManager.listVaults()).keys();
     const namesList: string[] = [];
-    for await (const name of list) {
+    for (const name of list) {
       namesList.push(name);
     }
     expect(namesList).not.toContain(vaultName);
