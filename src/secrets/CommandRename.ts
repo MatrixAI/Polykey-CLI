@@ -103,8 +103,8 @@ class CommandRename extends CommandPolykey {
           `EINVALID: The new secret name '${newSecretNameArg}' appears to be a path but could not be parsed: ${e.message}`,
         );
       }
-      const newVaultNameInArg = parsedNewPath[0];
-      const newSecretPathPart = parsedNewPath[1];
+      const newVaultNameInArg: string = parsedNewPath[0];
+      const newSecretPathPart: string = parsedNewPath[1];
       if (newVaultNameInArg !== originalVaultName) {
         throw new errors.ErrorPolykeyCLIRenameSecret(
           `ECROSSVAULT: Renaming to a different vault ('${newVaultNameInArg}') is not supported by this command. The target vault must be the same as the source vault ('${originalVaultName}').`,
