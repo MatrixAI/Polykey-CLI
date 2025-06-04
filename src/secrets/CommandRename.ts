@@ -75,7 +75,7 @@ class CommandRename extends CommandPolykey {
               metadata: auth,
               nameOrId: secretPath[0],
               secretName: secretPath[1],
-              newSecretName: newSecretNameArg,
+              newSecretName: finalNewSecretName,
             }),
           meta,
         );
