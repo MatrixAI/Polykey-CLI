@@ -2,6 +2,7 @@ import type PolykeyClient from 'polykey/PolykeyClient.js';
 import type { NodeConnectionMessage } from 'polykey/client/types.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binUtils from '../utils/utils.js';
+import * as binOptions from '../utils/options.js';
 import * as binProcessors from '../utils/processors.js';
 
 class CommandAdd extends CommandPolykey {
@@ -9,6 +10,9 @@ class CommandAdd extends CommandPolykey {
     super(...args);
     this.name('connections');
     this.description('list all active node connections');
+    this.addOption(binOptions.nodeId);
+    this.addOption(binOptions.clientHost);
+    this.addOption(binOptions.clientPort);
     this.action(async (options) => {
       const { default: PolykeyClient } = await import(
         'polykey/PolykeyClient.js'
