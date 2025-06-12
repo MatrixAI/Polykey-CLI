@@ -16,15 +16,30 @@ class CommandRename extends CommandPolykey {
       'Path to where the secret to be renamed, specified as <vaultName>:<directoryPath>',
       binParsers.parseSecretPath,
     );
-    this.argument('<newSecretName>', 'New name of the secret');
+    this.argument(
+      '<newSecretName>',
+      'Fully-qualified new name for the secret, specified as <vaultName>:<secretPath>',
+      binParsers.parseSecretPath,
+    );
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
-    this.action(async (secretPath, newSecretName, options) => {
+    this.action(async (secretPath, newSecretPath, options) => {
+      // Rename operation cannot work across vaults, only within a vault
+      if (secretPath[0] !== newSecretPath[0]) {
+        throw new errors.ErrorPolykeyCLIRenameSecret(
+          'Cannot rename file into another vault',
+        );
+      }
       // Ensure that a valid secret path is provided
       if (secretPath[1] == null) {
         throw new errors.ErrorPolykeyCLIRenameSecret(
-          'EPERM: Cannot rename vault root',
+          'Cannot rename vault root',
+        );
+      }
+      if (newSecretPath[1] == null) {
+        throw new errors.ErrorPolykeyCLIRenameSecret(
+          'Cannot rename to vault root',
         );
       }
       const { default: PolykeyClient } = await import(
@@ -63,7 +78,7 @@ class CommandRename extends CommandPolykey {
               metadata: auth,
               nameOrId: secretPath[0],
               secretName: secretPath[1],
-              newSecretName: newSecretName,
+              newSecretName: newSecretPath[1],
             }),
           meta,
         );
