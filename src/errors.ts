@@ -196,6 +196,11 @@ class ErrorPolykeyCLITouchSecret<T> extends ErrorPolykeyCLI<T> {
   exitCode = 1;
 }
 
+class ErrorPolykeyCLILoginFailed<T> extends ErrorPolykeyCLI<T> {
+  static description = 'Failed to login using Polykey';
+  exitCode = sysexits.SOFTWARE;
+}
+
 export {
   ErrorPolykeyCLI,
   ErrorPolykeyCLIUncaughtException,
@@ -224,4 +229,5 @@ export {
   ErrorPolykeyCLICatSecret,
   ErrorPolykeyCLIEditSecret,
   ErrorPolykeyCLITouchSecret,
+  ErrorPolykeyCLILoginFailed,
 };
