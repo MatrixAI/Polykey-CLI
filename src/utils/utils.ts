@@ -1,5 +1,5 @@
-import type { FileSystem } from 'polykey/types.js';
-import type { POJO } from 'polykey/types.js';
+import type { FileSystem, POJO } from 'polykey/types.js';
+import type { SignedTokenEncoded } from 'polykey/tokens/types.js';
 import type {
   TableRow,
   TableOptions,
@@ -469,7 +469,7 @@ function outputFormatterError(err: any): string {
       if (err.data && !utils.isEmptyObject(err.data)) {
         output += `${indent}data\t${JSON.stringify(err.data)}\n`;
       }
-      if (err.cause) {
+      if (err.cause && !utils.isEmptyObject(err.cause)) {
         output += `${indent}cause: `;
         if (err.cause instanceof ErrorPolykey) {
           err = err.cause;
@@ -637,6 +637,15 @@ async function importFS(fs?: FileSystem): Promise<FileSystem> {
   return fsImported;
 }
 
+function jsonToCompactJWT(token: SignedTokenEncoded): string {
+  if (token.signatures.length !== 1) {
+    throw new errors.ErrorPolykeyCLIInvalidJWT(
+      'Too many signatures, expected 1',
+    );
+  }
+  return `${token.signatures[0].protected}.${token.payload}.${token.signatures[0].signature}`;
+}
+
 export {
   verboseToLogLevel,
   standardErrorReplacer,
@@ -660,6 +669,7 @@ export {
   generateVersionString,
   promise,
   importFS,
+  jsonToCompactJWT,
 };
 
 export type { OutputObject };

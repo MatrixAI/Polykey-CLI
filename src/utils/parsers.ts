@@ -13,6 +13,7 @@ const vaultNameRegex = /^(?!.*[:])[ -~\t\n]*$/s;
 const secretPathRegex = /^(?!.*[=])[ -~\t\n]*$/s;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
+const base64UrlRegex = /^[A-Za-z0-9\-_]+$/;
 
 /**
  * Converts a validation parser to commander argument parser
@@ -192,6 +193,30 @@ const parsePort: (data: string) => Port = validateParserToArgParser(
 const parseSeedNodes: (data: string) => [SeedNodes, boolean] =
   validateParserToArgParser(nodesUtils.parseSeedNodes);
 
+// Compact JWTs are in xxxx.yyyy.zzzz format where x is the protected
+// header, y is the payload, and z is the binary signature.
+const parseCompactJWT = (token: string): [string, string, string] => {
+  // Clean up whitespaces
+  token = token.trim();
+
+  // Confirm part amount
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    throw new InvalidArgumentError(
+      'JWT must contain three dot-separated parts',
+    );
+  }
+
+  // Validate base64 encoding
+  for (const part of parts) {
+    if (!part || !base64UrlRegex.test(part)) {
+      throw new InvalidArgumentError('JWT is not correctly encoded');
+    }
+  }
+
+  return [parts[0], parts[1], parts[2]];
+};
+
 export {
   vaultNameRegex,
   secretPathRegex,
@@ -220,4 +245,5 @@ export {
   parseProviderId,
   parseIdentityId,
   parseProviderIdList,
+  parseCompactJWT,
 };
