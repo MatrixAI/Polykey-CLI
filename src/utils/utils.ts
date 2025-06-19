@@ -469,7 +469,7 @@ function outputFormatterError(err: any): string {
       if (err.data && !utils.isEmptyObject(err.data)) {
         output += `${indent}data\t${JSON.stringify(err.data)}\n`;
       }
-      if (err.cause && !utils.isEmptyObject(err.cause)) {
+      if (err.cause) {
         output += `${indent}cause: `;
         if (err.cause instanceof ErrorPolykey) {
           err = err.cause;
