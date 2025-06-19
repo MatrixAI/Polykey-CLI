@@ -152,6 +152,7 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
   const { default: CommandBootstrap } = await import('./bootstrap/index.js');
   const { default: CommandAgent } = await import('./agent/index.js');
   const { default: CommandAudit } = await import('./audit/index.js');
+  const { default: CommandAuth } = await import('./auth/index.js');
   const { default: CommandVaults } = await import('./vaults/index.js');
   const { default: CommandSecrets } = await import('./secrets/index.js');
   const { default: CommandKeys } = await import('./keys/index.js');
@@ -181,6 +182,7 @@ async function polykeyMain(argv: Array<string>): Promise<number> {
   rootCommand.addCommand(new CommandBootstrap({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandAgent({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandAudit({ exitHandlers, fs }));
+  rootCommand.addCommand(new CommandAuth({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandNodes({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandSecrets({ exitHandlers, fs }));
   rootCommand.addCommand(new CommandKeys({ exitHandlers, fs }));
