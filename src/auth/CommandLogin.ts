@@ -88,6 +88,7 @@ class CommandLogin extends CommandPolykey {
         try {
           result = await fetch(incomingPayload.returnURL, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: compactHeader }),
           });
         } catch (e) {
