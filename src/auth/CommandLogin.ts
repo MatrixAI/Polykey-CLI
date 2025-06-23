@@ -1,10 +1,8 @@
 import type PolykeyClient from 'polykey/PolykeyClient.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binProcessors from '../utils/processors.js';
-import * as binParsers from '../utils/parsers.js';
 import * as binUtils from '../utils/index.js';
 import * as binOptions from '../utils/options.js';
-import * as errors from '../errors.js';
 
 class CommandLogin extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -20,6 +18,7 @@ class CommandLogin extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/PolykeyClient.js'
       );
+      const { default: open } = await import('open');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -51,19 +50,31 @@ class CommandLogin extends CommandPolykey {
         // Get a signed token by the agent
         const response = await binUtils.retryAuthentication(
           (auth) =>
-            pkClient.rpcClient.methods.authSignToken({ metadata: auth }),
+            pkClient.rpcClient.methods.authIdentityToken({ metadata: auth }),
           meta,
         );
 
         // Send the returned JWT to the returnURL provided by the initial token
         const compactHeader = binUtils.jsonToCompactJWT(response);
-        const targetURL = new URL(url.endsWith('/') ? url.slice(0, url.length) : url);
-        const subPath: string = options.returnURLPath ?? '/api/oauth2/oidc'
+        const targetURL = new URL(
+          url.endsWith('/') ? url.slice(0, url.length) : url,
+        );
+        const subPath: string = options.returnURLPath ?? '/api/oauth2/oidc';
         targetURL.pathname = subPath.startsWith('/') ? subPath : `/${subPath}`;
         targetURL.searchParams.append('token', compactHeader);
 
-        // TEMPORARY: Print out the resulting URL
-        process.stdout.write(`Open the following URL in your browser:\n\t${targetURL}`)
+        // Print out the URL to stderr
+        process.stderr.write(
+          `Open the following URL in your browser:\n\t${targetURL}\n`,
+        );
+
+        // Try to open the URL in the browser
+        try {
+          process.stderr.write('Opening URL in browser...\n');
+          await open(targetURL.toString());
+        } catch (e) {
+          process.stderr.write(`Failed to open browser: ${e.message}\n`);
+        }
       } finally {
         if (pkClient! != null) await pkClient.stop();
       }
