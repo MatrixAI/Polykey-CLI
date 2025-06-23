@@ -320,6 +320,11 @@ const preserveNewline = new Option(
   })
   .default([]);
 
+const returnURLPath = new Option(
+  '--url-path <path>',
+  'Which path on the website to send the token to',
+);
+
 export {
   nodePath,
   format,
@@ -365,4 +370,5 @@ export {
   recursive,
   parents,
   preserveNewline,
+  returnURLPath,
 };
