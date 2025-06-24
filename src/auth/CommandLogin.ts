@@ -59,7 +59,7 @@ class CommandLogin extends CommandPolykey {
         const targetURL = new URL(
           url.endsWith('/') ? url.slice(0, url.length) : url,
         );
-        const subPath: string = options.returnURLPath ?? '/api/oauth2/oidc';
+        const subPath: string = options.returnURLPath ?? '/oauth2/oidc';
         targetURL.pathname = subPath.startsWith('/') ? subPath : `/${subPath}`;
         targetURL.searchParams.append('token', compactHeader);
 
