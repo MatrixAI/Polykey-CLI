@@ -1,7 +1,9 @@
 import type PolykeyClient from 'polykey/PolykeyClient.js';
-import type { ParsedSecretPathValue } from '../types.js';
+import type { JSONSchema, ParsedSecretPathValue } from '../types.js';
 import path from 'node:path';
 import os from 'node:os';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
+import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
 import { InvalidArgumentError } from 'commander';
 import * as utils from 'polykey/utils/index.js';
 import CommandPolykey from '../CommandPolykey.js';
@@ -26,6 +28,7 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.envDuplicate);
     this.addOption(binOptions.envExport);
     this.addOption(binOptions.preserveNewline);
+    this.addOption(binOptions.egressSchema);
     this.argument(
       '<args...>',
       'command and arguments formatted as <envPaths...> [-- cmd [cmdArgs...]]',
@@ -53,6 +56,7 @@ class CommandEnv extends CommandPolykey {
         if (secretPath == null) preservedSecrets.add(vaultName);
         else preservedSecrets.add(`${vaultName}:${secretPath}`);
       }
+
       // There are a few stages here
       // 1. parse the desired secrets
       // 2. obtain the desired secrets
@@ -226,7 +230,50 @@ class CommandEnv extends CommandPolykey {
             };
           }
           await writeP;
-          return [envp, envpPath];
+
+          // Apply validation using the schema
+          // TODO: filter before pulling instead of after
+          const filteredEnvp: Record<string, string> = {};
+          if (options.egressSchema != null) {
+            // Resolve references and bundle schema
+            const schema: JSONSchema = await $RefParser.bundle(
+              options.egressSchema,
+            );
+
+            // Validate the incoming secrets against the schema
+            const ajv = new Ajv({
+              coerceTypes: true,
+              useDefaults: false,
+              allErrors: true,
+            });
+            const validate = ajv.compile(schema);
+            validate(envp);
+
+            // Extract relevant keys, discarding the rest
+            const { requiredKeys, allKeys, defaults } =
+              binUtils.loadSchema(schema);
+
+            for (const key of allKeys) {
+              let value = envp[key];
+              if (value == null && defaults[key] != null) {
+                value = defaults[key];
+              }
+              if (
+                requiredKeys.includes(key) &&
+                (value == null || value === '')
+              ) {
+                throw new Error('TMP missing required variable');
+              }
+              if (value != null) {
+                filteredEnvp[key] = value.toString();
+              }
+            }
+          }
+
+          return [
+            utils.isEmptyObject(filteredEnvp) ? envp : filteredEnvp,
+            envpPath,
+          ];
         }, meta);
         // End connection early to avoid errors on server
         await pkClient.stop();

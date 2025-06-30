@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "allOf": [
+    { "$ref": "./test.schema.json"}
+  ],
+  "properties": {
+    "SECRET2": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "SECRET2"
+  ]
+}

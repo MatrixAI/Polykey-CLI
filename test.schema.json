@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "SECRET1": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "SECRET1"
+  ]
+}

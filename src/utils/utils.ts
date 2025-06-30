@@ -5,6 +5,8 @@ import type {
   TableOptions,
   DictOptions,
   PromiseDeconstructed,
+  JSONSchema,
+  JSONSchemaInfo,
 } from '../types.js';
 import process from 'node:process';
 import { LogLevel } from '@matrixai/logger';
@@ -646,6 +648,47 @@ function jsonToCompactJWT(token: SignedTokenEncoded): string {
   return `${token.signatures[0].protected}.${token.payload}.${token.signatures[0].signature}`;
 }
 
+function loadSchema(bundledSchema: JSONSchema): JSONSchemaInfo {
+  const props: Set<string> = new Set();
+  const required: Set<string> = new Set();
+  const defaults: Record<string, string> = {};
+
+  const unwrapSchema = (schema: JSONSchema) => {
+    // Collect properties and their defaults
+    if (schema.properties != null) {
+      for (const [k, p] of Object.entries(schema.properties)) {
+        props.add(k);
+        if (p.default == null) continue;
+        if (typeof p.default !== 'string') {
+          throw new Error('TMP wrong type');
+        }
+        defaults[k] = p.default;
+      }
+    }
+
+    // Collect required properties
+    if (schema.required != null) {
+      schema.required.forEach((requiredSecret) => required.add(requiredSecret));
+    }
+
+    // Process composition keywords
+    const compositionKeywords = ['allOf', 'anyOf', 'oneOf'] as const;
+    compositionKeywords.forEach(
+      (keyword) =>
+        schema[keyword] != null &&
+        Array.isArray(schema[keyword]) &&
+        schema[keyword]!.forEach(unwrapSchema),
+    );
+  };
+  unwrapSchema(bundledSchema);
+
+  return {
+    allKeys: [...props],
+    requiredKeys: [...required],
+    defaults: defaults,
+  };
+}
+
 export {
   verboseToLogLevel,
   standardErrorReplacer,
@@ -670,6 +713,7 @@ export {
   promise,
   importFS,
   jsonToCompactJWT,
+  loadSchema,
 };
 
 export type { OutputObject };
