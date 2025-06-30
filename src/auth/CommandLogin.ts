@@ -8,7 +8,7 @@ class CommandLogin extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('login');
-    this.description('Login to a platform with Polykey identity');
+    this.description('Login to a platform with your Polykey identity');
     this.argument('<url>', 'The URL to login using Polykey');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
@@ -70,7 +70,9 @@ class CommandLogin extends CommandPolykey {
 
         // Try to open the URL in the browser
         try {
-          process.stderr.write('Opening URL in browser...\n');
+          process.stderr.write(
+            'Attempting to open this URL in your browser...\n',
+          );
           await open(targetURL.toString());
         } catch (e) {
           process.stderr.write(`Failed to open browser: ${e.message}\n`);

@@ -3,12 +3,12 @@ import type {
   TokenProtectedHeaderEncoded,
   TokenSignatureEncoded,
 } from 'polykey/tokens/types.js';
-import path from 'node:path';
 import type open from 'open';
+import path from 'node:path';
 import fs from 'node:fs';
+import { spawn } from 'node:child_process';
 import { jest } from '@jest/globals';
 import { test } from '@fast-check/jest';
-import { spawn } from 'node:child_process';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
 import PolykeyAgent from 'polykey/PolykeyAgent.js';
 import Token from 'polykey/tokens/Token.js';
@@ -46,6 +46,7 @@ describe('commandAuthLogin', () => {
     });
   });
   afterEach(async () => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
     await polykeyAgent.stop();
     await fs.promises.rm(dataDir, {
@@ -92,7 +93,7 @@ describe('commandAuthLogin', () => {
     expect(nodeId).toBeDefined();
     const nodeIdPublicKey = keysUtils.publicKeyFromNodeId(nodeId!);
     expect(receivedToken.verifyWithPublicKey(nodeIdPublicKey)).toBeTrue();
-    expect(receivedToken.payload.exp).toBe(Math.floor(Date.now() / 1000));
+    expect(receivedToken.payload.exp).toBe(Math.floor(Date.now() / 1000) + 60);
     expect(receivedToken.payload.jti).toBeDefined();
   });
 });

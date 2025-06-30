@@ -1,3 +1,4 @@
+import type { GestaltAction } from 'polykey/gestalts/types.js';
 import type { Host, Hostname, Port } from 'polykey/network/types.js';
 import type { SeedNodes } from 'polykey/nodes/types.js';
 import type { ParsedSecretPathValue } from '../types.js';
@@ -13,7 +14,6 @@ const vaultNameRegex = /^(?!.*[:])[ -~\t\n]*$/s;
 const secretPathRegex = /^(?!.*[=])[ -~\t\n]*$/s;
 const secretPathValueRegex = /^([a-zA-Z_][\w]+)?$/;
 const environmentVariableRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)?$/;
-const base64UrlRegex = /^[A-Za-z0-9\-_]+$/;
 
 /**
  * Converts a validation parser to commander argument parser
@@ -163,7 +163,7 @@ const parseIdentityId: (data: string) => ids.IdentityId =
 const parseProviderIdList: (data: string) => Array<ids.ProviderId> =
   validateParserToArgListParser(ids.parseProviderId);
 
-const parseGestaltAction: (data: string) => 'notify' | 'scan' | 'claim' =
+const parseGestaltAction: (data: string) => GestaltAction =
   validateParserToArgParser(gestaltsUtils.parseGestaltAction);
 
 const parseHost: (data: string) => Host = validateParserToArgParser(
