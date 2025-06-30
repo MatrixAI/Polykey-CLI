@@ -1,15 +1,12 @@
 import type {
-  IdentityRequestData,
-  IdentityResponseData,
-} from 'polykey/client/types.js';
-import type {
   TokenPayloadEncoded,
   TokenProtectedHeaderEncoded,
   TokenSignatureEncoded,
 } from 'polykey/tokens/types.js';
+import type open from 'open';
 import path from 'node:path';
 import fs from 'node:fs';
-import fc from 'fast-check';
+import { spawn } from 'node:child_process';
 import { jest } from '@jest/globals';
 import { test } from '@fast-check/jest';
 import Logger, { LogLevel, StreamHandler } from '@matrixai/logger';
@@ -18,7 +15,6 @@ import Token from 'polykey/tokens/Token.js';
 import * as keysUtils from 'polykey/keys/utils/index.js';
 import * as nodesUtils from 'polykey/nodes/utils.js';
 import * as testUtils from '../utils/index.js';
-import * as utils from '#utils/utils.js';
 
 describe('commandAuthLogin', () => {
   const password = 'password';
@@ -27,14 +23,10 @@ describe('commandAuthLogin', () => {
   let polykeyAgent: PolykeyAgent;
 
   beforeEach(async () => {
-    jest.spyOn(globalThis, 'fetch').mockImplementation(() =>
-      Promise.resolve(
-        new Response(JSON.stringify({ result: 'success' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
-      ),
-    );
+    // Mock implementation which spawns a noop child process
+    jest.unstable_mockModule('open', () => ({
+      default: jest.fn<typeof open>().mockResolvedValue(spawn('true')),
+    }));
     dataDir = await fs.promises.mkdtemp(
       path.join(globalThis.tmpDir, 'polykey-test-'),
     );
@@ -54,6 +46,7 @@ describe('commandAuthLogin', () => {
     });
   });
   afterEach(async () => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
     await polykeyAgent.stop();
     await fs.promises.rm(dataDir, {
@@ -62,42 +55,30 @@ describe('commandAuthLogin', () => {
     });
   });
 
-  test('should succeed with a valid compact JWT', async () => {
-    // Generate and sign token
-    const keyPair = keysUtils.generateKeyPair();
-    const returnURL = 'test';
-    const publicKey = keyPair.publicKey.toString('base64url');
-    const token = Token.fromPayload<IdentityRequestData>({
-      publicKey,
-      returnURL,
-    });
-    token.signWithPrivateKey(keyPair.privateKey);
-    const encodedToken = utils.jsonToCompactJWT(token.toEncoded());
-
-    // Use token to try and login
-    const command = ['auth', 'login', '-np', dataDir, encodedToken];
+  test('should return a valid, signed, and compact JWT', async () => {
+    // Try and login to a mock site
+    jest.useFakeTimers();
+    const returnURL = 'https://testing123.com';
+    const command = ['auth', 'login', '-np', dataDir, returnURL];
     const result = await testUtils.pkStdio(command, {
       env: { PK_PASSWORD: password },
       cwd: dataDir,
     });
     expect(result.exitCode).toBe(0);
 
-    // Check the received token
-    const fetchMock = globalThis.fetch as jest.MockedFunction<typeof fetch>;
-    expect(fetchMock).toHaveBeenCalled();
-    const [url, options] = fetchMock.mock.lastCall!;
-    expect(url).toBe(returnURL);
-    expect(options).toBeDefined();
-    expect(options!.method).toBe('POST');
+    // Check the received url
+    const { default: open } = await import('open');
+    const openMock = open as jest.MockedFunction<typeof open>;
+    expect(openMock).toHaveBeenCalled();
+    const [url] = openMock.mock.lastCall!;
+    const populatedURL = new URL(url);
+    expect(populatedURL.origin).toBe(returnURL);
+    expect(populatedURL.searchParams.has('token'));
 
     // Reconstruct the token
-    expect(typeof options!.body).toBe('string');
-    const responseBody: { token: string } = JSON.parse(
-      options!.body! as string,
-    );
-    const receivedEncodedToken = responseBody.token;
+    const receivedEncodedToken = populatedURL.searchParams.get('token')!;
     const [header, payload, signature] = receivedEncodedToken.split('.');
-    const receivedToken = Token.fromEncoded<IdentityResponseData>({
+    const receivedToken = Token.fromEncoded({
       payload: payload as TokenPayloadEncoded,
       signatures: [
         {
@@ -108,55 +89,11 @@ describe('commandAuthLogin', () => {
     });
 
     // Verify the incoming token. The nodeId is the node's public key.
-    const nodeId = nodesUtils.decodeNodeId(receivedToken.payload.nodeId);
+    const nodeId = nodesUtils.decodeNodeId(receivedToken.payload.iss);
     expect(nodeId).toBeDefined();
     const nodeIdPublicKey = keysUtils.publicKeyFromNodeId(nodeId!);
     expect(receivedToken.verifyWithPublicKey(nodeIdPublicKey)).toBeTrue();
-    const sentTokenEncoded = receivedToken.payload.requestToken;
-    const sentToken = Token.fromEncoded<IdentityRequestData>(sentTokenEncoded);
-    expect(sentToken.verifyWithPublicKey(keyPair.publicKey)).toBeTrue();
-  });
-
-  test.prop([fc.string()], { numRuns: 1 })(
-    'should fail with an invalid JWT',
-    async (compactJWT) => {
-      // Use token to try and login
-      const command = ['auth', 'login', '-np', dataDir, compactJWT];
-      const result = await testUtils.pkStdio(command, {
-        env: { PK_PASSWORD: password },
-        cwd: dataDir,
-      });
-      expect(result.exitCode).not.toBe(0);
-
-      // We should never even get to a point where the fetch was invoked
-      const fetchMock = globalThis.fetch as jest.MockedFunction<typeof fetch>;
-      expect(fetchMock).not.toHaveBeenCalled();
-    },
-  );
-
-  test('should fail with incorrectly signed JWT', async () => {
-    // Generate and sign token with different key pairs
-    let keyPair = keysUtils.generateKeyPair();
-    const publicKey = keyPair.publicKey.toString('base64url');
-    keyPair = keysUtils.generateKeyPair();
-    const returnURL = 'test';
-    const token = Token.fromPayload<IdentityRequestData>({
-      publicKey,
-      returnURL,
-    });
-    token.signWithPrivateKey(keyPair.privateKey);
-    const encodedToken = utils.jsonToCompactJWT(token.toEncoded());
-
-    // Use token to try and login
-    const command = ['auth', 'login', '-np', dataDir, encodedToken];
-    const result = await testUtils.pkStdio(command, {
-      env: { PK_PASSWORD: password },
-      cwd: dataDir,
-    });
-    expect(result.exitCode).not.toBe(0);
-
-    // We should never even get to a point where the fetch was invoked
-    const fetchMock = globalThis.fetch as jest.MockedFunction<typeof fetch>;
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(receivedToken.payload.exp).toBe(Math.floor(Date.now() / 1000) + 60);
+    expect(receivedToken.payload.jti).toBeDefined();
   });
 });

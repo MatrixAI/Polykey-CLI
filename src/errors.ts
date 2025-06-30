@@ -201,11 +201,6 @@ class ErrorPolykeyCLIInvalidJWT<T> extends ErrorPolykeyCLI<T> {
   exitCode = sysexits.USAGE;
 }
 
-class ErrorPolykeyCLILoginFailed<T> extends ErrorPolykeyCLI<T> {
-  static description = 'Failed to login using Polykey';
-  exitCode = sysexits.SOFTWARE;
-}
-
 export {
   ErrorPolykeyCLI,
   ErrorPolykeyCLIUncaughtException,
@@ -235,5 +230,4 @@ export {
   ErrorPolykeyCLIEditSecret,
   ErrorPolykeyCLITouchSecret,
   ErrorPolykeyCLIInvalidJWT,
-  ErrorPolykeyCLILoginFailed,
 };
