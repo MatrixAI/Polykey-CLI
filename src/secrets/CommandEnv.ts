@@ -1,11 +1,14 @@
 import type PolykeyClient from 'polykey/PolykeyClient.js';
-import type { JSONSchema, ParsedSecretPathValue } from '../types.js';
+import type {
+  JSONSchema,
+  JSONSchemaInfo,
+  ParsedSecretPathValue,
+} from '../types.js';
 import path from 'node:path';
 import os from 'node:os';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
 import { InvalidArgumentError } from 'commander';
-import * as utils from 'polykey/utils/index.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binProcessors from '../utils/processors.js';
 import * as binUtils from '../utils/index.js';
@@ -37,6 +40,7 @@ class CommandEnv extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/PolykeyClient.js'
       );
+      const utils = await import('polykey/utils/index.js');
       const {
         envInvalid,
         envDuplicate,
@@ -122,27 +126,66 @@ class CommandEnv extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
 
+        let schema: JSONSchema | undefined = undefined;
+        let unwrappedSchema: JSONSchemaInfo | undefined = undefined;
+        if (options.egressSchema != null) {
+          schema = (await $RefParser.bundle(
+            options.egressSchema,
+          )) satisfies JSONSchema;
+          unwrappedSchema = binUtils.loadSchema(schema!);
+        }
+
         // Getting envs
         const [envp] = await binUtils.retryAuthentication(async (auth) => {
           const responseStream =
             await pkClient.rpcClient.methods.vaultsSecretsEnv();
+
           // Writing desired secrets
           const secretRenameMap = new Map<string, string | undefined>();
-          const writeP = (async () => {
-            const writer = responseStream.writable.getWriter();
-            let first = true;
-            for (const envVariable of envVariables) {
-              const [nameOrId, secretName, secretNameNew] = envVariable;
-              secretRenameMap.set(secretName ?? '/', secretNameNew);
+          const writer = responseStream.writable.getWriter();
+          let first = true;
+          for (const envVariable of envVariables) {
+            const [nameOrId, secretName, secretNameNew] = envVariable;
+            secretRenameMap.set(secretName ?? '/', secretNameNew);
+
+            // If there is no secret name provided, then attempt to export the
+            // secrets from the entire vault. Otherwise, check if the selected
+            // secret exists in the schema before requesting it. This will
+            // only run if a schema has been specified.
+            if (schema != null && unwrappedSchema != null) {
+              const { allKeys } = unwrappedSchema;
+              if (nameOrId != null && secretName == null) {
+                // Only vault specified
+                for (const key of allKeys) {
+                  // TODO: handle secret renames, allKeys key might not be the same in vault
+                  await writer.write({
+                    nameOrId: nameOrId,
+                    secretName: key,
+                    metadata: first ? auth : undefined,
+                  });
+                }
+              } else {
+                // Individual secret name specified
+                const name: string = secretNameNew != null ? secretNameNew : secretName!;
+                if (allKeys.includes(name)) {
+                  await writer.write({
+                    nameOrId: nameOrId,
+                    secretName: name,
+                    metadata: first ? auth : undefined,
+                  });
+                }
+              }
+            } else {
+              // No schema specified
               await writer.write({
                 nameOrId: nameOrId,
                 secretName: secretName ?? '/',
                 metadata: first ? auth : undefined,
               });
-              first = false;
             }
-            await writer.close();
-          })();
+            first = false;
+          }
+          await writer.close();
 
           const envp: Record<string, string> = {};
           const envpPath: Record<
@@ -153,6 +196,34 @@ class CommandEnv extends CommandPolykey {
             }
           > = {};
           for await (const value of responseStream.readable) {
+            if (value.type === 'ErrorMessage') {
+              switch (value.code) {
+                case 'EINVAL':
+                  // It is expected for the data to be populated with the offending
+                  // vault name if the vault was not found.
+                  process.stderr.write(
+                    binUtils.outputFormatterError(
+                      `Vault "${value.data?.nameOrId}" does not exist`,
+                    ),
+                  );
+                  break;
+                case 'ENOENT':
+                  // It is expected for the data to be populated with the offending
+                  // secret and vault name if a secret was not found.
+                  process.stderr.write(
+                    binUtils.outputFormatterError(
+                      `Secret "${value.data?.secretName}" does not exist in vault "${value.data?.nameOrId}"`,
+                    ),
+                  );
+                  break;
+                default:
+                  utils.never(
+                    `Expected code to be one of EINVAL, ENOENT, received ${value.code}`,
+                  );
+              }
+              continue;
+            }
+
             const { nameOrId, secretName, secretContent } = value;
             let newName = secretRenameMap.get(secretName);
             if (newName == null) {
@@ -229,30 +300,16 @@ class CommandEnv extends CommandPolykey {
               secretName,
             };
           }
-          await writeP;
 
-          // Apply validation using the schema
-          // TODO: filter before pulling instead of after
+          // Apply defaults using the schema
           const filteredEnvp: Record<string, string> = {};
-          if (options.egressSchema != null) {
-            // Resolve references and bundle schema
-            const schema: JSONSchema = await $RefParser.bundle(
-              options.egressSchema,
-            );
+          if (unwrappedSchema != null) {
+            // Parse the schema for manual filtering
+            const { requiredKeys, allKeys, defaults } = unwrappedSchema;
 
-            // Validate the incoming secrets against the schema
-            const ajv = new Ajv({
-              coerceTypes: true,
-              useDefaults: false,
-              allErrors: true,
-            });
-            const validate = ajv.compile(schema);
-            validate(envp);
-
-            // Extract relevant keys, discarding the rest
-            const { requiredKeys, allKeys, defaults } =
-              binUtils.loadSchema(schema);
-
+            // Add allowed secrets to a filtered set of secrets. This runs after
+            // the duplication is processed, so all secrets here are guaranteed
+            // to be unique.
             for (const key of allKeys) {
               let value = envp[key];
               if (value == null && defaults[key] != null) {
