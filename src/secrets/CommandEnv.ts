@@ -157,7 +157,8 @@ class CommandEnv extends CommandPolykey {
               if (nameOrId != null && secretName == null) {
                 // Only vault specified
                 for (const key of allKeys) {
-                  // TODO: handle secret renames, allKeys key might not be the same in vault
+                  // When exporting secrets from a vault, it is impossible to
+                  // rename the resulting secrets.
                   await writer.write({
                     nameOrId: nameOrId,
                     secretName: key,
@@ -166,7 +167,8 @@ class CommandEnv extends CommandPolykey {
                 }
               } else {
                 // Individual secret name specified
-                const name: string = secretNameNew != null ? secretNameNew : secretName!;
+                const name: string =
+                  secretNameNew != null ? secretNameNew : secretName!;
                 if (allKeys.includes(name)) {
                   await writer.write({
                     nameOrId: nameOrId,
@@ -201,21 +203,26 @@ class CommandEnv extends CommandPolykey {
                 case 'EINVAL':
                   // It is expected for the data to be populated with the offending
                   // vault name if the vault was not found.
-                  process.stderr.write(
-                    binUtils.outputFormatterError(
-                      `Vault "${value.data?.nameOrId}" does not exist`,
-                    ),
+                  throw new Error(
+                    `TMP Vault "${value.data?.nameOrId}" does not exist`,
                   );
-                  break;
                 case 'ENOENT':
+                  // If we have a default for this key, then don't bother
+                  // reporting the missing key.
+                  if (
+                    unwrappedSchema != null &&
+                    Object.keys(unwrappedSchema.defaults).includes(
+                      value.data!.secretName!.toString(),
+                    )
+                  ) {
+                    break;
+                  }
+
                   // It is expected for the data to be populated with the offending
                   // secret and vault name if a secret was not found.
-                  process.stderr.write(
-                    binUtils.outputFormatterError(
-                      `Secret "${value.data?.secretName}" does not exist in vault "${value.data?.nameOrId}"`,
-                    ),
+                  throw new Error(
+                    `TMP Secret "${value.data?.secretName}" does not exist in vault "${value.data?.nameOrId}"`,
                   );
-                  break;
                 default:
                   utils.never(
                     `Expected code to be one of EINVAL, ENOENT, received ${value.code}`,
