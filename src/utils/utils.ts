@@ -457,7 +457,9 @@ function outputFormatterError(err: any): string {
           output += '\n';
         }
       }
-      output += `${indent}cause: `;
+      if (err.cause) {
+        output += `${indent}cause: `;
+      }
       err = err.cause;
     } else if (err instanceof ErrorPolykey) {
       output += `${err.name}: ${err.description}`;

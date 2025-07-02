@@ -953,4 +953,290 @@ describe('commandEnv', () => {
       expect(result.stdout).toEqual(formatResult[format]);
     },
   );
+
+  describe('should apply json schema to control secrets egress', () => {
+    test('should filter secrets based on a schema', async () => {
+      // Write secrets to vault
+      const vaultName = 'vault';
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretName1 = 'SECRET1';
+      const secretName2 = 'SECRET2';
+      const secretName3 = 'SECRET3';
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, secretName1, secretName1);
+        await vaultOps.addSecret(vault, secretName2, secretName2);
+        await vaultOps.addSecret(vault, secretName3, secretName3);
+      });
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          SECRET2: { type: 'string' },
+        },
+        required: ['SECRET1', 'SECRET2'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+
+      // Confirm only the specified secrets were exported
+      expect(result.stdout).toContain("SECRET1='SECRET1'");
+      expect(result.stdout).toContain("SECRET2='SECRET2'");
+      expect(result.stdout).not.toContain("SECRET3='SECRET3'");
+    });
+
+    test('should apply schema to secrets from multiple vaults', async () => {
+      // Write secrets to vault
+      const vaultName1 = 'vault1';
+      const vaultName2 = 'vault2';
+      const vaultId1 = await polykeyAgent.vaultManager.createVault(vaultName1);
+      const vaultId2 = await polykeyAgent.vaultManager.createVault(vaultName2);
+      const secretName1 = 'SECRET1';
+      const secretName2 = 'SECRET2';
+      const secretName3 = 'SECRET3';
+      await polykeyAgent.vaultManager.withVaults(
+        [vaultId1, vaultId2],
+        async (vault1, vault2) => {
+          await vaultOps.addSecret(vault1, secretName1, secretName1);
+          await vaultOps.addSecret(vault2, secretName2, secretName2);
+          await vaultOps.addSecret(vault1, secretName3, secretName3);
+        },
+      );
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          SECRET2: { type: 'string' },
+        },
+        required: ['SECRET1', 'SECRET2'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName1,
+        vaultName2,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+
+      // Confirm only the specified secrets were exported
+      expect(result.stdout).toContain("SECRET1='SECRET1'");
+      expect(result.stdout).toContain("SECRET2='SECRET2'");
+      expect(result.stdout).not.toContain("SECRET3='SECRET3'");
+    });
+
+    test('should handle secret renames', async () => {
+      // Write secrets to vault
+      const vaultName = 'vault';
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretName1 = 'SECRET1';
+      const secretName2 = 'SECRET2';
+      const secretName3 = 'SECRET3';
+      const secretRename = 'RENAMED';
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, secretName1, secretName1);
+        await vaultOps.addSecret(vault, secretName2, secretName2);
+        await vaultOps.addSecret(vault, secretName3, secretName3);
+      });
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          RENAMED: { type: 'string' },
+        },
+        required: ['SECRET1', 'RENAMED'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema. Should first export all relevant secrets
+      // from the vault, then process the renamed secret.
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName,
+        `${vaultName}:${secretName2}=${secretRename}`,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+
+      // Confirm only the specified secrets were exported
+      expect(result.stdout).toContain("SECRET1='SECRET1'");
+      expect(result.stdout).toContain("RENAMED='SECRET2'");
+      expect(result.stdout).not.toContain("SECRET2='SECRET2'");
+      expect(result.stdout).not.toContain("SECRET3='SECRET3'");
+    });
+
+    test('should not fail when missing non-required secret', async () => {
+      // Write secrets to vault
+      const vaultName = 'vault';
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretName1 = 'SECRET1';
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, secretName1, secretName1);
+      });
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          SECRET2: { type: 'string' },
+        },
+        required: ['SECRET1'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema. Should first export all relevant secrets
+      // from the vault, then process the renamed secret.
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+
+      // Confirm only the specified secrets were exported
+      expect(result.stdout).toContain("SECRET1='SECRET1'");
+      expect(result.stdout).not.toContain('SECRET2');
+    });
+
+    test('should fail when missing required secret', async () => {
+      // Write secrets to vault
+      const vaultName = 'vault';
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretName1 = 'SECRET1';
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, secretName1, secretName1);
+      });
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          SECRET2: { type: 'string' },
+        },
+        required: ['SECRET1', 'SECRET2'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(64);
+
+      // Confirm the validity of the error
+      expect(result.stderr).toInclude('ErrorPolykeyCLIMissingRequiredEnvName');
+      expect(result.stderr).toInclude('SECRET2');
+    });
+
+    test('should replace variable with default if present', async () => {
+      // Write secrets to vault
+      const vaultName = 'vault';
+      const vaultId = await polykeyAgent.vaultManager.createVault(vaultName);
+      const secretName1 = 'SECRET1';
+      await polykeyAgent.vaultManager.withVaults([vaultId], async (vault) => {
+        await vaultOps.addSecret(vault, secretName1, secretName1);
+      });
+
+      // Write schema to file
+      const schema = {
+        type: 'object',
+        properties: {
+          SECRET1: { type: 'string' },
+          SECRET2: { type: 'string', default: 'abc' },
+        },
+        required: ['SECRET1', 'SECRET2'],
+      };
+      const schemaPath = path.join(dataDir, 'egress.schema.json');
+      await fs.promises.writeFile(schemaPath, JSON.stringify(schema, null, 2));
+
+      // Run command with the schema
+      const command = [
+        'secrets',
+        'env',
+        '-np',
+        dataDir,
+        '--env-format',
+        'unix',
+        '--egress-schema',
+        schemaPath,
+        vaultName,
+      ];
+      const result = await testUtils.pkExec(command, {
+        env: { PK_PASSWORD: password },
+      });
+      expect(result.exitCode).toBe(0);
+
+      // Confirm only the specified secrets were exported
+      expect(result.stdout).toInclude("SECRET1='SECRET1'");
+      expect(result.stdout).toInclude("SECRET2='abc");
+    });
+  });
 });

@@ -172,7 +172,7 @@ class CommandEnv extends CommandPolykey {
                 if (allKeys.includes(name)) {
                   await writer.write({
                     nameOrId: nameOrId,
-                    secretName: name,
+                    secretName: secretName!,
                     metadata: first ? auth : undefined,
                   });
                 }
@@ -201,25 +201,18 @@ class CommandEnv extends CommandPolykey {
             if (value.type === 'ErrorMessage') {
               switch (value.code) {
                 case 'EINVAL':
-                  // It is expected for the data to be populated with the offending
-                  // vault name if the vault was not found.
+                  // It is expected for the data to be populated with the
+                  // offending vault name if the vault was not found.
                   throw new Error(
                     `TMP Vault "${value.data?.nameOrId}" does not exist`,
                   );
                 case 'ENOENT':
-                  // If we have a default for this key, then don't bother
-                  // reporting the missing key.
-                  if (
-                    unwrappedSchema != null &&
-                    Object.keys(unwrappedSchema.defaults).includes(
-                      value.data!.secretName!.toString(),
-                    )
-                  ) {
-                    break;
-                  }
+                  // If we are working with schemas, then missing keys will be
+                  // validated later.
+                  if (unwrappedSchema != null) break;
 
-                  // It is expected for the data to be populated with the offending
-                  // secret and vault name if a secret was not found.
+                  // It is expected for the data to be populated with the
+                  // offending secret and vault name if a secret was not found.
                   throw new Error(
                     `TMP Secret "${value.data?.secretName}" does not exist in vault "${value.data?.nameOrId}"`,
                   );
@@ -310,7 +303,7 @@ class CommandEnv extends CommandPolykey {
 
           // Apply defaults using the schema
           const filteredEnvp: Record<string, string> = {};
-          if (unwrappedSchema != null) {
+          if (schema != null && unwrappedSchema != null) {
             // Parse the schema for manual filtering
             const { requiredKeys, allKeys, defaults } = unwrappedSchema;
 
@@ -326,12 +319,20 @@ class CommandEnv extends CommandPolykey {
                 requiredKeys.includes(key) &&
                 (value == null || value === '')
               ) {
-                throw new Error('TMP missing required variable');
+                throw new binErrors.ErrorPolykeyCLIMissingRequiredEnvName(
+                  `Expected definition for ${key}`,
+                );
               }
               if (value != null) {
                 filteredEnvp[key] = value.toString();
               }
             }
+
+            // Validate the schema using ajv. All defaults have already been
+            // applied. This is now the final state of the exported variables.
+            const ajv = new Ajv({ allErrors: true });
+            const validate = ajv.compile(schema);
+            validate(envp);
           }
 
           return [
