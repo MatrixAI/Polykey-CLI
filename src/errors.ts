@@ -202,8 +202,13 @@ class ErrorPolykeyCLITouchSecret<T> extends ErrorPolykeyCLI<T> {
 }
 
 class ErrorPolykeyCLIInvalidJWT<T> extends ErrorPolykeyCLI<T> {
-  static description: 'JWT is not valid';
+  static description = 'JWT is not valid';
   exitCode = sysexits.USAGE;
+}
+
+class ErrorPolykeyCLISchemaInvalid<T> extends ErrorPolykeyCLI<T> {
+  static description = 'The provided JSON schema is invalid';
+  exitCode = sysexits.CONFIG;
 }
 
 export {
@@ -236,4 +241,5 @@ export {
   ErrorPolykeyCLIEditSecret,
   ErrorPolykeyCLITouchSecret,
   ErrorPolykeyCLIInvalidJWT,
+  ErrorPolykeyCLISchemaInvalid,
 };

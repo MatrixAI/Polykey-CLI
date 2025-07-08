@@ -1,13 +1,9 @@
 import type PolykeyClient from 'polykey/PolykeyClient.js';
-import type {
-  JSONSchema,
-  JSONSchemaInfo,
-  ParsedSecretPathValue,
-} from '../types.js';
+import type { ParsedSecretPathValue } from '../types.js';
 import path from 'node:path';
 import os from 'node:os';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
-import { Ajv2019 as Ajv } from 'ajv/dist/2019.js';
+import { Ajv2019 } from 'ajv/dist/2019.js';
 import { InvalidArgumentError } from 'commander';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binProcessors from '../utils/processors.js';
@@ -126,65 +122,25 @@ class CommandEnv extends CommandPolykey {
           logger: this.logger.getChild(PolykeyClient.name),
         });
 
-        let schema: JSONSchema | undefined = undefined;
-        let unwrappedSchema: JSONSchemaInfo | undefined = undefined;
-        if (options.egressSchema != null) {
-          schema = (await $RefParser.bundle(
-            options.egressSchema,
-          )) satisfies JSONSchema;
-          unwrappedSchema = binUtils.loadSchema(schema!);
-        }
-
         // Getting envs
         const [envp] = await binUtils.retryAuthentication(async (auth) => {
           const responseStream =
             await pkClient.rpcClient.methods.vaultsSecretsEnv();
 
-          // Writing desired secrets
+          // Writing desired secrets. Attempt to get all the required secrets.
+          // If the schema is provided, then the resulting variables will be
+          // validated.
           const secretRenameMap = new Map<string, string | undefined>();
           const writer = responseStream.writable.getWriter();
           let first = true;
           for (const envVariable of envVariables) {
             const [nameOrId, secretName, secretNameNew] = envVariable;
             secretRenameMap.set(secretName ?? '/', secretNameNew);
-
-            // If there is no secret name provided, then attempt to export the
-            // secrets from the entire vault. Otherwise, check if the selected
-            // secret exists in the schema before requesting it. This will
-            // only run if a schema has been specified.
-            if (schema != null && unwrappedSchema != null) {
-              const { allKeys } = unwrappedSchema;
-              if (nameOrId != null && secretName == null) {
-                // Only vault specified
-                for (const key of allKeys) {
-                  // When exporting secrets from a vault, it is impossible to
-                  // rename the resulting secrets.
-                  await writer.write({
-                    nameOrId: nameOrId,
-                    secretName: key,
-                    metadata: first ? auth : undefined,
-                  });
-                }
-              } else {
-                // Individual secret name specified
-                const name: string =
-                  secretNameNew != null ? secretNameNew : secretName!;
-                if (allKeys.includes(name)) {
-                  await writer.write({
-                    nameOrId: nameOrId,
-                    secretName: secretName!,
-                    metadata: first ? auth : undefined,
-                  });
-                }
-              }
-            } else {
-              // No schema specified
-              await writer.write({
-                nameOrId: nameOrId,
-                secretName: secretName ?? '/',
-                metadata: first ? auth : undefined,
-              });
-            }
+            await writer.write({
+              nameOrId: nameOrId,
+              secretName: secretName ?? '/',
+              metadata: first ? auth : undefined,
+            });
             first = false;
           }
           await writer.close();
@@ -207,10 +163,6 @@ class CommandEnv extends CommandPolykey {
                     `TMP Vault "${value.data?.nameOrId}" does not exist`,
                   );
                 case 'ENOENT':
-                  // If we are working with schemas, then missing keys will be
-                  // validated later.
-                  if (unwrappedSchema != null) break;
-
                   // It is expected for the data to be populated with the
                   // offending secret and vault name if a secret was not found.
                   throw new Error(
@@ -301,44 +253,34 @@ class CommandEnv extends CommandPolykey {
             };
           }
 
-          // Apply defaults using the schema
-          const filteredEnvp: Record<string, string> = {};
-          if (schema != null && unwrappedSchema != null) {
-            // Parse the schema for manual filtering
-            const { requiredKeys, allKeys, defaults } = unwrappedSchema;
+          // Validate the schema
+          if (options.egressSchema != null) {
+            // Compose the schema as ajv cannot parse cross-schema refs
+            const schema = await $RefParser.bundle(options.egressSchema);
 
-            // Add allowed secrets to a filtered set of secrets. This runs after
-            // the duplication is processed, so all secrets here are guaranteed
-            // to be unique.
-            for (const key of allKeys) {
-              let value = envp[key];
-              if (value == null && defaults[key] != null) {
-                value = defaults[key];
-              }
-              if (
-                requiredKeys.includes(key) &&
-                (value == null || value === '')
-              ) {
-                throw new binErrors.ErrorPolykeyCLIMissingRequiredEnvName(
-                  `Expected definition for ${key}`,
-                );
-              }
-              if (value != null) {
-                filteredEnvp[key] = value.toString();
-              }
-            }
-
-            // Validate the schema using ajv. All defaults have already been
-            // applied. This is now the final state of the exported variables.
-            const ajv = new Ajv({ allErrors: true });
+            // Validate the schema using ajv. This will also apply defaults and
+            // coerce types as necessary.
+            const ajv = new Ajv2019({
+              strict: true,
+              allErrors: true,
+              useDefaults: true,
+              coerceTypes: true,
+            });
             const validate = ajv.compile(schema);
-            validate(envp);
+            const valid = validate(envp);
+            if (!valid && validate.errors != null) {
+              throw new binErrors.ErrorPolykeyCLISchemaInvalid(
+                'JSON schema validation failed',
+                {
+                  data: {
+                    errors: [...validate.errors],
+                  },
+                },
+              );
+            }
           }
 
-          return [
-            utils.isEmptyObject(filteredEnvp) ? envp : filteredEnvp,
-            envpPath,
-          ];
+          return [envp, envpPath];
         }, meta);
         // End connection early to avoid errors on server
         await pkClient.stop();
