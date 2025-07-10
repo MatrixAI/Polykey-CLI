@@ -1,5 +1,4 @@
 import type { FileSystem, POJO } from 'polykey/types.js';
-import type { SignedTokenEncoded } from 'polykey/tokens/types.js';
 import type {
   TableRow,
   TableOptions,
@@ -18,6 +17,13 @@ import * as binProcessors from './processors.js';
 import * as errors from '../errors.js';
 // @ts-ignore package.json is outside rootDir
 import packageJson from '../../package.json' assert { type: 'json' };
+
+const validEnvRegex = /[a-zA-Z_]+[a-zA-Z0-9_]*/;
+// We want to actually match control codes here!
+// eslint-disable-next-line no-control-regex
+const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`\\]/g;
+const decodeEscapedRegex = /\\([nrtvf"'`\\]|u[0-9a-fA-F]{4})/g;
+const urlProtocolRegex = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//;
 
 /**
  * Convert verbosity to LogLevel
@@ -129,10 +135,6 @@ function decodeEscapedWrapped(str: string): string {
   return decodeEscaped(str.substring(1, str.length - 1));
 }
 
-// We want to actually match control codes here!
-// eslint-disable-next-line no-control-regex
-const encodeEscapedRegex = /[\x00-\x1F\x7F-\x9F"'`\\]/g;
-
 /**
  * This function:
  *
@@ -168,8 +170,6 @@ function encodeEscaped(str: string): string {
     }
   });
 }
-
-const decodeEscapedRegex = /\\([nrtvf"'`\\]|u[0-9a-fA-F]{4})/g;
 
 /**
  * This function:
@@ -600,8 +600,6 @@ function remoteErrorCause(e: any): [any, number] {
   return [errorCause, depth];
 }
 
-const validEnvRegex = /[a-zA-Z_]+[a-zA-Z0-9_]*/;
-
 /**
  * Returns a formatted version string in the format of `[ APPVERSION, LIBRARYVERSION, NETWORKVERSION, STATEVERSION ]`
  */
@@ -637,13 +635,18 @@ async function importFS(fs?: FileSystem): Promise<FileSystem> {
   return fsImported;
 }
 
-function jsonToCompactJWT(token: SignedTokenEncoded): string {
-  if (token.signatures.length !== 1) {
-    throw new errors.ErrorPolykeyCLIInvalidJWT(
-      'Too many signatures, expected 1',
-    );
+/**
+ * The return URL will not contain a trailing slash
+ */
+function normalizeURL(url: string): URL {
+  // If the protocol is missing from the URL, add https:// as the default
+  if (!urlProtocolRegex.test(url)) {
+    url = 'https://' + url;
   }
-  return `${token.signatures[0].protected}.${token.payload}.${token.signatures[0].signature}`;
+  if (url.endsWith('/')) {
+    url = url.slice(0, url.length);
+  }
+  return new URL(url);
 }
 
 export {
@@ -669,7 +672,7 @@ export {
   generateVersionString,
   promise,
   importFS,
-  jsonToCompactJWT,
+  normalizeURL,
 };
 
 export type { OutputObject };
