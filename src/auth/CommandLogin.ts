@@ -1,15 +1,17 @@
+import type { AuthIdentityToken } from 'polykey/tokens/payloads/authIdentityToken.js';
 import type PolykeyClient from 'polykey/PolykeyClient.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binProcessors from '../utils/processors.js';
 import * as binUtils from '../utils/index.js';
 import * as binOptions from '../utils/options.js';
+import * as errors from '../errors.js';
 
 class CommandLogin extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
     super(...args);
     this.name('login');
     this.description('Login to a platform with your Polykey identity');
-    this.argument('<url>', 'The URL to login using Polykey');
+    this.argument('[url]', 'The URL to login using Polykey. Default is `enterprise.polykey.com`');
     this.addOption(binOptions.nodeId);
     this.addOption(binOptions.clientHost);
     this.addOption(binOptions.clientPort);
@@ -19,6 +21,7 @@ class CommandLogin extends CommandPolykey {
         'polykey/PolykeyClient.js'
       );
       const { default: open } = await import('open');
+      const { default: Token } = await import('polykey/tokens/Token.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -55,12 +58,15 @@ class CommandLogin extends CommandPolykey {
         );
 
         // Send the returned JWT to the returnURL provided by the initial token
-        const compactHeader = binUtils.jsonToCompactJWT(response);
-        const targetURL = new URL(
-          url.endsWith('/') ? url.slice(0, url.length) : url,
-        );
-        const subPath: string = options.returnURLPath ?? '/oauth2/oidc';
-        targetURL.pathname = subPath.startsWith('/') ? subPath : `/${subPath}`;
+        const compactHeader =
+          Token.fromEncoded<AuthIdentityToken>(response).toCompact();
+        if (compactHeader == null) {
+          throw new errors.ErrorPolykeyCLIInvalidJWT(
+            'Too many signatures, expected 1',
+          );
+        }
+        const targetURL = binUtils.normalizeURL(url ?? 'enterprise.polykey.com');
+        targetURL.pathname = options.returnURLPath ?? '/oauth2/oidc';
         targetURL.searchParams.append('token', compactHeader);
 
         // Print out the URL to stderr
