@@ -63,6 +63,32 @@ type PromiseDeconstructed<T> = {
 
 type ParsedSecretPathValue = [string, string?, string?];
 
+type JSONSchemaProps = Record<
+  string,
+  {
+    type?: string;
+    default?: unknown;
+    [key: string]: unknown;
+  }
+>;
+
+type JSONSchema = {
+  type?: string;
+  properties?: Record<string, JSONSchemaProps>;
+  required?: Array<string>;
+  allOf?: Array<JSONSchema>;
+  anyOf?: Array<JSONSchema>;
+  oneOf?: Array<JSONSchema>;
+  [key: string]: unknown;
+};
+
+// Only strings are supported for the time being
+type JSONSchemaInfo = {
+  allKeys: Array<string>;
+  requiredKeys: Array<string>;
+  defaults: Record<string, string>;
+};
+
 export type {
   TableRow,
   TableOptions,
@@ -72,4 +98,7 @@ export type {
   AgentChildProcessOutput,
   PromiseDeconstructed,
   ParsedSecretPathValue,
+  JSONSchemaProps,
+  JSONSchema,
+  JSONSchemaInfo,
 };

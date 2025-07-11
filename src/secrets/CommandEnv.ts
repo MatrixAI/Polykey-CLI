@@ -2,8 +2,9 @@ import type PolykeyClient from 'polykey/PolykeyClient.js';
 import type { ParsedSecretPathValue } from '../types.js';
 import path from 'node:path';
 import os from 'node:os';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
+import { Ajv2019 } from 'ajv/dist/2019.js';
 import { InvalidArgumentError } from 'commander';
-import * as utils from 'polykey/utils/index.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binProcessors from '../utils/processors.js';
 import * as binUtils from '../utils/index.js';
@@ -26,6 +27,7 @@ class CommandEnv extends CommandPolykey {
     this.addOption(binOptions.envDuplicate);
     this.addOption(binOptions.envExport);
     this.addOption(binOptions.preserveNewline);
+    this.addOption(binOptions.egressSchema);
     this.argument(
       '<args...>',
       'command and arguments formatted as <envPaths...> [-- cmd [cmdArgs...]]',
@@ -34,6 +36,7 @@ class CommandEnv extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/PolykeyClient.js'
       );
+      const utils = await import('polykey/utils/index.js');
       const {
         envInvalid,
         envDuplicate,
@@ -53,6 +56,7 @@ class CommandEnv extends CommandPolykey {
         if (secretPath == null) preservedSecrets.add(vaultName);
         else preservedSecrets.add(`${vaultName}:${secretPath}`);
       }
+
       // There are a few stages here
       // 1. parse the desired secrets
       // 2. obtain the desired secrets
@@ -122,23 +126,24 @@ class CommandEnv extends CommandPolykey {
         const [envp] = await binUtils.retryAuthentication(async (auth) => {
           const responseStream =
             await pkClient.rpcClient.methods.vaultsSecretsEnv();
-          // Writing desired secrets
+
+          // Writing desired secrets. Attempt to get all the required secrets.
+          // If the schema is provided, then the resulting variables will be
+          // validated.
           const secretRenameMap = new Map<string, string | undefined>();
-          const writeP = (async () => {
-            const writer = responseStream.writable.getWriter();
-            let first = true;
-            for (const envVariable of envVariables) {
-              const [nameOrId, secretName, secretNameNew] = envVariable;
-              secretRenameMap.set(secretName ?? '/', secretNameNew);
-              await writer.write({
-                nameOrId: nameOrId,
-                secretName: secretName ?? '/',
-                metadata: first ? auth : undefined,
-              });
-              first = false;
-            }
-            await writer.close();
-          })();
+          const writer = responseStream.writable.getWriter();
+          let first = true;
+          for (const envVariable of envVariables) {
+            const [nameOrId, secretName, secretNameNew] = envVariable;
+            secretRenameMap.set(secretName ?? '/', secretNameNew);
+            await writer.write({
+              nameOrId: nameOrId,
+              secretName: secretName ?? '/',
+              metadata: first ? auth : undefined,
+            });
+            first = false;
+          }
+          await writer.close();
 
           const envp: Record<string, string> = {};
           const envpPath: Record<
@@ -149,6 +154,28 @@ class CommandEnv extends CommandPolykey {
             }
           > = {};
           for await (const value of responseStream.readable) {
+            if (value.type === 'ErrorMessage') {
+              switch (value.code) {
+                case 'EINVAL':
+                  // It is expected for the data to be populated with the
+                  // offending vault name if the vault was not found.
+                  throw new Error(
+                    `TMP Vault "${value.data?.nameOrId}" does not exist`,
+                  );
+                case 'ENOENT':
+                  // It is expected for the data to be populated with the
+                  // offending secret and vault name if a secret was not found.
+                  throw new Error(
+                    `TMP Secret "${value.data?.secretName}" does not exist in vault "${value.data?.nameOrId}"`,
+                  );
+                default:
+                  utils.never(
+                    `Expected code to be one of EINVAL, ENOENT, received ${value.code}`,
+                  );
+              }
+              continue;
+            }
+
             const { nameOrId, secretName, secretContent } = value;
             let newName = secretRenameMap.get(secretName);
             if (newName == null) {
@@ -225,7 +252,34 @@ class CommandEnv extends CommandPolykey {
               secretName,
             };
           }
-          await writeP;
+
+          // Validate the schema
+          if (options.egressSchema != null) {
+            // Compose the schema as ajv cannot parse cross-schema refs
+            const schema = await $RefParser.bundle(options.egressSchema);
+
+            // Validate the schema using ajv. This will also apply defaults and
+            // coerce types as necessary.
+            const ajv = new Ajv2019({
+              strict: true,
+              allErrors: true,
+              useDefaults: true,
+              coerceTypes: true,
+            });
+            const validate = ajv.compile(schema);
+            const valid = validate(envp);
+            if (!valid && validate.errors != null) {
+              throw new binErrors.ErrorPolykeyCLISchemaInvalid(
+                'JSON schema validation failed',
+                {
+                  data: {
+                    errors: [...validate.errors],
+                  },
+                },
+              );
+            }
+          }
+
           return [envp, envpPath];
         }, meta);
         // End connection early to avoid errors on server

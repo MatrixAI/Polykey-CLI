@@ -325,6 +325,11 @@ const returnURLPath = new Option(
   'Which path on the website to send the token to',
 );
 
+const egressSchema = new Option(
+  '--egress-schema <path>',
+  'A JSON schema controlling the egressing secrets',
+);
+
 export {
   nodePath,
   format,
@@ -371,4 +376,5 @@ export {
   parents,
   preserveNewline,
   returnURLPath,
+  egressSchema,
 };

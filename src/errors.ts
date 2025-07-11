@@ -166,6 +166,11 @@ class ErrorPolykeyCLIDuplicateEnvName<T> extends ErrorPolykeyCLI<T> {
   exitCode = sysexits.USAGE;
 }
 
+class ErrorPolykeyCLIMissingRequiredEnvName<T> extends ErrorPolykeyCLI<T> {
+  static description = 'A required environment variable is not present';
+  exitCode = sysexits.USAGE;
+}
+
 class ErrorPolykeyCLIMakeDirectory<T> extends ErrorPolykeyCLI<T> {
   static description = 'Failed to create one or more directories';
   exitCode = 1;
@@ -197,8 +202,13 @@ class ErrorPolykeyCLITouchSecret<T> extends ErrorPolykeyCLI<T> {
 }
 
 class ErrorPolykeyCLIInvalidJWT<T> extends ErrorPolykeyCLI<T> {
-  static description: 'JWT is not valid';
+  static description = 'JWT is not valid';
   exitCode = sysexits.USAGE;
+}
+
+class ErrorPolykeyCLISchemaInvalid<T> extends ErrorPolykeyCLI<T> {
+  static description = 'The provided JSON schema is invalid';
+  exitCode = sysexits.CONFIG;
 }
 
 export {
@@ -223,6 +233,7 @@ export {
   ErrorPolykeyCLINodePingFailed,
   ErrorPolykeyCLIInvalidEnvName,
   ErrorPolykeyCLIDuplicateEnvName,
+  ErrorPolykeyCLIMissingRequiredEnvName,
   ErrorPolykeyCLIMakeDirectory,
   ErrorPolykeyCLIRenameSecret,
   ErrorPolykeyCLIRemoveSecret,
@@ -230,4 +241,5 @@ export {
   ErrorPolykeyCLIEditSecret,
   ErrorPolykeyCLITouchSecret,
   ErrorPolykeyCLIInvalidJWT,
+  ErrorPolykeyCLISchemaInvalid,
 };
