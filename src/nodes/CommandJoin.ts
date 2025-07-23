@@ -1,9 +1,10 @@
 import type PolykeyClient from 'polykey/PolykeyClient.js';
+import type { Hostname } from 'polykey/network/types.js';
+import type { NodeId, NodeAddress } from 'polykey/nodes/types.js';
 import CommandPolykey from '../CommandPolykey.js';
 import * as binUtils from '../utils/index.js';
 import * as binOptions from '../utils/options.js';
 import * as binProcessors from '../utils/processors.js';
-import * as errors from '../errors.js';
 
 class CommandJoin extends CommandPolykey {
   constructor(...args: ConstructorParameters<typeof CommandPolykey>) {
@@ -18,6 +19,8 @@ class CommandJoin extends CommandPolykey {
       const { default: PolykeyClient } = await import(
         'polykey/PolykeyClient.js'
       );
+      const nodesUtils = await import('polykey/nodes/utils.js');
+      const utils = await import('polykey/utils/index.js');
       const clientOptions = await binProcessors.processClientOptions(
         options.nodePath,
         options.nodeId,
@@ -45,10 +48,22 @@ class CommandJoin extends CommandPolykey {
           },
           logger: this.logger.getChild(PolykeyClient.name),
         });
+        const seedNodes = await nodesUtils.resolveSeednodes(network as Hostname);
+        const seedNodeEntries = Object.entries(seedNodes);
+        const initialNodes = seedNodeEntries.map(
+          ([nodeIdEncoded, nodeAddress]) => {
+            const nodeId = nodesUtils.decodeNodeId(nodeIdEncoded);
+            if (nodeId == null) {
+              utils.never(`failed to decode NodeId "${nodeIdEncoded}"`);
+            }
+            return [nodeId, nodeAddress] as [NodeId, NodeAddress];
+          },
+        );
         await binUtils.retryAuthentication(
           (auth) =>
             pkClient.rpcClient.methods.nodesSyncGraph({
               network,
+              initialNodes,
               metadata: auth,
             }),
           auth,
